@@ -332,7 +332,10 @@ class NeuralSequenceDecoder(object):
             # Resume training, so we need to load optimizer and step from checkpoint.
             ckptVars['step'] = tf.Variable(0)
             ckptVars['bestValCer'] = tf.Variable(1.0)
-            ckptVars['optimizer'] = self.optimizer
+            # In infer mode, skip restoring the optimizer to avoid legacy Adam
+            # compatibility issues with TF 2.11+ (checkpoint was saved with legacy API).
+            if self.args['mode'] != 'infer':
+                ckptVars['optimizer'] = self.optimizer
             self.checkpoint = tf.train.Checkpoint(**ckptVars)
             ckptPath = tf.train.latest_checkpoint(self.args['outputDir'])
             # If in infer mode, we may want to load a particular checkpoint idx

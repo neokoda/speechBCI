@@ -1,0 +1,18 @@
+torch>=2.0.0
+torchaudio
+torchvision
+tensorflow>=2.10.0  # For legacy data reading if needed
+transformers
+peft
+accelerate
+bitsandbytes
+hydra-core
+omegaconf
+jupyter
+matplotlib
+scipy
+pandas
+scikit-learn
+soundfile
+wandb
+python-Levenshtein
