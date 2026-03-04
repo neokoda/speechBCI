@@ -48,26 +48,20 @@ for dirIdx, testDir in enumerate(testDirs):
     print("Initializing NeuralSequenceDecoder...")
     nsd = NeuralSequenceDecoder(args)
 
-    # --- Count total batches for progress bar ---
-    total_batches = 0
-    for datasetIdx, valProb in enumerate(args['dataset']['datasetProbabilityVal']):
-        if valProb > 0:
-            total_batches += sum(1 for _ in nsd.tfValDatasets[datasetIdx])
-    print(f"Running inference on {total_batches} batches. This may take a while...")
-
-    # Monkey-patch inference() to add a progress bar
+    # Monkey-patch _valStep to show progress during inference
+    print("Running inference. This may take a while...")
     original_val_step = nsd._valStep
     batch_count = [0]
 
     def _valStep_with_progress(data, layerIdx):
         batch_count[0] += 1
-        print(f"\r  Batch {batch_count[0]}/{total_batches} ...", end="", flush=True)
+        print(f"\r  Batch {batch_count[0]} processed ...", end="", flush=True)
         return original_val_step(data, layerIdx)
 
     nsd._valStep = _valStep_with_progress
 
     out = nsd.inference()
-    print()  # newline after progress
+    print(f"\r  Done — {batch_count[0]} batches total.")
 
     per = out['cer']
     print(f"[{testDir}] Phoneme Error Rate (PER) without LM: {per:.4f}")

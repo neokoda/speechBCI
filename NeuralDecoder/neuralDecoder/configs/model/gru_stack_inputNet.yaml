@@ -1,3 +1,6 @@
+# Model type selector (gru or transformer)
+modelType: gru
+
 #number of units in each GRU layer
 nUnits: 512
 

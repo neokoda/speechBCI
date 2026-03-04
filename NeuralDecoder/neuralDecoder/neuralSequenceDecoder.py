@@ -1,4 +1,5 @@
 import os
+import csv
 import copy
 import random
 from datetime import datetime
@@ -71,18 +72,35 @@ class NeuralSequenceDecoder(object):
         tf.random.set_seed(self.args['seed'])
         random.seed(self.args['seed'])
 
-        # Init GRU model
-        self.model = models.GRU(self.args['model']['nUnits'],
-                         self.args['model']['weightReg'],
-                         self.args['model']['actReg'],
-                         self.args['model']['subsampleFactor'],
-                         self.args['dataset']['nClasses'] + 1,
-                         self.args['model']['bidirectional'],
-                         self.args['model']['dropout'],
-                         self.args['model'].get('nLayers', 2),
-                         conv_kwargs=self.args['model'].get('conv_kwargs', None),
-                         stack_kwargs=self.args['model'].get('stack_kwargs', None),
+        # Init model based on modelType config
+        modelType = self.args['model'].get('modelType', 'gru')
+        if modelType == 'transformer':
+            self.model = models.TransformerEncoder(
+                d_model=self.args['model']['d_model'],
+                nhead=self.args['model']['nhead'],
+                num_layers=self.args['model']['num_layers'],
+                d_ff=self.args['model']['d_ff'],
+                nClasses=self.args['dataset']['nClasses'] + 1,
+                weightReg=self.args['model']['weightReg'],
+                dropout=self.args['model']['dropout'],
+                attention_dropout=self.args['model'].get('attentionDropout', 0.0),
+                posEncType=self.args['model'].get('posEncType', 'sinusoidal'),
+                subsampleFactor=self.args['model']['subsampleFactor'],
+                stack_kwargs=self.args['model'].get('stack_kwargs', None),
+            )
+        else:
+            self.model = models.GRU(self.args['model']['nUnits'],
+                             self.args['model']['weightReg'],
+                             self.args['model']['actReg'],
+                             self.args['model']['subsampleFactor'],
+                             self.args['dataset']['nClasses'] + 1,
+                             self.args['model']['bidirectional'],
+                             self.args['model']['dropout'],
+                             self.args['model'].get('nLayers', 2),
+                             conv_kwargs=self.args['model'].get('conv_kwargs', None),
+                             stack_kwargs=self.args['model'].get('stack_kwargs', None),
         )
+
         if 'inputNetwork' in self.args['model']:
             self.model(tf.keras.Input(shape=(None, self.args['model']['inputNetwork']['inputLayerSizes'][-1])))
         else:
@@ -381,6 +399,17 @@ class NeuralSequenceDecoder(object):
             self.summary_writer = tf.summary.create_file_writer(
                 self.args['outputDir'])
 
+            # CSV metrics log
+            self.csvLogPath = os.path.join(self.args['outputDir'], 'metrics.csv')
+            if not os.path.exists(self.csvLogPath):
+                with open(self.csvLogPath, 'w', newline='') as f:
+                    writer = csv.writer(f)
+                    writer.writerow(['batch', 'val_per', 'train_loss', 'reg_loss',
+                                     'grad_norm', 'wall_time_sec'])
+
+            # Decoded samples log
+            self.decodedLogPath = os.path.join(self.args['outputDir'], 'decoded_samples.txt')
+
     def _datasetLayerTransform(self, dat, normLayer, whiteNoiseSD, constantOffsetSD, randomWalkSD, staticGainSD, randomCut):
 
         features = dat['inputFeatures']
@@ -491,8 +520,44 @@ class NeuralSequenceDecoder(object):
                 self._addRowToStatsTable(
                     perBatchData_val, batchIdx, totalSeconds, valOutputs, False)
                 print(f'Val batch {batchIdx}: ' +
-                      f'CER: {valOutputs["seqErrorRate"]:.2f} ' +
+                      f'CER: {valOutputs["seqErrorRate"]:.4f} ' +
                       f'time {totalSeconds:.2f}')
+
+                # CSV logging
+                try:
+                    with open(self.csvLogPath, 'a', newline='') as f:
+                        writer = csv.writer(f)
+                        writer.writerow([
+                            batchIdx,
+                            f'{valOutputs["seqErrorRate"]:.6f}',
+                            f'{float(trainOut["predictionLoss"]):.4f}',
+                            f'{float(trainOut["regularizationLoss"]):.4f}',
+                            f'{float(trainOut["gradNorm"]):.4f}',
+                            f'{totalSeconds:.2f}',
+                        ])
+                except Exception as e:
+                    print(f'CSV logging error: {e}')
+
+                # Log decoded samples (5 samples per validation)
+                if self.args['lossType'] == 'ctc':
+                    try:
+                        nSamples = min(5, len(valOutputs['decodedSeqs']))
+                        with open(self.decodedLogPath, 'a') as f:
+                            f.write(f'\n{"="*60}\n')
+                            f.write(f'Batch {batchIdx} | Val PER: {valOutputs["seqErrorRate"]:.4f}\n')
+                            f.write(f'{"="*60}\n')
+                            for si in range(nSamples):
+                                trueLen = int(valOutputs['trueSeqLengths'][si])
+                                trueSeq = valOutputs['trueSeqs'][si, :trueLen].tolist()
+                                predSeq = valOutputs['decodedSeqs'][si]
+                                predSeq = [p for p in predSeq if p >= 0]  # remove padding
+                                editDist = int(valOutputs['editDistances'][si]) if 'editDistances' in valOutputs else '?'
+                                f.write(f'  Sample {si}:\n')
+                                f.write(f'    TRUE: {trueSeq}\n')
+                                f.write(f'    PRED: {predSeq}\n')
+                                f.write(f'    Edit distance: {editDist}/{trueLen}\n')
+                    except Exception as e:
+                        print(f'Decoded sample logging error: {e}')
 
                 if saveBestCheckpoint and valOutputs['seqErrorRate'] < bestValCer:
                     bestValCer = valOutputs['seqErrorRate']

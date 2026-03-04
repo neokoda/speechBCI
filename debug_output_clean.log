@@ -1,0 +1,158 @@
+======================================================================
+STEP 1: RAW TFRECORD COMPARISON
+======================================================================
+
+--- test ---
+  Dir: c:/Users/LENOVO/Koding/Semester 8/TA/speechBCI/data\derived\tfRecords\t12.2022.05.24\test
+  Files: ['chunk_0.tfrecord']
+  Num files: 1
+
+  Record 1 keys: ['ceMask', 'classLabelsOneHot', 'inputFeatures', 'nSeqElements', 'nTimeSteps', 'newClassSignal', 'seqClassIDs', 'transcription']
+    ceMask: float_list, len=426, first5=[1.0, 1.0, 1.0, 1.0, 1.0]
+    classLabelsOneHot: float_list, len=13206, first5=[0.0, 0.0, 0.0, 0.0, 0.0]
+    inputFeatures: float_list, len=109056, first5=[-0.9351004958152771, 1.2280752658843994, -0.7430139780044556, 0.6325367093086243, 1.3576745986938477]
+    nSeqElements: int64_list, len=1, values=[38]
+    nTimeSteps: int64_list, len=1, values=[426]
+    newClassSignal: float_list, len=426, first5=[0.0, 0.0, 0.0, 0.0, 0.0]
+    seqClassIDs: int64_list, len=500, values=[17, 31, 29, 40, 28, 17, 21, 18, 40, 16, 1, 28, 9, 40, 31, 34, 40, 14, 6, 23]...
+    transcription: int64_list, len=500, values=[105, 116, 39, 115, 32, 114, 101, 97, 108, 108, 121, 32, 104, 97, 114, 100, 32, 116, 111, 32]...
+
+  Record 2 keys: ['ceMask', 'classLabelsOneHot', 'inputFeatures', 'nSeqElements', 'nTimeSteps', 'newClassSignal', 'seqClassIDs', 'transcription']
+    ceMask: float_list, len=268, first5=[1.0, 1.0, 1.0, 1.0, 1.0]
+    classLabelsOneHot: float_list, len=8308, first5=[0.0, 0.0, 0.0, 0.0, 0.0]
+    inputFeatures: float_list, len=68608, first5=[-0.9351004958152771, -0.5651863217353821, -0.7430139780044556, 0.6325367093086243, 0.22063349187374115]
+    nSeqElements: int64_list, len=1, values=[20]
+    nTimeSteps: int64_list, len=1, values=[268]
+    newClassSignal: float_list, len=268, first5=[0.0, 0.0, 0.0, 0.0, 0.0]
+    seqClassIDs: int64_list, len=500, values=[3, 23, 9, 40, 6, 40, 21, 3, 35, 9, 40, 32, 29, 40, 30, 6, 23, 17, 24, 40]...
+    transcription: int64_list, len=500, values=[97, 110, 100, 32, 105, 32, 108, 111, 118, 101, 100, 32, 116, 104, 115, 32, 115, 104, 105, 110]...
+  Total records in partition: 40
+
+--- competitionHoldOut ---
+  Dir: c:/Users/LENOVO/Koding/Semester 8/TA/speechBCI/data\derived\tfRecords\t12.2022.05.24\competitionHoldOut
+  Files: ['chunk_0.tfrecord']
+  Num files: 1
+
+  Record 1 keys: ['ceMask', 'classLabelsOneHot', 'inputFeatures', 'nSeqElements', 'nTimeSteps', 'newClassSignal', 'seqClassIDs', 'transcription']
+    ceMask: float_list, len=224, first5=[1.0, 1.0, 1.0, 1.0, 1.0]
+    classLabelsOneHot: float_list, len=6944, first5=[0.0, 0.0, 0.0, 0.0, 0.0]
+    inputFeatures: float_list, len=57344, first5=[2.147841215133667, 0.6765772104263306, -0.7766626477241516, 0.4040118455886841, 1.3487915992736816]
+    nSeqElements: int64_list, len=1, values=[8]
+    nTimeSteps: int64_list, len=1, values=[224]
+    newClassSignal: float_list, len=224, first5=[0.0, 0.0, 0.0, 0.0, 0.0]
+    seqClassIDs: int64_list, len=500, values=[16, 11, 21, 9, 40, 5, 31, 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]...
+    transcription: int64_list, len=500, values=[104, 101, 108, 100, 32, 111, 117, 116, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]...
+
+  Record 2 keys: ['ceMask', 'classLabelsOneHot', 'inputFeatures', 'nSeqElements', 'nTimeSteps', 'newClassSignal', 'seqClassIDs', 'transcription']
+    ceMask: float_list, len=454, first5=[1.0, 1.0, 1.0, 1.0, 1.0]
+    classLabelsOneHot: float_list, len=14074, first5=[0.0, 0.0, 0.0, 0.0, 0.0]
+    inputFeatures: float_list, len=116224, first5=[0.0025336220860481262, -0.7057201862335205, 0.6243206262588501, 0.4040118455886841, -0.9525796175003052]
+    nSeqElements: int64_list, len=1, values=[8]
+    nTimeSteps: int64_list, len=1, values=[454]
+    newClassSignal: float_list, len=454, first5=[0.0, 0.0, 0.0, 0.0, 0.0]
+    seqClassIDs: int64_list, len=500, values=[16, 11, 21, 9, 40, 5, 31, 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]...
+    transcription: int64_list, len=500, values=[104, 101, 108, 100, 32, 111, 117, 116, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]...
+  Total records in partition: 80
+
+======================================================================
+STEP 2: MODEL OUTPUT COMPARISON (session t12.2022.05.24, idx=4)
+======================================================================
+
+--- Running model on 'test' ---
+  layerIdx for session 4: 4
+
+  Batch 1 details:
+    inputFeatures shape: (40, 522, 256)
+    inputFeatures mean/std: -0.0000 / 0.8109
+    logits shape: (40, 123, 41)
+    logits mean/std: -0.3217 / 5.6674
+    nTimeSteps: [426 268 359 235 438]
+    nSeqElements: [38 20 25 18 41]
+
+    Sample 0:
+      True  (38 phonemes): [16, 30, 28, 39, 27, 16, 20, 17, 39, 15, 0, 27, 8, 39, 30, 33, 39, 13, 5, 22, 8, 39, 28, 2, 21, 31, 16, 23, 39, 9, 1, 30, 39, 35, 11, 19, 28, 39]
+      Decoded (37 phonemes): [16, 30, 28, 39, 27, 16, 20, 17, 39, 15, 0, 27, 8, 39, 30, 33, 39, 13, 5, 22, 39, 28, 2, 21, 31, 16, 23, 39, 9, 1, 30, 39, 35, 11, 19, 28, 39]
+      Edit distance: 1.0
+      Logit argmax non-blank count: 81
+      Logit argmax first 50: [40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 16, 30, 28, 28, 39, 39, 39, 39, 27, 40, 16, 20, 20, 17, 17, 39, 39, 39, 39, 39, 39, 15, 40, 0, 27, 8, 39, 39, 39, 39, 39, 30]
+
+    Sample 1:
+      True  (20 phonemes): [2, 22, 8, 39, 5, 39, 20, 2, 34, 8, 39, 31, 28, 39, 29, 5, 22, 16, 23, 39]
+      Decoded (19 phonemes): [2, 22, 8, 39, 5, 39, 20, 2, 34, 39, 9, 2, 28, 39, 18, 5, 16, 23, 39]
+      Edit distance: 5.0
+      Logit argmax non-blank count: 48
+      Logit argmax first 50: [40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 2, 22, 8, 8, 39, 39, 40, 5, 5, 39, 39, 39, 39, 39, 39, 20, 20, 40, 2, 34, 34, 39, 39, 39, 39, 39, 39, 39, 9, 40, 2, 28, 39, 39, 18, 40, 5]
+
+    Sample 2:
+      True  (25 phonemes): [5, 39, 8, 33, 39, 15, 1, 34, 39, 2, 39, 13, 27, 10, 22, 8, 39, 9, 1, 30, 39, 27, 1, 22, 39]
+      Decoded (26 phonemes): [5, 39, 8, 33, 39, 15, 1, 34, 39, 2, 39, 13, 27, 10, 22, 8, 37, 39, 9, 1, 30, 39, 27, 2, 22, 39]
+      Edit distance: 2.0
+      Logit argmax non-blank count: 72
+      Logit argmax first 50: [40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 5, 39, 39, 39, 39, 39, 8, 40, 33, 40, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 15, 15, 40, 1, 34, 39, 39, 39, 39, 40, 40, 2, 39, 39]
+
+    Sample 3:
+      True  (18 phonemes): [18, 2, 28, 30, 39, 35, 12, 39, 16, 22, 39, 9, 2, 39, 6, 1, 19, 39]
+      Decoded (18 phonemes): [20, 2, 28, 30, 39, 35, 12, 39, 16, 22, 39, 9, 2, 39, 6, 1, 19, 39]
+      Edit distance: 1.0
+      Logit argmax non-blank count: 45
+      Logit argmax first 50: [40, 40, 40, 40, 40, 40, 40, 20, 40, 40, 2, 28, 30, 39, 39, 39, 35, 40, 40, 12, 40, 39, 39, 39, 40, 40, 16, 22, 22, 39, 39, 39, 39, 39, 39, 9, 40, 2, 39, 39, 39, 39, 39, 39, 6, 40, 40, 1, 19, 39]
+
+    Sample 4:
+      True  (41 phonemes): [1, 19, 7, 2, 35, 2, 20, 17, 39, 16, 30, 39, 21, 12, 19, 28, 39, 28, 10, 22, 28, 39, 30, 33, 39, 2, 39, 28, 11, 30, 2, 22, 39, 16, 19, 28, 30, 10, 22, 30, 39]
+      Decoded (41 phonemes): [1, 19, 7, 2, 35, 2, 20, 17, 39, 16, 30, 39, 21, 12, 19, 39, 28, 10, 22, 8, 28, 39, 30, 33, 39, 2, 39, 28, 30, 11, 8, 2, 22, 30, 39, 1, 19, 2, 22, 8, 39]
+      Edit distance: 10.0
+      Logit argmax non-blank count: 90
+      Logit argmax first 50: [40, 40, 40, 40, 40, 40, 40, 1, 19, 7, 2, 35, 35, 2, 2, 20, 20, 17, 17, 39, 39, 39, 40, 40, 40, 16, 30, 39, 39, 39, 39, 21, 40, 12, 19, 19, 39, 39, 39, 39, 39, 39, 39, 39, 39, 39, 28, 28, 40, 10]
+
+  RESULT: 1 batches, PER=0.1426 (editDist=159, trueLen=1115)
+
+--- Running model on 'competitionHoldOut' ---
+  layerIdx for session 4: 4
+
+  Batch 1 details:
+    inputFeatures shape: (64, 503, 256)
+    inputFeatures mean/std: 0.0035 / 0.7668
+    logits shape: (64, 118, 41)
+    logits mean/std: -0.3287 / 5.6205
+    nTimeSteps: [224 454 216 283 243]
+    nSeqElements: [8 8 8 8 8]
+
+    Sample 0:
+      True  (8 phonemes): [15, 10, 20, 8, 39, 4, 30, 39]
+      Decoded (22 phonemes): [5, 21, 39, 2, 22, 36, 20, 17, 39, 13, 27, 2, 21, 39, 19, 0, 20, 11, 10, 8, 24, 39]
+      Edit distance: 19.0
+      Logit argmax non-blank count: 44
+      Logit argmax first 50: [40, 40, 40, 40, 40, 40, 40, 40, 5, 5, 21, 39, 39, 39, 40, 40, 2, 22, 36, 20, 20, 20, 20, 20, 17, 39, 39, 39, 13, 27, 27, 2, 21, 39, 39, 39, 19, 40, 0, 20, 20, 40, 11, 40, 10, 8, 8, 24, 39, 39]
+
+    Sample 1:
+      True  (8 phonemes): [15, 10, 20, 8, 39, 4, 30, 39]
+      Decoded (37 phonemes): [5, 13, 39, 5, 39, 15, 1, 8, 39, 21, 2, 22, 17, 39, 5, 8, 39, 6, 17, 39, 13, 12, 34, 39, 30, 33, 39, 6, 5, 39, 2, 39, 22, 24, 39, 22, 39]
+      Edit distance: 32.0
+      Logit argmax non-blank count: 78
+      Logit argmax first 50: [40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 5, 13, 39, 39, 40, 5, 5, 39, 39, 39, 15, 40, 1, 8, 39, 39, 39, 39, 39, 21, 21, 40, 2, 22, 22, 17, 39, 39, 39, 39, 40, 40, 5, 8, 8, 40, 39]
+
+    Sample 2:
+      True  (8 phonemes): [15, 10, 20, 8, 39, 4, 30, 39]
+      Decoded (15 phonemes): [5, 39, 27, 5, 28, 30, 39, 16, 22, 39, 22, 3, 27, 19, 39]
+      Edit distance: 13.0
+      Logit argmax non-blank count: 37
+      Logit argmax first 50: [40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 5, 5, 40, 39, 39, 39, 39, 39, 39, 27, 40, 40, 5, 28, 30, 40, 39, 39, 16, 22, 22, 39, 39, 39, 22, 22, 40, 40, 3, 27, 19, 19, 39, 39, 39, 39, 39]
+
+    Sample 3:
+      True  (8 phonemes): [15, 10, 20, 8, 39, 4, 30, 39]
+      Decoded (25 phonemes): [5, 39, 31, 3, 30, 39, 9, 2, 39, 30, 0, 26, 16, 19, 39, 35, 0, 37, 39, 26, 25, 27, 16, 23, 39]
+      Edit distance: 22.0
+      Logit argmax non-blank count: 58
+      Logit argmax first 50: [40, 40, 40, 40, 40, 40, 40, 40, 5, 40, 39, 39, 31, 31, 3, 30, 30, 39, 39, 39, 39, 9, 40, 2, 40, 39, 39, 39, 39, 30, 40, 40, 0, 26, 26, 16, 16, 19, 19, 39, 39, 39, 39, 39, 35, 35, 40, 0, 37, 39]
+
+    Sample 4:
+      True  (8 phonemes): [15, 10, 20, 8, 39, 4, 30, 39]
+      Decoded (20 phonemes): [35, 2, 30, 39, 10, 34, 11, 17, 39, 8, 5, 34, 39, 2, 26, 39, 9, 10, 27, 39]
+      Edit distance: 16.0
+      Logit argmax non-blank count: 41
+      Logit argmax first 50: [40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 35, 2, 30, 30, 39, 39, 40, 40, 10, 34, 11, 11, 17, 17, 17, 17, 39, 39, 39, 8, 40, 40, 5, 34, 39, 39, 40, 2, 26, 39, 39, 39, 39, 39, 9, 10, 27]
+
+  RESULT: 2 batches, PER=2.5375 (editDist=1624, trueLen=640)
+
+
+DONE.

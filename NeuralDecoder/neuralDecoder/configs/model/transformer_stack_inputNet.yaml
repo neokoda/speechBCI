@@ -1,0 +1,29 @@
+# Model type selector (gru or transformer)
+modelType: transformer
+
+# Transformer architecture params
+d_model: 512
+nhead: 8
+num_layers: 6
+d_ff: 2048                  # feedforward hidden dim
+posEncType: sinusoidal       # sinusoidal | learned
+dropout: 0.1
+attentionDropout: 0.0
+
+# Shared params (same as GRU config)
+inputLayerSize: 256
+subsampleFactor: 1
+weightReg: 1e-5
+actReg: 0.0
+trainable: True
+
+stack_kwargs:
+  kernel_size: 32
+  strides: 4
+
+inputNetwork:
+  nInputLayers: 1
+  inputLayerSizes: [256]
+  trainable: True
+  activation: softsign
+  dropout: 0.2

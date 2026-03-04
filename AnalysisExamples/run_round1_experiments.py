@@ -1,0 +1,248 @@
+#!/usr/bin/env python3
+"""
+Round 1 Experiment Runner: Successive Halving for Transformer Architecture Search.
+
+Runs 16 Transformer configs for 1,000 batches each, logs results to CSV,
+and ranks them by validation PER.
+
+Usage (on RunPod):
+    python run_round1_experiments.py \
+        --data-dir /workspace/data/derived/tfRecords \
+        --output-dir /workspace/experiments/round1 \
+        --gpu 0
+"""
+
+import argparse
+import itertools
+import os
+import subprocess
+import sys
+import csv
+import json
+from datetime import datetime
+
+
+# ============================================================================
+# Experiment Configuration Grid
+# ============================================================================
+GRID = {
+    'd_model':    [256, 512],
+    'num_layers': [4, 6],
+    'nhead':      [4, 8],
+    'd_ff_mult':  [2, 4],   # d_ff = d_ff_mult * d_model
+}
+
+# Fixed hyperparameters for Round 1
+FIXED = {
+    'nBatchesToTrain':   1000,
+    'batchesPerVal':     100,
+    'batchSize':         64,
+    'learnRateStart':    0.001,
+    'learnRateEnd':      0.0,
+    'learnRateDecaySteps': 1000,
+    'warmUpSteps':       100,
+    'gradClipValue':     10,
+    'lossType':          'ctc',
+    'smoothInputs':      1,
+    'smoothKernelSD':    2,
+}
+
+# Sessions to use (same as baseline)
+SESSIONS = [
+    't12.2022.04.28', 't12.2022.05.05', 't12.2022.05.17', 't12.2022.05.19',
+    't12.2022.05.24', 't12.2022.05.26', 't12.2022.06.02', 't12.2022.06.07',
+    't12.2022.06.14', 't12.2022.06.16', 't12.2022.06.21', 't12.2022.06.28',
+    't12.2022.07.05', 't12.2022.07.14', 't12.2022.07.21', 't12.2022.07.27',
+    't12.2022.08.02', 't12.2022.08.11', 't12.2022.08.13',
+]
+
+
+def make_config_name(d_model, num_layers, nhead, d_ff):
+    return f"transformer_{d_model}d_{num_layers}L_{nhead}H_{d_ff}ff"
+
+
+def generate_configs():
+    """Generate all 16 experiment configs."""
+    configs = []
+    for d_model, num_layers, nhead, d_ff_mult in itertools.product(
+        GRID['d_model'], GRID['num_layers'], GRID['nhead'], GRID['d_ff_mult']
+    ):
+        d_ff = d_ff_mult * d_model
+        name = make_config_name(d_model, num_layers, nhead, d_ff)
+        configs.append({
+            'name': name,
+            'd_model': d_model,
+            'num_layers': num_layers,
+            'nhead': nhead,
+            'd_ff': d_ff,
+        })
+    return configs
+
+
+def build_command(config, data_dir, output_dir, gpu):
+    """Build the hydra command to run a single experiment."""
+    exp_dir = os.path.join(output_dir, config['name'])
+    os.makedirs(exp_dir, exist_ok=True)
+
+    # Build data dir list for all sessions
+    data_dirs_str = '[' + ','.join([data_dir] * len(SESSIONS)) + ']'
+    sessions_str = '[' + ','.join(SESSIONS) + ']'
+    layer_map = list(range(len(SESSIONS)))
+    layer_map_str = '[' + ','.join(map(str, layer_map)) + ']'
+    prob = round(1.0 / len(SESSIONS), 4)
+    prob_str = '[' + ','.join([str(prob)] * len(SESSIONS)) + ']'
+
+    cmd = [
+        sys.executable, '-m', 'neuralDecoder.main',
+        f'model=transformer_stack_inputNet',
+        f'dataset=speech_release_baseline',
+        f'model.d_model={config["d_model"]}',
+        f'model.num_layers={config["num_layers"]}',
+        f'model.nhead={config["nhead"]}',
+        f'model.d_ff={config["d_ff"]}',
+        f'model.dropout=0.1',
+        f'model.posEncType=sinusoidal',
+        f'outputDir={exp_dir}',
+        f'gpuNumber={gpu}',
+        f'dataset.dataDir={data_dirs_str}',
+        f'dataset.sessions={sessions_str}',
+        f'dataset.datasetToLayerMap={layer_map_str}',
+        f'dataset.datasetProbability={prob_str}',
+        f'dataset.datasetProbabilityVal={prob_str}',
+    ]
+
+    # Add fixed params
+    for key, val in FIXED.items():
+        cmd.append(f'{key}={val}')
+
+    return cmd
+
+
+def parse_val_per(exp_dir):
+    """Parse the best validation PER from the experiment output."""
+    import scipy.io
+    snapshot_path = os.path.join(exp_dir, 'outputSnapshot.mat')
+    if not os.path.exists(snapshot_path):
+        return float('inf')
+
+    try:
+        dat = scipy.io.loadmat(snapshot_path)
+        val_data = dat['perBatchData_val']
+        # Column 4 is seqErrorRate, find the last nonzero row
+        nonzero_rows = val_data[val_data[:, 0] > 0]
+        if len(nonzero_rows) == 0:
+            return float('inf')
+        return float(nonzero_rows[-1, 4])  # last val PER
+    except Exception as e:
+        print(f"  Warning: Could not parse results from {exp_dir}: {e}")
+        return float('inf')
+
+
+def run_experiments(args):
+    configs = generate_configs()
+    print(f"\n{'='*70}")
+    print(f"  ROUND 1: Successive Halving - Architecture Search")
+    print(f"  {len(configs)} configs × {FIXED['nBatchesToTrain']} batches each")
+    print(f"{'='*70}\n")
+
+    # Results CSV
+    results_csv = os.path.join(args.output_dir, 'round1_results.csv')
+    os.makedirs(args.output_dir, exist_ok=True)
+
+    with open(results_csv, 'w', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerow([
+            'rank', 'config_name', 'd_model', 'num_layers', 'nhead', 'd_ff',
+            'val_per', 'status', 'start_time', 'end_time', 'duration_min'
+        ])
+
+    results = []
+    for i, config in enumerate(configs):
+        print(f"\n[{i+1}/{len(configs)}] Running: {config['name']}")
+        print(f"  d_model={config['d_model']}, layers={config['num_layers']}, "
+              f"heads={config['nhead']}, d_ff={config['d_ff']}")
+
+        exp_dir = os.path.join(args.output_dir, config['name'])
+
+        # Skip if already completed
+        if os.path.exists(os.path.join(exp_dir, 'outputSnapshot.mat')):
+            per = parse_val_per(exp_dir)
+            if per < float('inf'):
+                print(f"  Already completed (PER: {per:.4f}), skipping.")
+                results.append({**config, 'val_per': per, 'status': 'cached'})
+                continue
+
+        cmd = build_command(config, args.data_dir, args.output_dir, args.gpu)
+        start_time = datetime.now()
+
+        try:
+            proc = subprocess.run(cmd, capture_output=True, text=True, timeout=3600)
+            end_time = datetime.now()
+            duration_min = (end_time - start_time).total_seconds() / 60
+
+            if proc.returncode != 0:
+                print(f"  FAILED (exit code {proc.returncode})")
+                print(f"  stderr: {proc.stderr[-500:]}")
+                # Save error log
+                with open(os.path.join(exp_dir, 'error.log'), 'w') as f:
+                    f.write(proc.stderr)
+                results.append({**config, 'val_per': float('inf'), 'status': 'failed',
+                               'duration_min': duration_min})
+                continue
+
+            # Save stdout log
+            with open(os.path.join(exp_dir, 'training.log'), 'w') as f:
+                f.write(proc.stdout)
+
+            per = parse_val_per(exp_dir)
+            print(f"  Completed in {duration_min:.1f} min, val PER: {per:.4f}")
+            results.append({**config, 'val_per': per, 'status': 'ok',
+                           'duration_min': duration_min})
+
+        except subprocess.TimeoutExpired:
+            print(f"  TIMEOUT (>60min)")
+            results.append({**config, 'val_per': float('inf'), 'status': 'timeout'})
+
+    # Sort by val PER and write final results
+    results.sort(key=lambda x: x['val_per'])
+    print(f"\n{'='*70}")
+    print(f"  ROUND 1 RESULTS (ranked by val PER)")
+    print(f"{'='*70}")
+    print(f"{'Rank':>4} {'Config':<40} {'Val PER':>10} {'Status':>8}")
+    print('-' * 70)
+
+    with open(results_csv, 'w', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerow([
+            'rank', 'config_name', 'd_model', 'num_layers', 'nhead', 'd_ff',
+            'val_per', 'status', 'duration_min'
+        ])
+        for rank, r in enumerate(results, 1):
+            per_str = f"{r['val_per']:.4f}" if r['val_per'] < float('inf') else 'FAIL'
+            print(f"{rank:>4} {r['name']:<40} {per_str:>10} {r.get('status','?'):>8}")
+            writer.writerow([
+                rank, r['name'], r['d_model'], r['num_layers'], r['nhead'], r['d_ff'],
+                r['val_per'], r.get('status', '?'), r.get('duration_min', '')
+            ])
+
+    # Save promotions for Round 2
+    promoted = [r['name'] for r in results[:8] if r['val_per'] < float('inf')]
+    promotions_file = os.path.join(args.output_dir, 'promoted_to_round2.json')
+    with open(promotions_file, 'w') as f:
+        json.dump({'promoted': promoted, 'all_results': results}, f, indent=2, default=str)
+
+    print(f"\n  Top 8 promoted to Round 2: {promoted}")
+    print(f"  Results saved to: {results_csv}")
+    print(f"  Promotions saved to: {promotions_file}")
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Round 1: Transformer Architecture Search')
+    parser.add_argument('--data-dir', required=True,
+                        help='Path to tfRecords directory')
+    parser.add_argument('--output-dir', required=True,
+                        help='Output directory for experiments')
+    parser.add_argument('--gpu', default='0',
+                        help='GPU number to use')
+    args = parser.parse_args()
+    run_experiments(args)
