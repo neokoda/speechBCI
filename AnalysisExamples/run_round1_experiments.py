@@ -103,7 +103,7 @@ def build_command(config, data_dir, output_dir, gpu):
         f'model.dropout=0.1',
         f'model.posEncType=sinusoidal',
         f'outputDir={exp_dir}',
-        f'gpuNumber={gpu}',
+        f'gpuNumber="{gpu}"',
         f'dataset.dataDir={data_dirs_str}',
         f'dataset.sessions={sessions_str}',
         f'dataset.datasetToLayerMap={layer_map_str}',
@@ -176,23 +176,34 @@ def run_experiments(args):
         start_time = datetime.now()
 
         try:
-            proc = subprocess.run(cmd, capture_output=True, text=True, timeout=3600)
+            # Stream output in real-time so user sees progress
+            proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                    text=True, bufsize=1)
+            log_lines = []
+            for line in proc.stdout:
+                line = line.rstrip()
+                log_lines.append(line)
+                # Show key training progress lines
+                if 'Train batch' in line or 'Val batch' in line or 'Checkpoint' in line:
+                    print(f"  {line}")
+            proc.wait(timeout=3600)
             end_time = datetime.now()
             duration_min = (end_time - start_time).total_seconds() / 60
 
             if proc.returncode != 0:
                 print(f"  FAILED (exit code {proc.returncode})")
-                print(f"  stderr: {proc.stderr[-500:]}")
-                # Save error log
+                # Show last 5 lines for debugging
+                for l in log_lines[-5:]:
+                    print(f"    {l}")
                 with open(os.path.join(exp_dir, 'error.log'), 'w') as f:
-                    f.write(proc.stderr)
+                    f.write('\n'.join(log_lines))
                 results.append({**config, 'val_per': float('inf'), 'status': 'failed',
                                'duration_min': duration_min})
                 continue
 
             # Save stdout log
             with open(os.path.join(exp_dir, 'training.log'), 'w') as f:
-                f.write(proc.stdout)
+                f.write('\n'.join(log_lines))
 
             per = parse_val_per(exp_dir)
             print(f"  Completed in {duration_min:.1f} min, val PER: {per:.4f}")
