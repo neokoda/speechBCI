@@ -256,4 +256,6 @@ if __name__ == '__main__':
     parser.add_argument('--gpu', default='0',
                         help='GPU number to use')
     args = parser.parse_args()
+    args.data_dir = os.path.abspath(args.data_dir)
+    args.output_dir = os.path.abspath(args.output_dir)
     run_experiments(args)

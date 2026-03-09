@@ -5,6 +5,7 @@ Simulink/xPC/bin/*
 !Simulink/xPC/bin/neuralProcess_Complete_bld.mldatx
 !Simulink/xPC/bin/xNeuralSim_603.mldatx
 !Simulink/xPC/bin/xNeuralSim_603_256ch.mldatx
+experiments/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
