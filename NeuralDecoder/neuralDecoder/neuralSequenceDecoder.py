@@ -120,7 +120,8 @@ class NeuralSequenceDecoder(object):
             datasetIdx = datasetIdx[0, 0]
             nInputFeatures = self.args['dataset']['nInputFeatures']
 
-            normLayer = tf.keras.layers.experimental.preprocessing.Normalization(input_shape=[nInputFeatures])
+            normLayer = tf.keras.layers.Normalization(input_shape=[nInputFeatures])
+            normLayer.build([None, nInputFeatures])
 
             if isTraining and self.args['normLayer']:
                 normLayer.adapt(self.tfAdaptDatasets[datasetIdx].take(-1))
@@ -168,8 +169,8 @@ class NeuralSequenceDecoder(object):
             nInputFeatures = self.args['dataset']['nInputFeatures']
 
             # Adapt normalization layer with all data.
-            normLayer = tf.keras.layers.experimental.preprocessing.Normalization(input_shape=[
-                                                                                 nInputFeatures])
+            normLayer = tf.keras.layers.Normalization(input_shape=[nInputFeatures])
+            normLayer.build([None, nInputFeatures])
             if isTraining and self.args['normLayer']:
                 normLayer.adapt(self.tfAdaptDatasets[datasetIdx].take(-1))
 
@@ -392,7 +393,7 @@ class NeuralSequenceDecoder(object):
                 self.checkpoint = tf.train.Checkpoint(**ckptVars)
 
         self.ckptManager = tf.train.CheckpointManager(
-            self.checkpoint, self.args['outputDir'], max_to_keep=None if self.args['batchesPerSave'] > 0 else 10)
+            self.checkpoint, self.args['outputDir'], max_to_keep=1)
 
         # Tensorboard summary
         if self.args['mode'] == 'train':
@@ -413,7 +414,7 @@ class NeuralSequenceDecoder(object):
     def _datasetLayerTransform(self, dat, normLayer, whiteNoiseSD, constantOffsetSD, randomWalkSD, staticGainSD, randomCut):
 
         features = dat['inputFeatures']
-        features = normLayer(dat['inputFeatures'])
+        features = (features - normLayer.mean) / tf.math.sqrt(normLayer.variance + 1e-7)
 
         featShape = tf.shape(features)
         batchSize = featShape[0]

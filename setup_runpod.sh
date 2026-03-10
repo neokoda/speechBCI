@@ -19,15 +19,12 @@ echo "============================================="
 echo "[1/5] Installing system dependencies..."
 apt-get update -qq && apt-get install -y -qq git unzip wget > /dev/null 2>&1
 
-# 2. Install Python dependencies
+# 2. Install Python dependencies globally
 echo "[2/5] Installing Python packages..."
 pip install -q tensorflow==2.12.0 \
-    numpy scipy omegaconf hydra-core wandb matplotlib
+    numpy scipy omegaconf hydra-core wandb matplotlib tensorboard
 
-# 3. Clone/copy the repo (adjust if using a different method)
-echo "[3/5] Setting up workspace..."
 WORKSPACE=/workspace
-cd $WORKSPACE
 
 # If the repo isn't already here, you need to upload it or clone it
 if [ ! -d "speechBCI" ]; then
@@ -75,6 +72,6 @@ echo "To run Round 1 experiments:"
 echo "  cd /workspace/speechBCI"
 echo "  python AnalysisExamples/run_round1_experiments.py \\"
 echo "    --data-dir /workspace/speechBCI/data/derived/tfRecords \\"
-echo "    --output-dir /workspace/experiments/round1 \\"
+echo "    --output-dir /workspace/speechBCI/experiments/round1 \\"
 echo "    --gpu 0"
 echo ""

@@ -7,8 +7,8 @@ and ranks them by validation PER.
 
 Usage (on RunPod):
     python run_round1_experiments.py \
-        --data-dir /workspace/data/derived/tfRecords \
-        --output-dir /workspace/experiments/round1 \
+        --data-dir /workspace/speechBCI/data/derived/tfRecords \
+        --output-dir /workspace/speechBCI/experiments/round1 \
         --gpu 0
 """
 
@@ -20,6 +20,10 @@ import sys
 import csv
 import json
 from datetime import datetime
+
+# Path to NeuralDecoder source directory (contains the neuralDecoder package)
+_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+NEURAL_DECODER_DIR = os.path.abspath(os.path.join(_SCRIPT_DIR, '..', 'NeuralDecoder'))
 
 
 # ============================================================================
@@ -121,8 +125,8 @@ def build_command(config, data_dir, output_dir, gpu):
 def parse_val_per(exp_dir):
     """Parse the best validation PER from the experiment output."""
     import scipy.io
-    snapshot_path = os.path.join(exp_dir, 'outputSnapshot.mat')
-    if not os.path.exists(snapshot_path):
+    snapshot_path = os.path.join(exp_dir, 'outputSnapshot')
+    if not os.path.exists(snapshot_path) and not os.path.exists(snapshot_path + ".mat"):
         return float('inf')
 
     try:
@@ -165,7 +169,7 @@ def run_experiments(args):
         exp_dir = os.path.join(args.output_dir, config['name'])
 
         # Skip if already completed
-        if os.path.exists(os.path.join(exp_dir, 'outputSnapshot.mat')):
+        if os.path.exists(os.path.join(exp_dir, 'outputSnapshot')) or os.path.exists(os.path.join(exp_dir, 'outputSnapshot.mat')):
             per = parse_val_per(exp_dir)
             if per < float('inf'):
                 print(f"  Already completed (PER: {per:.4f}), skipping.")
@@ -176,9 +180,14 @@ def run_experiments(args):
         start_time = datetime.now()
 
         try:
+            # Ensure neuralDecoder is importable by subprocess
+            env = os.environ.copy()
+            existing = env.get('PYTHONPATH', '')
+            env['PYTHONPATH'] = NEURAL_DECODER_DIR + (os.pathsep + existing if existing else '')
+
             # Stream output in real-time so user sees progress
             proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                    text=True, bufsize=1)
+                                    text=True, bufsize=1, env=env)
             log_lines = []
             for line in proc.stdout:
                 line = line.rstrip()

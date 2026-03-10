@@ -1,0 +1,1191 @@
+ 
+ 
+PEMBANGUNAN MODEL NEUROPROSTHESIS BICARA 
+DENGAN ARSITEKTUR DUA TAHAP DAN END-TO-END 
+BERBASIS FOUNDATION MODEL 
+ 
+ 
+ 
+ 
+Disusun sebagai syarat kelulusan mata kuliah 
+IF4091/Penulisan Proposal 
+ 
+ 
+ 
+ 
+Oleh 
+Muhammad Neo Cicero Koda 
+NIM : 13522108 
+ 
+ 
+ 
+ 
+ 
+PROGRAM STUDI TEKNIK INFORMATIKA 
+SEKOLAH TEKNIK ELEKTRO & INFORMATIKA 
+INSTITUT TEKNOLOGI BANDUNG 
+Desember 2025
+
+ 
+i 
+ 
+PEMBANGUNAN MODEL NEUROPROSTHESIS BICARA 
+DENGAN ARSITEKTUR DUA TAHAP DAN END-TO-END 
+BERBASIS FOUNDATION MODEL 
+ 
+Laporan Proposal Tugas Akhir  
+ 
+ 
+Oleh 
+Muhammad Neo Cicero Koda 
+NIM : 13522108 
+Program Studi Teknik Informatika 
+Sekolah Teknik Elektro dan Informatika 
+Institut Teknologi Bandung 
+ 
+ 
+Bandung, 24 Desember 2025 
+Mengetahui, 
+ 
+ 
+Pembimbing I, 
+ 
+Dessi Puji Lestari, S.T, M.Eng., Ph.D. 
+NIP. 197912012012122005 
+Pembimbing II, 
+ 
+ 
+ 
+Prof. Dr.-Ing. Sakriani Sakti, S.T., 
+M.Sc. 
+ 
+     
+ 
+
+ 
+ii 
+ 
+DAFTAR ISI 
+BAB I PENDAHULUAN ....................................................................................... 7 
+I.1 Latar Belakang .............................................................................................. 7 
+I.2 Rumusan Masalah ......................................................................................... 9 
+I.3 Tujuan dan Ukuran Keberhasilan Pencapaian ............................................ 10 
+I.4 Batasan Masalah ......................................................................................... 11 
+I.5 Metodologi .................................................................................................. 11 
+BAB II KAJIAN PUSTAKA ............................................................................... 13 
+II.1 Brain Computer Interface (BCI) ................................................................ 13 
+II.1.1 Paradigma Komunikasi BCI ............................................................. 14 
+II.1.2 Metode Akuisisi Sinyal pada BCI .................................................... 15 
+II.1.3 Elektrokortikografi (ECoG) ............................................................. 16 
+II.2 Pemrosesan Sinyal ECoG Menjadi Teks ................................................... 18 
+II.2.1 Praproses Sinyal ECoG dan Ekstraksi Fitur ..................................... 19 
+II.2.2 Pemetaan Fitur ECoG Menjadi Probabilitas Fonem ........................ 20 
+II.2.3 Pemetaan Fonem ke Teks ................................................................. 21 
+II.2.4 Metrik Evaluasi pada Dekode Sinyal ECoG ke Teks ....................... 22 
+II.3 Transformer ............................................................................................... 23 
+II.4 Foundation Model ..................................................................................... 25 
+II.4.1 Varian Arsitektur Foundation Model ............................................... 26 
+II.4.2 Adaptasi Foundation Model untuk Modalitas Baru ......................... 27 
+II.4.3 Teknik Fine-Tuning Foundation Model ........................................... 29 
+II.4.4 Optimasi Kecepatan Foundation Model ........................................... 30 
+II.5 Penelitian Terkait....................................................................................... 31 
+BAB III ANALISIS MASALAH DAN RANCANGAN SOLUSI .................... 32 
+III.1 Analisis Masalah dan Solusi .................................................................... 32 
+III.2 Gambaran Umum Solusi .......................................................................... 33 
+BAB IV RENCANA PELAKSANAAN .............................................................. 35 
+IV.1 Jadwal ...................................................................................................... 35 
+IV.2 Risiko ....................................................................................................... 36 
+ 
+ 
+ 
+ 
+ 
+iii 
+ 
+DAFTAR GAMBAR 
+Gambar II.1 Contoh pemasangan alat BCI (https://changlab.ucsf.edu) ................. 12 
+Gambar II.2 Contoh penempatan kisi ECoG untuk sistem neuroprosthesis bicara 
+(Metzger et al., 2023) ............................................................................................. 16 
+Gambar II.3 Proses mendekode sinyal ECoG menjadi teks (Willett et al., 2023) . 16 
+Gambar II.4 Arsitektur Transformer (Vaswani et al., 2017).................................. 22 
+Gambar III.1 Alur sistem neuroprosthesis bicara dengan arsitektur dua tahap (atas) 
+dan E2E (bawah) .................................................................................................... 32 
+ 
+ 
+iv 
+ 
+DAFTAR TABEL 
+Tabel II.1 Metrik Evaluasi Sistem Dekode Ucapan ............................................... 20 
+Tabel II.2 Perbandingan metode penyelarasan modalitas ...................................... 26 
+Tabel II.3 Perbandingan strategi fine-tuning pada Foundation Model .................. 27 
+Tabel IV-1 Gantt Chart Pelaksanaan Tugas Akhir ................................................ 33 
+ 
+ 
+ 
+1 
+ 
+BAB I  
+PENDAHULUAN 
+Bab Pendahuluan menjelaskan tentang landasan dan arah penelitian sebagai dasar 
+pengerjaan tugas akhir. Penjelasan meliputi latar belakang (I.1), rumusan masalah  
+(I.2), tujuan dan ukuran keberhasilan pencapaian (I.3), batasan masalah (I.4), dan 
+metodologi (I.5). 
+I.1 Latar Belakang 
+Komunikasi verbal adalah kemampuan mendasar manusia yang memiliki peran 
+penting dalam interaksi sosial dan ekspresi diri. Sayangnya, jutaan individu 
+kehilangan kemampuan tersebut akibat gangguan neurologis seperti amyotrophic 
+lateral sclerosis (ALS), stroke batang otak, dan cedera sumsum tulang belakang. 
+Gangguan tersebut membuat mereka berada dalam kondisi locked-in, yaitu kondisi 
+ketika seseorang tetap memiliki fungsi kognitif, tetapi menderita anarthria 
+(ketidakmampuan berbicara) dan quadriplegia (kelumpuhan) (Moses et al., 2021; 
+Metzger et al., 2023). Akibatnya, keterhubungan mereka ke dunia sosial hilang dan 
+kualitas hidup mereka berkurang secara drastis (Silva et al., 2024). 
+Untuk menghadapi permasalahan ini, sistem neuroprosthesis bicara dapat menjadi 
+solusi dengan mendekode upaya berbicara seseorang secara langsung dari sinyal 
+otak (Silva et al., 2024).  Meskipun terdapat alternatif komunikasi lain, seperti eye 
+tracking, metode tersebut kurang alami dan memiliki kecepatan yang jauh lebih 
+rendah daripada berbicara (Willett et al., 2023). Agar komunikasi dapat 
+berlangsung secara efektif, cepat, dan intuitif, sinyal otak yang diakuisisi juga harus 
+berkualitas tinggi. Metode  akuisisi sinyal noninvasif, seperti elektroensefalografi 
+(EEG), kurang cocok karena memiliki tingkat kebisingan tinggi (Shih et al., 2012). 
+Di samping itu, terdapat metode invasif seperti elektrokortikografi (ECoG) yang 
+memperoleh sinyal dari elektroda yang diletakkan secara langsung pada permukaan 
+otak (Metzger et al., 2023). Ini lebih cocok untuk sistem neuroprosthesis bicara 
+karena kemampuan mendekode kalimat kompleks (Silva et al., 2024). 
+ 
+2 
+ 
+Arsitektur state-of-the-art sistem neuroprosthesis bicara saat ini dikembangkan 
+oleh beberapa peneliti, Willett et al. (2023) dan Seto et al. (2025), melalui dua tahap. 
+Pada tahap pertama, sinyal mentah dari otak dikonversi menjadi probabilitas fonem. 
+Selanjutnya, probabilitas fonem dikonversi menjadi kali mat yang koheren 
+menggunakan model bahasa. Awalnya, Willett et al. (2023) menggunakan 
+recurrent neural network  (RNN) untuk dekode probabilitas fonem dan model 
+bahasa n-gram untuk menghasilkan kalimat. Pend ekatan ini terbukti berhasil 
+dengan mencapai word error rate  (WER) sebesar 17.4%. Metode kemudian 
+dikembangkan oleh Seto et al. (2025) dengan mengganti model bahasa n-gram 
+menjadi Transformer sehingga WER turun menjadi 16.9%.  
+Meskipun menghasilkan kinerja yang cukup baik, arsitektur dua tahap tersebut 
+memiliki keterbatasan tersendiri. Pertama, tahap dekode fonem yang digunakan 
+oleh Willett et al. (2023) dan Seto et al. (2025) masih menggunakan model RNN 
+yang memiliki kemampuan terbatas dalam menangkap hubungan spasiotemporal 
+dibandingkan model yang lebih canggih. Seto et al. (2025) mendapatkan phoneme 
+error rate (PER) sebesar 19.2%. Artinya, masih terjadi satu kesalahan untuk setiap 
+lima fonem yang ada pada kalimat. Kedua, jika terdapat kesalahan pada langkah 
+pertama dekode fonem, kesalahan tersebut dapat terpropagasi ke langkah 
+selanjutnya dan membuat model gagal mendekode kalimat yang koheren. 
+Arsitektur Transformer yang diperkenalkan oleh Vaswani et al. (2017) merupakan 
+alternatif yang mampu menanggulangi hambatan pada model tradisional. Berbeda 
+dengan RNN yang memproses data secara sekuensial, Transformer memanfaatkan 
+mekanisme self-attention yang memungkinkan model untuk mengintegrasikan 
+konteks dari keseluruhan input saat memproses suatu elemen. Arsitektur ini 
+memiliki potensi untuk meningkatkan akurasi pada tahap dekode fonem dalam 
+sistem neuroprosthesis bicara yang saat ini masih memanfaatk an RNN. Dengan 
+optimasi ini, diharapkan kualitas probabilitas fonem yang dihasilkan menjadi lebih 
+akurat. 
+Meskipun penggunaan Transformer dapat meningkatkan akurasi pada suatu modul, 
+secara desain, arsitektur dua tahap memiliki kelemahan berupa propagasi kesalahan 
+ 
+3 
+ 
+(error propagation ) (Hannun et al., 2014). Jika terjadi kesalahan pada langkah 
+dekode fonem, kesalahan tersebut akan diteruskan ke langkah selanjutnya. 
+Akibatnya, model bahasa gagal merekonstruksi kalimat yang koheren. 
+Sebagai alternatif untuk mencegah masalah error propagation, terdapat arsitektur 
+end-to-end (E2E) yang langsung memetakan input menjadi output tanpa melalui 
+representasi perantara yang terdefinisi secara manual (contohnya fonem). Salah 
+satu cara untuk membangun arsitektur E2E adalah dengan melatih model 
+Transformer dari nol ( from scratch). Akan tetapi, cara ini sulit dilakukan karena 
+keterbatasan dataset ECoG yang tersedia dan kebutuhan komputasi yang sangat 
+besar. Solusi yang lebih efisien adalah dengan me manfaatkan Foundation Model 
+(FM). FM, seperti Qwen, LLaMA, dan Gemma, dilatih menggunakan triliunan 
+token dari berbagai bahasa sehingga memiliki pemahaman mendalam tentang 
+struktur, sintaksis, dan semantik bahasa (Bommasani et al, 2021). Ini membuat 
+mereka berpotensi untuk digunakan dalam sistem neuroprosthesis bicara. 
+Dengan mempertimbangkan kemampuannya untuk mempertimbangkan 
+keseluruhan input dalam pemrosesan suatu token, Transformer menjadi alternatif 
+yang berpotensi mengurangi kesalahan dekode dalam sistem neuroprosthesis 
+bicara. Di sisi lain, perbaikan juga dapat dilakukan dengan mengganti arsitektur dua 
+tahap secara total dengan pendekatan end-to-end untuk mengurangi error 
+propagation. Kedua pendekatan ini akan dibandingkan untuk menentukan sistem 
+yang memberikan kinerja terbaik. Harapannya, kemajuan yang dihasilka n dari 
+penelitian ini dapat membantu memulihkan kemampuan komunikasi bagi individu 
+yang menderita gangguan bicara akibat kondisi neurologis. 
+I.2 Rumusan Masalah 
+Sistem neuroprosthesis bicara state-of-the-art oleh Seto et al. (2025) saat ini 
+memiliki dua kelemahan utama. Pertama, modul dekode fonem masih 
+menggunakan arsitektur yang kurang optimal dalam menangkap hubungan 
+temporal yang kompleks. Untuk menyelesaikan masalah ini, salah satu alternatif 
+yang diajukan adalah mengganti RNN menjadi Transformer pada modul dekode 
+ 
+4 
+ 
+fonem arsitektur dua tahap. Kedua, arsitektur dua tahap berisiko mempropagasi 
+kesalahan pada tahap dekode fonem ke bagian selanjutnya sehingga menyebabkan 
+kegagalan dekode. Oleh karena itu, alternatif lain yang diajukan adalah melakukan 
+transisi dari arsit ektur dua tahap ke end-to-end berbasis Foundation Model untuk 
+menghindari masalah error propagation. Untuk mengevaluasi efektivitas masing -
+masing alternatif, penelitian ini akan mengembangkan dan membandingkan kedua 
+arsitektur dalam sistem neuroprosthesis bicara. Oleh karena itu, tugas akhir ini akan 
+memiliki fokus penelitian pada permasalahan-permasalahan berikut: 
+1. Bagaimana merancang dan mengimplementasikan arsitektur dua tahap berbasis 
+Transformer sebagai decoder fonem untuk sistem neuroprosthesis bicara? 
+2. Bagaimana arsitektur end-to-end (E2E) berbasis Foundation Model untuk 
+sistem neuroprosthesis bicara? 
+3. Bagaimana perbandingan kinerja antara arsitektur dua tahap dan arsitektur end-
+to-end berbasis Foundation Model untuk sistem neuroprosthesis bicara? 
+I.3 Tujuan dan Ukuran Keberhasilan Pencapaian 
+Penelitian tugas akhir ini memiliki tujuan sebagai berikut. 
+1. Merancang dan mengimplementasikan arsitektur dua tahap berbasis 
+Transformer sebagai decoder fonem dalam sistem neuroprosthesis bicara . 
+Keberhasilan diukur dari kinerja sistem yang meningkat dari penelitian Seto et 
+al. (2025). 
+2. Mengimplementasikan arsitektur end-to-end berbasis Foundation Model untuk 
+sistem neuroprosthesis bicara. Keberhasilan diukur dari kinerja sistem yang 
+meningkat dari penelitian Seto et al. (2025). 
+3. Menganalisis perbandingan kinerja antara arsitektur dua tahap berbasis 
+Transformer sebagai decoder fonem dan arsitektur end-to-end. Ukuran 
+keberhasilan berupa hasil analisis perbandingan antara kedua arsitektur. 
+I.4 Batasan Masalah 
+Pelaksanaan tugas akhir ini memiliki batasan masalah sebagai berikut. 
+ 
+5 
+ 
+1. Sistem neuroprosthesis bicara dirancang dan dievaluasi menggunakan data 
+yang disediakan oleh Willett et al. (2023). Penelitian ini memanfaatkan data 
+publik dan tidak menggunakan data yang direkam sendiri. 
+2. Kosakata yang digunakan terbatas pada daftar kata yang tersedia dalam dataset. 
+I.5 Metodologi 
+Metodologi penelitian ini akan mengadopsi alur kerja CRISP -DM. Berikut 
+merupakan tahap -tahap yang dilalui untuk menyelesaikan penelitian pada tugas 
+akhir. 
+1. Persiapan Data 
+Akan dilakukan preprocessing seperti resampling, filtering, dan normalisasi 
+dari dataset Willett et al. (2023). Setelah itu, format data akan diubah menjadi 
+bentuk yang dapat diterima oleh model. 
+2. Perancangan dan Optimasi Arsitektur Dua Tahap dan End-to-End 
+Pada tahap ini, arsitektur dua tahap dan E2E akan dirancang. Untuk arsitektur 
+dua tahap, metode yang dipaparkan oleh Seto et al. (2025) akan ditiru, namun 
+modul dekode fonem diganti dengan Transformer. Untuk arsitektur E2E, 
+beberapa jenis Foundation Model pretrained akan dipilih dan sebagian dari 
+parameternya akan dibekukan. Setelah itu, suatu modul proyeksi fitur akan 
+dirancang dan dilatih untuk memetakan sinyal ECoG ke ruang embedding 
+Foundation Model. Optimasi dilakukan dengan melatih/melakukan fine-tuning 
+beberapa parameter model agar dapat memproses sinyal otak dengan lebih baik. 
+3. Evaluasi dan Analisis 
+Arsitektur dua tahap dan end-to-end akan dievaluasi dengan data uji yang 
+berbeda dengan data latih. Kinerja diukur menggunakan metrik phone error 
+rate (PER), word error rate (WER), dan character error rate  (CER). 
+Perbandingan akan dilakukan untuk menentukan arsitektur yang memberikan 
+kinerja tertinggi. 
+ 
+6 
+ 
+BAB II 
+KAJIAN PUSTAKA 
+Bab ini membahas tentang pustaka yang menjadi dasar pengembangan sistem 
+neuroprosthesis bicara serta penelitian terkait. 
+II.1 Brain Computer Interface (BCI) 
+Brain-Computer Interface (BCI) adalah sistem yang membangun jalur komunikasi 
+langsung antara otak dan perangkat eksternal sehingga melewati jalur 
+neuromuskular konvensional tubuh (Moses et al., 2021; Shih et al., 2012). 
+Teknologi ini penting bagi individu dengan gangguan neurologis berat yang 
+mengalami kelumpuhan seperti amyotrophic lateral sclerosis (ALS), stroke batang 
+otak, atau cedera sumsum tulang belakang tingkat tinggi (Beukelman et al., 2007; 
+Moses et al., 2021).  Kondisi seperti ALS ditandai dengan  pelumpuhan progresif 
+pada neuron motorik yang menyebabkan hilangnya kendali otot secara drastis. Pada 
+tingkat lanjut, hal ini dapat mengakibatkan kondisi locked-in, yaitu kondisi ketika 
+fungsi kognitif seseorang tetap utuh, tetapi kemampuan mereka untuk berbicara 
+atau bergerak hilang sepenuhnya (Moses et al., 2021). Studi menunjukkan bahwa 
+80% hingga 95% individu dengan ALS pada akhirnya akan kehilangan kemampuan 
+untuk mengeluarkan ucapan. Akibatnya, kualitas hidup mereka menurun secara 
+drastis dan koneksi penderita dengan dunia sosial terputus (Beukelman et al., 2007). 
+BCI menyediakan alternatif untuk memulihkan kemampuan dasar manusia ini 
+dengan menciptakan saluran komunikasi yang tidak memerlukan kendali otot. 
+ 
+7 
+ 
+ 
+Gambar II.1 Contoh pemasangan alat BCI (https://changlab.ucsf.edu) 
+Perangkat augmentative and alternative communication  (AAC) dapat merupakan 
+alternatif, tetapi memiliki keterbatasan dan kendala tersendiri. Teknologi tersebut 
+tetap memerlukan kemampuan mengontrol otot yang dapat menurun seiring 
+berkembangnya tingkat keparahan penyakit (Moses et al., 2021). Lebih lanjut, 
+perangkat ini seringkali lambat dan melelahkan dengan kecepatan komunikasi yang 
+jauh di bawah kecepatan bicara rata-rata manusia, yaitu 160 kata per menit (Willett 
+et al., 2023). Keterbatasan yang mencolok ini menciptakan kebutuhan yang jelas 
+dan mendesak akan saluran komunikasi yang tidak hanya terpisah dari kontrol 
+motorik, tetapi juga mampu mencapai bandwidth komunikasi yang lebih tinggi. 
+II.1.1 Paradigma Komunikasi BCI 
+Paradigma BCI memberikan definisi tentang aksi tertentu atau stimulus eksternal 
+yang digunakan untuk menyandikan maksud pengguna menjadi sinyal otak yang 
+dapat diproses. Secara historis, paradigma yang umum dan telah dipelajari dengan 
+baik adalah P300 speller (Shih et al., 2012). Dalam sistem ini, pengguna disajikan 
+dengan kisi-kisi karakter, dan seiring dengan adanya baris dan kolom yang berkedip 
+secara berurutan, pengguna memfokuskan perhatian mereka pada karakter yang 
+diinginkan. Pada kasus ini, BCI dila tih untuk mendeteksi gelombang otak yang 
+dikenal sebagai peristiwa P300. P300 muncul dalam sinyal EEG sekitar 300 
+milisekon setelah pengguna menerima stimulus yang merupakan target pada 
+tugasnya. Dalam hal ini, target tersebut merupakan kedipan karakter ya ng mereka 
+
+ 
+8 
+ 
+ingin eja (Shih et al., 2012). Dengan mengidentifikasi kedipan baris dan kolom 
+mana yang memicu respon P300, sistem dapat menentukan karakter yang dipilih. 
+Meskipun efektif, metode ini pada dasarnya bersifat serial dan memerlukan setiap 
+karakter untuk diej a secara satu -persatu sehingga memperlambat bandwidth 
+komunikasi. 
+Paradigma yang lebih maju bertujuan untuk mendekode langsung maksud motorik 
+atau ucapan pengguna. Sistem ini mencoba menafsirkan perintah saraf yang terkait 
+dengan tindakan yang diinginkan. Misalnya, pengguna mungkin membayangkan 
+atau mencoba menggerakkan tangannya untuk mengontrol kursor. Sebagai contoh 
+dalam neuroprosthesis bicara, pengguna membayangkan pengucapan kata atau 
+kalimat (Moses et al., 2021).  BCI dirancang untuk menerjemahkan pola aktivitas 
+pada otak yang dihasilkan selama suatu tindakan dilak ukan secara langsung 
+menjadi perintah atau keluaran teks yang sesuai. 
+II.1.2 Metode Akuisisi Sinyal pada BCI 
+Sistem BCI dapat dikategorisasi berdasarkan metode akuisisi sinyalnya menjadi 
+invasif atau non-invasif. Kedua pilihan ini memiliki trade-off antara keamanan dan 
+kualitas sinyal. 
+Metode non-invasif, seperti elektroensefalografi (EEG), merekam aktivitas listrik 
+otak dari elektroda yang dipasang di kulit kepala (Shih et al., 2012). EEG bersifat 
+aman, relatif murah, dan portabel sehingga banyak digunakan dalam penelitian dan 
+klinis. Namun, kegunaannya untuk BCI yang berkinerja tinggi sangat terbatas. Saat 
+sinyal saraf bergerak dari korteks ke kulit kepala, sinyal tersebut dilemahkan dan 
+dikaburkan secara spasial oleh lapisan di antaranya, terutama tengkorak. Hal ini 
+menghasilkan signal to noise ratio (SNR) yang rendah, resolusi spasial yang buruk 
+(berkisar beberapa sentimeter), dan kerentanan yang tinggi terhadap artefak dari 
+aktivitas otot, seperti kedipan mata atau gerakan rahang (Schalk & Leuthardt, 
+2011). 
+Metode invasif digunakan untuk mengatasi keterbatasan ini. Elektrokortikografi 
+(ECoG) adalah metode akuisisi sinyal yang dilakukan dengan meletakkan 
+ 
+9 
+ 
+serangkaian elektroda secara langsung ke permukaan otak melalui prosedur bedah. 
+Elektroda umumnya diletakkan di ruang subdural di bawah dura mater (Schalk & 
+Leuthardt, 2011). Prosedur bedah yang dilakukan bernama kraniotomi, prosedur 
+yang membawa risiko se perti infeksi dan pendarahan. Namun, dengan 
+menempatkan sensor di dekat sumber saraf, ECoG menghindari efek distorsi 
+tengkorak. Hasilnya adalah sinyal dengan SNR yang jauh lebih unggul, resolusi 
+spasial yang jauh lebih tinggi (dalam orde milimeter), dan bandwidth frekuensi 
+yang lebih luas dibandingkan dengan EEG (Michel & Murray, 2011; Schalk & 
+Leuthardt, 2011). Untuk tugas -tugas kompleks dan berkecepatan tinggi seperti 
+mendekode sinyal saraf dari ucapan kalimat dengan kosakata beragam, kualitas 
+sinyal yang ditawar kan oleh EEG umumnya tidak mencukupi. Oleh karena itu, 
+kualitas data yang ditawarkan ECoG diperlukan untuk mampu melakukan dekode 
+dengan kinerja tinggi. 
+II.1.3 Elektrokortikografi (ECoG) 
+ECoG merupakan jenis elektroensefalografi intrakranial yang merekam aktivitas 
+listrik secara langsung dari permukaan korteks serebral (Metzger et al., 2023). 
+Prosedur klinisnya melibatkan kraniotomi untuk menghasilkan bukaan sementara 
+pada tengkorak dan membukakan dura mater, yaitu membran luar otak. Dura mater 
+kemudian diiris untuk memperlihatkan permukaan kortikal. Serangkaian elektroda 
+kemudian ditempatkan di ruang subdural otak (Schalk & Leuthardt, 2011). 
+Susunan elektroda tersebut biasanya dibentuk dari bahan yang bersifat 
+biokompatibel, seperti karet silikon, yang dibubuhkan susunan elektroda cakram 
+logam kecil yang terbuat dari paduan platinum-iridium atau stainless steel (Metzger 
+et al., 2023). Pada sistem yang berkinerja tinggi, susunan yang dipakai umumnya 
+berdensitas tinggi dan terdiri dari 253 hingga 256 elektroda dengan jarak antar pusat 
+sebesar tiga hingga empat milimeter (Metzger et al., 2023). Sinyal saraf yang 
+terekam ditransmisikan dari elektroda melalui kabel tipis yang disalurkan di bawah 
+kulit menuju konektor pedestal perkutan yang dipasang secara edah pada tengkorak. 
+Konektor ini berfungsi sebagai tempat pemasangan headstage digital untuk 
+ 
+10 
+ 
+melakukan digitalisasi dan transmisi data neural menuju komputer untuk 
+pemrosesan (Metzger et al., 2023). 
+II.1.4 Mekanisme Neural dalam Produksi Ucapan 
+Produksi ucapan merupakan salah satu perilaku motorik paling kompleks yang 
+dapat dilakukan manusia. Produksi ucapan memerlukan koordinasi yang tepat dan 
+cepat untuk lebih dari 100 otot yang mengendalikan sistem pernapasan, laring, serta 
+artikulator saluran vokal (bibir, lidah, rahang, dan velum). Tindakan motorik rumit 
+ini diatur oleh jaringan kortikal yang tersebar luas, terutama di daerah lobus frontal, 
+temporal, dan parietal di hemisfer dominan bahasa (yang umumnya merupakan 
+hemisfer kiri). 
+Untuk keperluan BCI dalam ucapan, kisi ECoG diletakkan secara strategis di 
+daerah kortikal yang memiliki peran penting dalam kontrol motorik dan artikulasi 
+ucapan. Area penting di antaranya adalah ventral sensorimotor cortex (vSMC) yang 
+mencakupi sebagian dari precentral gyrus dan postcentral gyrus. Daerah tersebut 
+mengandung representasi neural dari muka, bibir, lidah, dan laring (Metzger et al., 
+2023). Daerah kritis lainnya di lobus frontal meliputi korteks premotor yang terlibat 
+dalam merencanakan sekuen s motorik. Selain itu, terdapat daerah seperti area 
+Broca yang berperan dalam pemrosesan fonem dan sintaksis (Indefrey, 2011). 
+Selain itu, area lobus temporal, khususnya superior temporal gyrus (STG), terlibat 
+dalam memproses umpan balik suara selama ucapan. Pemrosesan ini penting untuk 
+memantau dan membetulkan keluaran ucapan tersendiri (Moses et al., 2021). Area 
+tersebut umum ditargetkan pada pemasangan elektroda ECoG, dengan susunan 
+elektroda yang mencakup precentral gyrus, postcentral gyrus, superior temporal 
+gyrus, serta middle temporal gyrus (Metzger et al., 2023; Willet et al., 2023). Pada 
+sistem neuroprosthesis bicara milik Metzger et al. (2023), digunakan penempatan 
+ECoG yang seperti pada Gambar II.2. 
+ 
+11 
+ 
+ 
+Gambar II.2 Contoh penempatan kisi ECoG untuk sistem neuroprosthesis bicara 
+(Metzger et al., 2023) 
+II.2 Pemrosesan Sinyal ECoG Menjadi Teks 
+Bagian ini menjelaskan alur mendekode sinyal ECoG menjadi teks koheren 
+sebagaimana dilakukan oleh Willett et al. (2023) pada Gambar III.3. Secara singkat, 
+proses meliputi ekstraksi fitur neural, prediksi probabilitas fonem, dan konstruksi 
+kalimat menggunakan prediksi probabilitas fonem dan model bahasa. 
+ 
+Gambar II.3 Proses mendekode sinyal ECoG menjadi teks (Willett et al., 2023) 
+ 
+
+ 
+12 
+ 
+II.2.1 Praproses Sinyal ECoG dan Ekstraksi Fitur 
+Sinyal ECoG mentah yang direkam dari susunan elektroda tidak diteruskan secara 
+langsung ke model pembelajaran mesin. Sebelum itu, praproses dilakukan terlebih 
+dahulu untuk menghilangkan noise dan mengekstraksi fitur yang lebih informatif 
+tentang niat pengguna. Sinyal umumnya dikelompokkan menjadi jangka waktu 
+yang pendek dan bertumpang -tindih terlebih dahulu. Proses pengelompokan ini 
+dinamakan temporal binning. Pada referensi, rentang waktu suatu bin ditetapkan 
+pada 20 ms (Metzger et al., 2023; Willett et al., 2023). 
+Langkah proposes meliputi beberapa langkah. Pertama, sinyal mentah disaring 
+(filter) terlebih dahulu untuk mengisolasikan rentang filter tertentu. Sebagai contoh, 
+filter band-pass berukuran 70 sampai dengan 200 Hz bertujuan untuk mengisolasi 
+sinyal yang berada pada rentang frekuensi tersebut. Rentang ini biasa digunakan 
+untuk mengisolasi high-gamma activity (HGA) dari sinyal, yaitu pola sinyal otak 
+berpresisi spasiotemporal tinggi yang terasosiasi dengan aktivasi kortikal. Untuk 
+setiap rentang waktu pendek, serangkaian fitur dikalkulasi untuk setiap elektroda. 
+Dua fitur yang umum digunakan pada tugas ini adalah spike band power  dan 
+threshold crossings . Fitur spike band power  dihitung sebagai rata -rata dari nilai 
+voltase yang dikuadratkan dari sinyal yang sudah difilter pada rentang waktu 
+tertentu. Fitur ini merepresentasikan daya total aktivitas spiking yang terjadi secara 
+lokal di dekat elektroda dan merupakan ukuran baik dari keterlibatan saraf (Willet 
+et al., 2023). Fitur threshold crossings  merupakan hitungan berapa kali sinyal 
+tegangan yang telah difilter me lintasi ambang batas negatif tertentu selama satu 
+rentang waktu. Ambang waktu biasanya ditentukan secara relatif terhadap tingkat 
+kebisingan dasar sinyal. Fitur ini berfungsi sebagai indikator untuk mendeteksi 
+terjadinya potensial aksi dari populasi neural di sekitarnya (Willett et al., 2023). 
+Keluaran dari tahap ekstraksi fitur adalah matriks fitur dengan dimensi T x F. Pada 
+kasus ini, T adalah jumlah rentang waktu ( time bin) yang dihasilkan dan F adalah 
+total jumlah fitur yang dihasilkan. 
+ 
+13 
+ 
+II.2.2 Pemetaan Fitur ECoG Menjadi Probabilitas Fonem 
+Matriks fitur akan diteruskan ke suatu jaringan saraf buatan ( neural network ) 
+berupa dekoder. Fungsi neural network  adalah untuk mentranslasikan pola 
+temporal dari fitur neural menjadi suatu representasi linguistik sementara. 
+Contoh arsitektur jaringan saraf buatan yang dipilih pada referensi, seperti yang 
+dipilih oleh Metzger et al. (2023), adalah suatu bidirectional recurrent neural 
+network (BiRNN). Suatu recurrent neural network  (RNN) adalah jaringan saraf 
+yang didesain secara spesifik untuk memodelkan data sekuensial dengan 
+mempertahankan keadaan tersembunyi (hidden state) yang mengandung informasi 
+dari waktu sebelumnya. Karakteristik bidirectional (dua arah) dari BiRNN berarti 
+bahwa sekuens diproses secara maju dan mundur d alam segi waktu. Hal ini 
+memungkinkan prediksinya pada waktu tertentu untuk diberikan konteks masa lalu 
+dan masa depan. Hal ini berguna untuk mendekode ucapan karena representasi saraf 
+dari suara dapat dipengaruhi oleh suara sebelumnya dan sesudahnya. 
+Alih-alih memprediksi kata secara langsung dari fitur neural, dekoder umumnya 
+dilatih untuk memprediksi fonem, yaitu satuan mendasar dari suatu bahasa. Sebagai 
+contoh, kata cat dalam Bahasa Inggris tersusun dari fonem /k/, /æ/, dan /t/. 
+Pendekatan ini memiliki keunggulan dalam segi kompleksitas. Karena tidak 
+memprediksi kata secara langsung dari ribuan kemungkinan kata, jumlah kelas 
+yang dapat diprediksi, contohnya pada fonem Bahasa Inggris, hanya berjumlah 41. 
+Hal ini mengurangi kompleksitas pelatihan seca ra signifikan. Fonem yang 
+dihasilkan tersebut kemudian dapat digunakan untuk memprediksi kata. 
+Salah satu tantangan dalam proses dekode fonem adalah panjang sekuens fitur 
+neural yang jauh lebih panjang daripada sekuens fonem yang dihasilkan. Selain itu, 
+tidak terdapat penanda waktu yang dapat secara otomatis menyelaraskan fitur 
+neural dengan sekuens  fonem yang dihasilkan. Untuk menangani tantangan 
+tersebut, dekoder dilatih dengan fungsi loss bernama connectionist temporal 
+classification (Graves et al., 2006). CTC merupakan algoritma yang 
+memungkinkan jaringan untuk dilatih pada pasangan sekuens yang belum 
+ 
+14 
+ 
+diselaraskan ( unaligned). Untuk setiap rentang waktu, jaringan menghasilkan 
+distribusi probabilitas untuk setiap kelas fonem dan kelas khusus (ε) yang 
+merepresentasikan kosong ( blank). Kelas ε tersebut memungkinkan model untuk 
+menghasilkan keluaran ketika tidak ada fonem yang sedang dihasilkan. Kelas 
+tersebut juga berguna untuk memisahkan fonem yang berulang. 
+Hasil akhir dari tahap ini adalah matriks probabilitas fonem yang berukuran T x C. 
+Pada kasus ini, T adalah jumlah langkah waktu dan C adalah jumlah kelas (39 
+fonem, satu token jeda, dan satu token kosong). 
+II.2.3 Pemetaan Fonem ke Teks 
+Matriks probabilitas fonem yang dihasilkan dari decoder ditranslasikan menjadi 
+teks yang koheren dengan penggunaan model bahasa yang diintegrasikan dengan 
+algoritma pencarian. Suatu language model  atau model bahasa adalah model 
+statistik yang menyediakan probabilitas rangkaian kata. Umumnya, hal tersebut 
+dilakukan dengan memprediksi probabilitas kata selanjutnya jika diberikan kata -
+kata sebelumnya. Model bahasa yang digunakan pada bagian ini adalah  
+Transformer, yaitu arsitektur modern berbasis jaringan sara f buatan yang 
+menggunakan mekanisme self-attention untuk mempertimbangkan seluruh 
+rangkaian kata sebelumnya untuk memprediksi kata selanjutnya (Vaswani et al., 
+2017). Hal ini memungkinkan mereka untuk menangkap hubungan jangka panjang 
+dan memberikan pemahaman yang lebih mendalam terhadap sintaksis dan semantik 
+teks. 
+Untuk menemukan urutan kata yang paling mungkin dari matriks probabilitas 
+fonem, digunakan algoritma heuristik bernama beam search. Alih-alih melakukan 
+pencarian terhadap semua calon kalimat (yang bersifat mahal secara komputasi), 
+teknik beam search  hanya mengeksplorasi k kalimat parsial yang paling 
+memungkinkan pada setiap langkah proses dekode. 
+Untuk menyatukan hasil prediksi dari dekoder neural (model akustik) dengan 
+model bahasa, teknik yang dapat dilakukan adalah shallow fusion (Metzger et al., 
+ 
+15 
+ 
+2023). Pada setiap langkah pencarian, skor total calon kalimat dihitung dari 
+penjumlahan berbobot antara probabilitas kedua model. 
+II.2.4 Metrik Evaluasi pada Dekode Sinyal ECoG ke Teks 
+Terdapat beberapa metrik evaluasi yang dapat digunakan untuk mengukur kinerja 
+dekode sinyal ECoG ke Teks. Metrik tersebut dapat mengukur aspek akurasi 
+maupun kecepatan. Daftar metrik yang dapat digunakan terlihat pada Tabel II.1. 
+Tabel II.1 Metrik Evaluasi Sistem Dekode Ucapan 
+Metrik Definisi Deskripsi 
+Word Error Rate (WER) (S + D + I ) / Nkata Menghitung ketepatan 
+dalam tingkat kata. 
+Angka S, D, dan I 
+masing-masing 
+merupakan jumlah 
+substitusi, penghapusan, 
+dan penyisipan kata yang 
+perlu dilakukan untuk 
+menyamakan teks 
+dengan referensi 
+(Metzger et al., 2023). 
+Character Error Rate 
+(CER) 
+(S + D + I ) / Nhuruf Menghitung ketepatan 
+dalam tingkat kata. 
+Angka S, D, dan I 
+masing-masing 
+merupakan jumlah 
+substitusi, penghapusan, 
+dan penyisipan karakter 
+yang perlu dilakukan 
+untuk menyamakan teks 
+dengan referensi 
+(Metzger et al., 2023). 
+Phoneme Error Rate 
+(PER) 
+(S + D + I ) / Nfonem Menghitung ketepatan 
+dalam tingkat kata. 
+Angka S, D, dan I 
+masing-masing 
+merupakan jumlah 
+substitusi, penghapusan, 
+dan penyisipan fonem 
+ 
+16 
+ 
+yang perlu dilakukan 
+untuk menyamakan teks 
+dengan referensi (Willett 
+et al., 2023). 
+Words per Minute 
+(WPM) 
+(Nkata yang didekode / T) Menghitung kecepatan 
+komunikasi yang 
+disediakan oleh BCI 
+(Metzger et al., 2023). 
+Real-time Factor (RTF) (Tpemrosesan / Taudio) Menghitung efisiensi 
+komputasional sistem. 
+Nilai RTF yang kurang 
+dari 1.0 penting agar 
+sistem dapat memproses 
+informasi lebih cepat 
+daripada laju informasi 
+baru yang datang (Seto 
+et al., 2025). 
+ 
+II.3 Transformer 
+Arsitektur Transformer diperkenalkan oleh Vaswani et al. (2017) sebagai alternatif 
+dari model tradisional seperti RNN. Berbeda dengan RNN yang sulit mengingat 
+informasi secara jangka panjang, Transformer memanfaatkan mekanisme self-
+attention yang memungkinkan model untuk mengintegrasikan konteks dari 
+keseluruhan input secara sekaligus. Hal ini memberikan potensi bagi Transformer 
+untuk menangkap hubungan spasiotemporal secara lebih optimal dibandingkan 
+RNN. Selain itu, mekanisme self-attention memungkinkan T ransformer untuk 
+memproses input secara paralel, sedangkan RNN harus memproses input secara 
+satu persatu. Hal ini memungkinkan pelatihan Transformer yang lebih efisien 
+daripada RNN. 
+Mekanisme self-attention adalah komponen yang memungkinkan model 
+memberikan tingkat kepentingan yang berbeda pada setiap token dalam input relatif 
+terhadap elemen lainnya. Pertama, setiap vektor input diproyeksikan secara linier 
+menjadi tiga  vektor berbeda, yaitu query (Q), key (K), dan value (V). Skor attention 
+dihitung dengan melakukan dot product  antara vektor Q dari satu posisi token 
+ 
+17 
+ 
+dengan vektor K dari seluruh posisi lainnya. Hasil ini menentukan seberapa besar 
+perhatian yang diberikan posisi saat ini ke posisi lainnya dalam input. Skor tersebut 
+dibagi dengan akar kuadrat dari dimensi vektor untuk menjaga stabilitas gradien 
+dan diproses melalui fungsi softmax. Hasilnya adalah matriks bobot probabilitas 
+yang kemudian dikalikan dengan vektor V. Posisi dengan bobot tinggi akan 
+memberikan lebih banyak informasi ke representasi akhir pada posisi tersebut. 
+ 
+Gambar II.4 Arsitektur Transformer (Vaswani et al., 2017) 
+Secara end-to-end, arsitektur Transformer dapat dilihat pada Gambar II.4. Awalnya, 
+Transformer memproses suatu input dengan mengubah input menjadi vektor 
+berdimensi tinggi terlebih dahulu melalui matriks embedding. Setelah itu, karena 
+Transformer tidak secara inheren memiliki informasi tentang letak token relatif 
+terhadap token lainnya, positional encoding ditambahkan ke vektor embedding agar 
+model dapat membedakan token yang sama pada posisi berbeda. Vektor yang telah 
+memiliki informasi posisi masuk ke lap isan multi-head attention  (MHA) yang 
+melakukan operasi self-attention secara paralel untuk menangkap berbagai jenis 
+hubungan antar token dalam urutan secara bersamaan. Setiap head mempelajari 
+aspek hubungan yang berbeda dengan menggunakan proyeksi Q, K, dan V yang 
+
+ 
+18 
+ 
+berbeda. Setelah itu, residual connection dan normalisasi ( add & norm ) masing-
+masing digunakan untuk mempertahankan informasi awal suatu token sebelum 
+attention dan untuk menjaga kestabilan distribusi nilai aktivasi. Keluaran dari 
+lapisan MHA diproses oleh jaringan saraf fully-connected untuk memperdalam 
+representasi fitur yang telah diekstraksi. Hasil dari fully-connected akan diproses 
+kembali melalui lapisan linier dan softmax untuk mendapat prediksi akhir. 
+Transformer, pada awalnya, seperti yang dijelaskan oleh Vaswani et al. (2017), 
+terdiri dari bagian encoder dan decoder. Bagian encoder berfungsi untuk 
+memproses input sehingga menghasilkan representasi matematis darinya. Bagian 
+decoder menghasilkan urutan output secara autoregresif dan menggunakan masked 
+self-attention untuk mencegahnya dari melihat masa depan. Kedua komponen 
+terhubung oleh mekanisme cross-attention. Pada mekanisme ini, decoder 
+menggunakan memory dari encoder untuk melakukan penyelarasan an tara urutan 
+output yang sedang dihasilkan dengan informasi penting dari urutan input. 
+II.4 Foundation Model 
+Foundation Model (FM) adalah model yang dilatih dengan skala data yang sangat 
+luas (umumnya menggunakan metode pembelajaran mandiri) sehingga dapat 
+diadaptasi ke berbagai macam tugas hilir ( downstream tasks) (Bommasani et al., 
+2021). Umumnya, Foundation Model memanfaatkan Transformer dalam 
+arsitekturnya karena kemampuannya dalam menangkap dependensi jangka 
+panjang. Terdapat beberapa sifat yang wajib dimiliki oleh FM. FM perlu mampu 
+untuk menangkap distribusi data yang kompleks ( expressivity), mengelola jumlah 
+data dan parameter yang sangat besar secara efisien ( scalability), menghubungkan 
+berbagai jenis modalitas ( multimodality), menyimpan pengetahuan dalam jangka 
+waktu panjang ( memory capacity ), dan melakukan generalisasi ke konteks dan 
+tugas baru ( compositionality) (Bommasani et al., 2021). Sifat -sifat tersebut 
+memungkinkan FM untuk memanfaatkan pengetahuan mendalamnya yang 
+diperoleh dari triliunan token data latih untuk melakukan generalisasi pada 
+modalitas baru. 
+ 
+19 
+ 
+II.4.1 Varian Arsitektur Foundation Model 
+Variasi arsitektur FM secara umum dapat dikategorikan berdasarkan konfigurasi 
+blok Transformer dan tujuan pelatihannya. Arsitektur encoder-only, seperti BERT 
+dan RoBERTa, dirancang utamanya untuk tugas pemahaman bahasa ( natural 
+language understanding) melalui mekanisme masked language modeling (MLM). 
+Dalam mekanisme MLM, sebagian token dalam urutan input disembunyikan 
+(masking) dan model dilatih untuk memprediksi kembali token tersebut dengan 
+mempertimbangkan konteks kata-kata di sekitarnya (Devlin et al., 2019). Arsitektur 
+ini sangat efektif untuk menangkap hubungan struktural yang mendalam, tetapi 
+kurang optimal dalam menghasilkan urutan teks yang panjang dan mengalir. 
+Terdapat juga arsitektur encoder-decoder seperti T5 dan BART. Bagian encoder 
+berfungsi mengekstraksi representasi kontekstual dari input, sementara bagian 
+decoder memanfaatkan representasi tersebut melalui mekanisme cross-attention 
+untuk menghasilkan teks target secara bertahap.(Raffel et al., 2020). Meskipun 
+arsitektur ini unggul dalam tugas sequence-to-sequence seperti translasi, 
+keberadaan dua blok terpisah menciptakan kompleksitas tambahan dalam 
+penyelarasan modalitas baru serta potensi adanya hambatan informasi (information 
+bottleneck) pada bagian cross-attention. 
+Terakhir, ada arsitektur decoder-only yang telah menjadi paradigma umum untuk 
+model generatif skala besar seperti seri GPT, LLaMA, Qwen, dan Gemma. Model 
+dalam kategori ini berfokus pada pembangkitan teks melalui pemodelan bahasa 
+autoregresif, yaitu memprediksi token selanjutnya berdasarkan u rutan prediksi 
+token sebelumnya. Kemampuan ini membuatnya cocok untuk tugas generatif, 
+seperti mendekode kalimat dari sinyal ECoG. 
+Terdapat berbagai varian model decoder-only yang masing -masing memiliki 
+perbedaan teknis dalam komponen internalnya. 
+● LLaMA: LLaMA merupakan keluarga model bahasa open source  yang 
+dikembangkan oleh Meta AI (Touvron et al., 2023). LlaMA meningkatkan 
+ekspresivitas model dengan fungsi aktivasi SwiGLU dan stabilitas 
+ 
+20 
+ 
+menggunakan root mean square layer normalization (RMSNorm). LLaMA 
+memanfaatkan rotary positional embeddings  (RoPE) yang menyuntikkan 
+informasi posisi melalui rotasi vektor untuk mempertahankan dependensi 
+temporal dari suatu input sekuensial. 
+● Qwen: Qwen adalah seri large language models yang dikembangkan oleh 
+Alibaba Cloud dan dirancang untuk memiliki kemampuan pemrosesan 
+bahasa yang kuat serta fleksibilitas multimodal (Bai et al., 2023). Qwen 
+dikembangkan dengan fokus penyelarasan multimodal sejak awal tahap 
+pemrosesan. Arsitektur ini m engintegrasikan fitur sensorik sebagai bagian 
+dari hidden state  melalui lapisan adapter khusus untuk memetakan 
+modalitas baru ke representasi linguistik model. 
+● Gemma: Gemma merupakan keluarga model yang dibangun oleh Google 
+DeepMind (Gemma Team, 2024). Gemma dioptimasi untuk efisiensi 
+memori melalui weight tying yang menggunakan satu matriks bobot tunggal 
+untuk lapisan input dan output untuk membuang redundansi parameter. 
+Selain itu, Gemma juga menggunakan teknik grouped query attention  
+(GQA) yang mengelompokkan beberapa query head untuk key dan value 
+yang sama agar mengurangi beban memori. 
+II.4.2 Adaptasi Foundation Model untuk Modalitas Baru 
+Untuk mengintegrasikan jenis modality baru ke Foundation Model yang umumnya 
+berbasis teks, diperlukan sebuah mekanisme penyelarasan ( alignment). Terdapat 
+berbagai variasi metode penyelarasan yang dapat digunakan dan masing -masing 
+memiliki karakteristik yang berbeda sebagaimana dirangkum dalam Tabel II.2. 
+ 
+ 
+Tabel II.2 Perbandingan metode penyelarasan modalitas 
+Metode Referensi Cara Kerja 
+ 
+21 
+ 
+Matriks proyeksi 
+linier 
+Liu et al., 
+2023 
+Mengalikan fitur input dengan matriks 
+bobot (W) untuk mengubah dimensi fitur 
+modalitas agar sesuai dengan dimensi 
+embedding FM 
+Adapter MLP Bai et al., 
+2023 
+Menggunakan beberapa lapisan fully-
+connected  dengan fungsi aktivasi 
+nonlinier untuk menangkap hubungan 
+fitur yang lebih kompleks 
+Q-Former Li et al., 2023 
+Menggunakan arsitektur Transformer 
+kecil yang berisi learnable queries untuk 
+mengekstraksi informasi paling relevan 
+dari input 
+Cross-Attention Alayrac et al., 
+2022 
+Menyuntikkan informasi modalitas baru 
+langsung ke dalam lapisan-lapisan 
+Transformer FM melalui mekanisme 
+attention tambahan 
+Tokenisasi Diskrit Oord et al., 
+2017 
+Menggunakan model untuk 
+mengelompokkan pola sinyal otak 
+menjadi ID token tertentu. 
+Setiap metode memiliki trade-off antara efisiensi komputasi dan kapasitas 
+representasi model. Matriks proyeksi linier merupakan metode paling efisien 
+karena hanya melibatkan satu operasi perkalian matriks, tetapi terbatas untuk 
+menangkap hubungan yang nonlinier. Adapter MLP mampu memodel kan 
+hubungan fitur yang lebih dalam dibandingkan dengan proyeksi linier melalui 
+fungsi aktivasi nonlinier, namun memiliki beban komputasi lebih tinggi. Q-Former 
+efektif dalam mereduksi input yang besar menjadi embedding ringkas, namun 
+meningkatkan waktu pelatihan dan inferensi karena menggunakan Transformer. 
+Cross-Attention memiliki cara kerja yang berbeda dengan menyuntikkan informasi 
+di berbagai lapisan FM secara langsung, namun memerlukan modifikasi pada 
+arsitektur FM. Ter akhir, tokenisasi diskrit memungkinkan model untuk 
+menggunakan kosakata khusus untuk sinyal otak, namun proses kuantisasi sinyal 
+berisiko menghilangkan detail informasi mikro dari sinyal. 
+ 
+22 
+ 
+II.4.3 Teknik Fine-Tuning Foundation Model 
+Proses fine-tuning dilakukan untuk mengadaptasi Foundation Model terhadap tugas 
+baru. Mengingat besarnya jumlah parameter pada FM, melakukan pelatihan ulang 
+pada seluruh parameter model seringkali tidak praktis karena kebutuhan sumber 
+daya komputasi yang sangat besar dan ri siko degradasi pengetahuan yang sudah 
+ada. Oleh karena itu, dikembangkan strategi parameter-efficient fine tuning (PEFT) 
+yang memungkinkan adaptasi model ke tugas baru dengan hanya melatih sebagian 
+kecil parameter. Karakteristik dari berb agai model PEFT dirangkum dalam Tabel 
+II.3 (Ding et al., 2023). 
+Tabel II.3 Perbandingan strategi fine-tuning pada Foundation Model 
+Metode Kenaikan 
+Latensi 
+% Parameter 
+Dilatih Kemudahan Efektivitas 
+Adaptasi 
+Full-fine 
+tuning Tidak ada 100% 
+Rendah 
+(butuh banyak 
+GPU) 
+Tinggi, namun 
+sangat berisiko 
+catastrophic 
+forgetting 
+Adapters 
+Ya (karena 
+lapisan 
+ekstra) 
+~1-3% Menengah Tinggi 
+Prompt 
+Tuning Tidak ada < 0.1% Rendah (tidak 
+stabil) Rendah 
+LoRA Tidak ada ~0.1-1% Tinggi dan 
+Stabil 
+Sangat tinggi, 
+hampir setara 
+dengan full-
+finetuning 
+Meskipun memberikan efektivitas yang tinggi, metode full-fine tuning  sangat 
+memerlukan ketersediaan perangkat keras yang tinggi untuk menyimpan gradien 
+seluruh parameter model. Terdapat juga risiko catastrophic forgetting, yaitu ketika 
+model kehilangan kemampuan linguistik generiknya karena seluruh bobotnya 
+dimodifikasi. Metode adapter merupakan metode pelatihan yang lebih efisien, 
+namun menyisipkan lapisan fisik yang menyebabkan kenaikan latensi saat 
+inferensi. Strategi prompt tuning hanya melatih vektor embedding tambahan pada 
+ 
+23 
+ 
+bagian input tanpa mengubah parameter model. Meskipun efisien, metode ini 
+seringkali tidak stabil, terutama untuk tugas kompleks. Terakhir, LoRA bekerja 
+dengan melatih matriks low-rank pada beberapa lapisan, lalu menggabungkan hasil 
+matriks ke bobot asli setelah pelatihan. Metode ini memiliki efektivitas yang hampir 
+setara dengan full-fine tuning , namun dengan kebutuhan parameter yang sangat 
+kecil dan tanpa menyebabkan kenaikan latensi. 
+II.4.4 Optimasi Kecepatan Foundation Model 
+Implementasi Foundation Model pada sistem neuroprosthesis bicara memerlukan 
+kinerja yang tinggi dengan latensi minimal agar komunikasi dapat berlangsung 
+secara alami. Mengingat besarnya parameter model, diperlukan teknik optimasi 
+setelah pelatihan untuk mempercepat fase inferensi tanpa mengurangi akurasi 
+secara drastis. Berikut merupakan metode optimasi yang umum dilakukan. 
+● Kuantisasi: Kuantisasi atau quantization bekerja dengan mengonversi nilai 
+bobot yang berpresisi tinggi, seperti floating point 16 -bit, ke presisi yang 
+lebih rendah, seperti 4-bit atau 8-bit. Teknik ini mengurangi penggunaan 
+memori dan mempercepat operasi matematika, namun dapat sedikit 
+menurunkan akurasi model. 
+● Pemangkasan: Pemangkasan ( pruning) dilakukan dengan 
+mengidentifikasi dan menghapuskan bobot dalam matriks yang memiliki 
+nilai mendekati nol atau berkontribusi minimal terhadap output. Hal ini 
+membuat jumlah operasi perkalian berkurang secara signifikan,  namun 
+diperlukan hardware khusus untuk memberikan kenaikan kecepatan yang 
+signifikan. 
+● KV Caching: Teknik KV caching dilakukan dengan menyimpan vektor K 
+dan V dari token -token sebelumnya di dalam memori agar tidak perlu 
+dihitung ulang pada setiap langkah pembangkitan kata baru. 
+ 
+24 
+ 
+II.5 Penelitian Terkait 
+Saat ini penelitian dalam sistem neuroprosthesis bicara telah mengalami 
+perkembangan. Willett et al. (2023) telah mengimplementasi sistem 
+neuroprosthesis bicara dua tahap dengan RNN sebagai modul dekode fonem dan 
+model bahasa trigram. Sistem ini mampu mendapatkan WER sebesar 17.4% dan 
+kecepatan 62 kata per menit. Setelah itu, Seto et al. (2025) mengembangkan sistem 
+tersebut dengan fokus pada model bahasa. Dengan menggantikan model trigram 
+dengan Transformer, khususnya LLaMA 2, ia berhasil menurunkan WER menjadi 
+16.9%. Namun, hingga saat ini, modul dekode fonem dalam sistem tersebut masih 
+mengandalkan arsitektur berbasis RNN dan belum ada penelitian yang 
+memanfaatkan Transformer sebagai alternatifnya yang lebih mampu menangkap 
+dependensi jangka panjang. 
+Dari sisi penggunaan Foundation Model, paradigma ini sebenarnya telah terbukti 
+sangat sukses pada berbagai modalitas, seperti gambar, bahasa, dan suara. Akan 
+tetapi, pemanfaatan FM dalam domain sinyal otak masih sangat terbatas. Sebagian 
+besar riset terkait Foundation Model untuk BCI saat ini difokuskan pada sinyal EEG 
+yang bersifat noninvasif. Selain itu, fokus penelitian tersebut umumnya tidak 
+memanfaatkan FM berbasis teks untuk downstream tasks, tetapi membangun FM 
+yang dilatih khusus dengan sinyal otak, seperti LaBraM dan CBraMod (Jiang et al., 
+2024; Wang et al., 2025). Oleh karena itu, penggunaan Foundation Model untuk 
+mendekode kalimat dari sinyal ECoG secara end-to-end masih menjadi celah 
+penelitian. 
+Berdasarkan penelitian terkait tersebut, terdapat dua celah utama yang diangkat 
+dalam penelitian ini. Pertama, belum ada penggunaan arsitektur Transformer 
+sebagai pengganti RNN untuk memetakan sinyal neural ECoG secara langsung 
+menjadi probabilitas fonem. Kedua, belum ada sistem yang memanfaatkan 
+Foundation Model untuk melakukan dekode kalimat dari sinyal ECoG secara end-
+to-end. 
+ 
+25 
+ 
+BAB III  
+ANALISIS MASALAH DAN RANCANGAN SOLUSI 
+Bab ini membahas tentang permasalahan yang dapat muncul selama penelitian serta 
+usulan solusinya. 
+III.1 Analisis Masalah dan Solusi 
+Penelitian ini bertujuan untuk membangun sistem neuroprosthesis bicara dengan 
+arsitektur dua tahap dan E2E berbasis Foundation Model, lalu membandingkan 
+kinerja kedua pendekatan. Agar tujuan dapat tercapai, terdapat beberapa tantangan 
+dan ketidakpastian yang perlu ditangani. 
+1. Pemilihan Arsitektur Foundation Model 
+Setiap model FM memiliki perbedaan dari sisi arsitektur, ukuran, dan 
+kemampuan pemrosesan linguistik. Masalah utama yang dihadapi adalah 
+menentukan model yang tidak hanya mampu melakukan dekode secara efektif, 
+tetapi juga memproses sinyal dalam waktu yang wajar. Berbagai jenis FM akan 
+dilatih dan diuji untuk menentukan model terbaik. Model utama yang dipilih 
+adalah LLaMA, Qwen, dan Gemma karena ketiganya merupakan varian yang 
+paling sering dipakai untuk berbagai tugas, dikembangkan oleh organisasi 
+terbesar saat ini, serta memiliki dukungan komunitas yang paling banyak. 
+Untuk setiap model, akan dicoba variasi ukuran berbeda -beda sehingga dapat 
+ditentukan model yang memiliki keseimbangan terbaik antara akurasi dan 
+kecepatan. 
+2. Adaptasi Model terhadap Jenis Input Baru 
+FM mampu memproses berbagai jenis modalitas, seperti teks, suara, bahkan 
+gambar, namun belum dapat memproses sinyal ECoG. Perlu ditentukan 
+pendekatan paling optimal untuk mengubah sinyal ECoG menjadi bentuk yang 
+dapat dipahami model. Mengingat kompleksitas  dan ukuran FM yang besar, 
+ 
+26 
+ 
+perlu juga ditentukan metode pelatihan efisien yang dapat mengajarkan model 
+tentang cara memproses sinyal ECoG. 
+Tabel II.2 memaparkan beberapa alternatif agar FM mampu menerima ECoG 
+sebagai input. Dari beberapa alternatif yang ada, dipilih matriks proyeksi linier 
+karena efisiensi komputasi dan jumlah parameter tambahan yang minimal, 
+tetapi alternatif lain mungkin dicoba jika pendekatan ini kurang efektif. Modul 
+ini mengubah dimensi dari sinyal kon tinu ECoG menjadi serangkaian vektor 
+yang dapat diterima oleh ruang embedding FM. 
+Tabel II.3 memberikan alternatif untuk melakukan fine-tuning pada FM agar 
+mampu memproses sinyal ECoG secara efektif (Ding et al., 2023). Dari 
+alternatif yang ada, LoRA dipilih karena mampu melakukan adaptasi model 
+besar tanpa menambah latensi inferensi. 
+3. Latensi Inferensi dan Beban Komputasi 
+Idealnya, sistem neuroprosthesis bicara mampu bekerja secara real-time agar 
+komunikasi bersifat alami. Namun, arsitektur Foundation Model memiliki 
+beban komputasi dan latensi inferensi yang besar. Tantangannya adalah 
+merancang arsitektur yang mampu mempertahankan latensi inferensi dalam 
+batas wajar tanpa mengorbankan akurasi. Teknik seperti pruning parameter saat 
+inferensi dan kuantisasi bobot menjadi bentuk 4 bit atau 8 bit dapat mengurangi 
+ukuran dan beban komputasi.  
+III.2 Gambaran Umum Solusi 
+Gambar 3.1 memperlihatkan alur pemrosesan sistem neuroprosthesis bicara untuk 
+arsitektur dua tahap dan E2E. Keduanya dimulai dari input berupa fitur neural yang 
+berasal dari aktivitas otak partisipan T12 yang direkam oleh Willett et al. (2023). 
+Sinyal ECoG direkam melalui empat array subdural yang masing-masing memiliki 
+64 elektroda. Dataset ini mencakup berbagai variabel yang diselaraskan per time 
+step (20 ms), seperti daya spike band  (spikePow) dan threshold crossings  (tx1 
+hingga tx4), serta fitur audio, seperti envelope audio dan MFCC.  
+ 
+27 
+ 
+ 
+Gambar III.1 Alur sistem neuroprosthesis bicara dengan arsitektur dua tahap 
+(atas) dan E2E (bawah) 
+Di diagram atas Gambar 3.1, kotak berwarna kuning merepresentasikan alur 
+pemrosesan pada arsitektur dua tahap. Pada langkah pertama, digunakan 
+Transformer untuk memetakan fitur neural menjadi probabilitas fonem dengan 
+connectionist temporal classification sebagai fungsi loss. Setelah itu, model bahasa 
+LLaMA 2 digunakan untuk mengubah fonem menjadi teks (Seto et al., 2025). Teks 
+dihasilkan melalui algoritma beam search dengan shallow fusion  yang 
+menggabungkan skor akustik probabilitas fonem dan skor linguistik model bahasa 
+(Seto et al., 2025). 
+Di diagram bawah Gambar 3.1, kotak berwarna merah merepresentasikan modul 
+yang baru akan dikembangkan pada penelitian ini. Seperti penjelasan sebelumnya, 
+berbagai variasi tipe dan ukuran FM akan dilatih untuk mengetahui jenis FM yang 
+terbaik. Modul akan di buat mampu memproses sinyal ECoG melalui matriks 
+proyeksi fitur dan diadaptasi untuk dapat memproses sinyal ECoG dengan LoRA. 
+Setelah pendekatan baseline dan Foundation Model sudah dilatih, kinerja baseline 
+dan setiap variasi Foundation Model akan dievaluasi. WER dan CER digunakan 
+untuk mengevaluasi ketepatan dekode, sedangkan RTF dan WPM digunakan untuk 
+mengevaluasi kecepatan. 
+Implementasi dan eksperimen akan dilakukan menggunakan framework Python 
+berbasis PyTorch. Pustaka penting lainnya meliputi Hugging Face Transformers 
+dan PEFT untuk memfasilitasi penggunaan FM dan penerapan LoRA. Pelatihan 
+dan inferensi akan dilakukan pada infrastruktur yang memiliki GPU berkinerja 
+tinggi. 
+
+ 
+28 
+ 
+BAB IV  
+RENCANA PELAKSANAAN 
+Bagian rencana pelaksanaan membahas tentang jadwal pengerjaan tugas akhir, 
+risiko yang mungkin dihadapi, dan rencana mitigasinya. 
+IV.1 Jadwal 
+Rincian jadwal pelaksanaan tugas akhir dapat dilihat pada Tabel IV-1. 
+Tabel IV-1 Gantt Chart Pelaksanaan Tugas Akhir 
+Kegiatan 
+Jan Feb Mar Apr Mei 
+1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4 
+Persiapan 
+lingkungan 
+pengerjaan 
+                    
+Pra-pemrosesan 
+data 
+                    
+Implementasi 
+arsitektur dua 
+tahap 
+                    
+Implementasi 
+arsitektur end-
+to-end 
+                    
+Eksperimentasi 
+dan perbaikan 
+                    
+Penulisan 
+laporan tugas 
+akhir 
+                    
+Seminar hasil 
+tugas akhir 
+                    
+Sidang tugas 
+akhir 
+                    
+ 
+29 
+ 
+ 
+IV.2 Risiko 
+Dalam mengerjakan tugas akhir, terdapat beberapa risiko yang mungkin dihadapi 
+selama pengembangan. Karena risiko ini dapat memengaruhi kelancaran penelitian 
+dan kualitas hasil, rencana mitigasi perlu disusun untuk mengurangi dampaknya. 
+Berikut merupakan risiko yang mungkin terjadi serta rencana mitigasinya. 
+1. Beban komputasi tinggi 
+Mekanisme self-attention yang dimiliki oleh Transformer pada modul 
+dekode fonem dan Foundation Model memiliki kompleksitas kuadratik. 
+Pelatihan dan inferensi untuk model berbasis Transformer akan memakan 
+biaya komputasi yang sangat tinggi, terutama jika menggunakan perangkat 
+keras yang terbatas seperti komputer lokal. Untuk memitigasi hal ini, 
+pelatihan dan inferensi akan dilakukan dalam lingkungan dengan 
+kemampuan komputasi tinggi, seperti cloud server. 
+2. Kendala pada server ketika pelatihan 
+Arsitektur berbasis Transformer memiliki waktu pelatihan yang relatif lama. 
+Jika terdapat kendala pada server yang mengakibatkan koneksi terputus atau 
+berhentinya pelatihan secara tiba -tiba, proses pelatihan juga akan berhenti 
+dan banyak waktu terbuang secara sia -sia. Prosedur checkpointing dapat 
+dilakukan untuk menyimpan bobot model yang sedang dilatih secara 
+berkala agar kemajuan pelatihan tetap ada meskipun mengalami kendala. 
+3. Latensi inferensi melebihi batas real-time 
+Selain waktu pelatihan yang lama, waktu inferensi yang dimiliki 
+Transformer relatif lama dibandingkan jenis model lainnya. Jika waktu 
+tersebut terlalu tinggi, kegunaan model akan berkurang secara drastis karena 
+tidak praktis untuk dipakai sehari-hari. Untuk menghadapi hal ini, dilakukan 
+teknik quantization pada saat inferensi agar operasi matematika yang 
+dilakukan saat inferensi berjalan lebih cepat. 
+4. Kegagalan dalam memetakan sinyal ECoG ke ruang embedding FM 
+ 
+30 
+ 
+Risiko ini terjadi ketika teknik adaptasi modality tidak mampu 
+mengekstraksi fitur yang bermakna dari sinyal otak untuk dipetakan ke 
+representasi FM. Kegagalan pemetaan sinyal ECoG menyebabkan FM 
+hanya menerima noise sehingga proses fine-tuning tidak akan konvergen. 
+Berbagai variasi arsitektur dan lapisan proyeksi fitur dapat dieksperimentasi 
+untuk menemukan metode terbaik dalam mentranslasi sinyal ECoG ke 
+ruang embedding FM. 
+5. Hasil eksperimen tidak menunjukkan perbedaan signifikan dengan baseline 
+Risiko ini muncul ketika kedua arsitektur yang diusulkan tidak memberikan 
+nilai word error rate  (WER) yang lebih rendah dibandingkan dengan 
+arsitektur baseline oleh Seto et al. (2025). Jika hal ini terjadi, analisis 
+kesalahan lain, seperti analisis kualitatif, dapat dilakukan. Analisis kualitatif 
+dilakukan dengan memeriksa apakah arsitektur yang diusulkan memberikan 
+hasil dekode yang lebih masuk akal secara sema ntik (salah mentranslasi 
+kata, tetapi masih sesuai dengan konteks kalimat) meskipun memiliki 
+metrik kuantitatif yang tidak berbeda jauh dengan baseline. 
+  
+ 
+31 
+ 
+DAFTAR PUSTAKA 
+Alayrac, J. B., et al. (2022). Flamingo: a visual language model for few -shot 
+learning. Advances in Neural Information Processing Systems, 35, 23716-23736. 
+ 
+Bai, J., Bai, S., Yang, S., Wang, S., Tan, S., Lin, J., ... & Zhou, J. (2023). Qwen -
+VL: A versatile vision-language model for understanding, localization, text reading, 
+and beyond. arXiv preprint arXiv:2308.12966. 
+ 
+Beukelman, D. R., Fager, S., Ball, L., & Dietz, A. (2007). AAC for adults with 
+acquired neurological conditions: A review. Augmentative and Alternative 
+Communication, 23(3), 230-242. 
+ 
+Bommasani, R. et al. (2021). On the opportunities and risks of foundation models. 
+arXiv preprint arXiv:2108.07258. 
+ 
+Ding, N., Qin, Y., Yang, G., Wei, F., Yang, Z., Su, Y., ... & Sun, M. (2023). 
+Parameter-efficient fine -tuning of large -scale pre -trained language models: A 
+benchmark. Nature Machine Intelligence, 5(3), 220-235. 
+ 
+Devlin, J., Chang, M. W., Lee, K., & Toutanova, K. (2019). BERT: Pre-training of 
+Deep Bidirectional Transformers for Language Understanding. In Proceedings of 
+the 2019 Conference of the North American Chapter of the Association for 
+Computational Linguistics: Human Language Technologies, Volume 1 (Long and 
+Short Papers) (pp. 4171-4186). Association for Computational Linguistics. 
+ 
+Gemma Team, Google. (2024). Gemma: Open models based on Gemini research 
+and technology. arXiv preprint arXiv:2403.08295 
+ 
+Graves, A., Fernández, S., Gomez, F., & Schmidhuber, J. (2006). Connectionist 
+temporal classification: labelling unsegmented sequence data with recurrent neural 
+ 
+32 
+ 
+networks. Proceedings of the 23rd International Conference on Machine Learning, 
+369-376. 
+ 
+Hannun, Y., et al. (2014). Deep Speech: Scaling up end-to-end speech recognition. 
+arXiv preprint arXiv:1412.5567. 
+ 
+Indefrey, P. (2011). The spatial and temporal signatures of word production 
+components: A critical review. Language and Cognitive Processes, 26(9), 1349 -
+1376. 
+ 
+Jiang, W.-B., Zhao, L. -M., & Lu, B. -L. (2024). Large Brain Model for Learning 
+Generic Representations with Tremendous EEG Data in BCI. In The Twelfth 
+International Conference on Learning Representations (ICLR 2024). 
+ 
+Li, J., Li, D., Savarese, S., & Hoi, S. (2023). BLIP -2: Bootstrapping language -
+image pre -training with frozen image encoders and large language models. 
+International Conference on Machine Learning (pp. 19730-19742). PMLR. 
+ 
+Lialin, V., Deshpande, O., & Rumshisky, A. (2023). Scaling Down to Scale Up: A 
+Guide to Parameter-Efficient Fine-Tuning. arXiv preprint arXiv:2303.15647. 
+ 
+Liu, H., Li, C., Wu, Q., & Lee, Y. J. (2023). Visual instruction tuning. Advances in 
+Neural Information Processing Systems, 36. 
+ 
+Luo, A., et al. (2024). Stability of speech-related ECoG signals in an individual with 
+ALS. Journal of Neural Engineering. 
+ 
+Metzger, S. L., Littlejohn, K. T., Silva, A. B., Moses, D. A., Seaton, M. P., Wang, 
+R.,... & Chang, E. F. (2023). A high -performance neuroprosthesis for speech 
+decoding and avatar control. Nature, 620(7976), 1037-1046. 
+ 
+ 
+33 
+ 
+Michel, C. M., & Murray, M. M. (2011). Towards the utilization of EEG as a brain 
+imaging tool. NeuroImage, 61(2), 371-385. 
+ 
+Moses, D. A., Metzger, S. L., Liu, J. R., Anumanchipalli, G. K., Makin, J. G., Sun, 
+P. F.,... & Chang, E. F. (2021). Neuroprosthesis for decoding speech in a paralyzed 
+person with anarthria. New England Journal of Medicine, 385(3), 217-227. 
+ 
+Oord, A. V. D., Vinyals, O., & Kavukcuoglu, K. (2017). Neural discrete 
+representation learning. Advances in neural information processing systems, 30. 
+ 
+Rainey, S., Maslen, H., Mégevand, P., Arnal, L. H., Fourneret, E., & Yvert, B. 
+(2019). Neuroprosthetic speech: The ethical significance of accuracy, control and 
+pragmatics. Cambridge Quarterly of Healthcare Ethics, 28(4), 617-630. 
+ 
+Raffel, C., Shazeer, N., Roberts, A., Lee, K., Narang, S., Matena, M., ... & Liu, P. 
+J. (2020). Exploring the limits of transfer learning with a unified text -to-text 
+transformer. Journal of Machine Learning Research, 21(140), 1-67. 
+ 
+Schalk, G., & Leuthardt, E. C. (2011). Brain -computer interfaces using 
+electrocorticographic signals. IEEE Reviews in Biomedical Engineering, 4, 140 -
+154. 
+ 
+Seto, B. (2025). Implementasi dan Perbandingan Model Bahasa Berbasis N -Gram 
+dan Transformer pada Sistem Neuroprosthesis Bicara. Institut Teknologi Bandung. 
+ 
+Shih, J. J., Krusienski, D. J., & Wolpaw, J. R. (2012). Brain-computer interfaces in 
+medicine. Mayo Clinic Proceedings, 87(3), 268-279. 
+ 
+Silva, A. B. et al. (2024). The speech neuroprosthesis. Nature Reviews 
+Neuroscience. 
+ 
+ 
+34 
+ 
+Touvron, H., Lavril, T., Izacard, G., Martinet, X., Lachaux, M. A., Lacroix, T., ... 
+& Lample, G. (2023). Llama: Open and efficient foundation language models. 
+arXiv preprint arXiv:2302.13971. 
+ 
+Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A. N.,... & 
+Polosukhin, I. (2017). Attention is all you need. Advances in Neural Information 
+Processing Systems, 30. 
+ 
+Wang, J., Zhao, S., Luo, Z., Zhou, Y., Jiang, H., Li, S., Li, T., & Pan, G. (2025). 
+CBraMod: A Criss -Cross Brain Foundation Model for EEG Decoding. In The 
+Thirteenth International Conference on Learning Representations (ICLR 2025). 
+ 
+Willett, F. R., Kunz, E. M., Fan, C., Avansino, D. T., Wilson, G. H., Choi, E. Y.,... 
+& Henderson, J. M. (2023). A high -performance speech neuroprosthesis. Nature, 
+620(7976), 1031-1036. 
+ 
+Willett, F. R., et al. (2025). Decoding inner speech from the motor cortex in a person 
+with paralysis. Cell. 
+ 
+ 
