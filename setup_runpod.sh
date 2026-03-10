@@ -15,6 +15,10 @@ echo "============================================="
 echo "  Setting up Transformer Experiment Environment"
 echo "============================================="
 
+# 0. Git
+git config --global user.name "Neo Koda"
+git config --global user.email "mneocicerok@gmail.com"
+
 # 1. Install system dependencies
 echo "[1/5] Installing system dependencies..."
 apt-get update -qq && apt-get install -y -qq git unzip wget > /dev/null 2>&1
