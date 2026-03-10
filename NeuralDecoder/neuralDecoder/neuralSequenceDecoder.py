@@ -482,6 +482,13 @@ class NeuralSequenceDecoder(object):
         saveBestCheckpoint = self.args['batchesPerSave'] == 0
         bestValCer = self.checkpoint.bestValCer
         print('bestValCer: ' + str(bestValCer))
+
+        # Early stopping state
+        earlyStopPatience = self.args.get('earlyStopPatience', 0)
+        earlyStopMinDelta = self.args.get('earlyStopMinDelta', 0.0001)
+        earlyStopCounter = 0
+        earlyStopBestVal = float(bestValCer) if float(bestValCer) < 1.0 else float('inf')
+        earlyStopped = False
         for batchIdx in range(restoredStep, self.args['nBatchesToTrain'] + 1):
             #--training--
             if self.args['dataset']['datasetProbability'] is None:
@@ -566,6 +573,19 @@ class NeuralSequenceDecoder(object):
                     savedCkpt = self.ckptManager.save(checkpoint_number=batchIdx)
                     print(f'Checkpoint saved {savedCkpt}')
 
+                # Early stopping check
+                if earlyStopPatience > 0:
+                    if valOutputs['seqErrorRate'] < (earlyStopBestVal - earlyStopMinDelta):
+                        earlyStopBestVal = valOutputs['seqErrorRate']
+                        earlyStopCounter = 0
+                    else:
+                        earlyStopCounter += 1
+                        print(f'Early stop patience: {earlyStopCounter}/{earlyStopPatience}')
+                        if earlyStopCounter >= earlyStopPatience:
+                            print(f'Early stopping triggered at batch {batchIdx} '
+                                  f'(best val PER: {earlyStopBestVal:.4f})')
+                            earlyStopped = True
+
                 #save a snapshot of key RNN outputs/variables so an outside program can plot them if desired
                 outputSnapshot = {}
                 outputSnapshot['logitsSnapshot'] = trainOut['logits'][0, :, :].numpy()
@@ -584,6 +604,10 @@ class NeuralSequenceDecoder(object):
             if self.args['batchesPerSave'] > 0 and batchIdx % self.args['batchesPerSave'] == 0:
                 savedCkpt = self.ckptManager.save(checkpoint_number=batchIdx)
                 print(f'Checkpoint saved {savedCkpt}')
+
+            if earlyStopped:
+                break
+
         return float(bestValCer)
 
     def inference(self, returnData=False):

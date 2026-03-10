@@ -91,3 +91,7 @@ randomWalkAxis: -1
 
 # LR warmup steps. LR will linearly increase from 0 to 1 over this number of steps
 warmUpSteps: 0
+
+# Early stopping: 0 = disabled, >0 = stop after N consecutive val cycles without improvement
+earlyStopPatience: 0
+earlyStopMinDelta: 0.0001

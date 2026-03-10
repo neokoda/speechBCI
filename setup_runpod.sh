@@ -11,8 +11,13 @@
 
 set -e
 
+# Resolve the repo root from wherever this script lives
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$SCRIPT_DIR"
+
 echo "============================================="
 echo "  Setting up Transformer Experiment Environment"
+echo "  Repo root: $REPO_ROOT"
 echo "============================================="
 
 # 0. Git
@@ -25,25 +30,30 @@ apt-get update -qq && apt-get install -y -qq git unzip wget > /dev/null 2>&1
 
 # 2. Install Python dependencies globally
 echo "[2/5] Installing Python packages..."
-pip install -q tensorflow==2.12.0 \
-    numpy scipy omegaconf hydra-core wandb matplotlib tensorboard
+pip install -q --ignore-installed blinker
+pip install -q tensorflow==2.15.0.post1 \
+    nvidia-cudnn-cu12 nvidia-cuda-nvrtc-cu12 nvidia-cublas-cu12 nvidia-cuda-runtime-cu12 \
+    omegaconf hydra-core wandb matplotlib tensorboard
 
-WORKSPACE=/workspace
-
-# If the repo isn't already here, you need to upload it or clone it
-if [ ! -d "speechBCI" ]; then
-    echo "  NOTE: Please upload/clone your speechBCI repo to /workspace/speechBCI"
-    echo "  You can use: scp -r /local/path/to/speechBCI root@<runpod-ip>:/workspace/"
-    echo "  Or: git clone <your-repo-url> speechBCI"
+# Add NVIDIA pip libraries to LD_LIBRARY_PATH so TF finds the GPU
+NV_LIB_PATH="/usr/local/lib/python3.11/dist-packages/nvidia"
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$NV_LIB_PATH/cudnn/lib:$NV_LIB_PATH/cublas/lib:$NV_LIB_PATH/cuda_nvrtc/lib:$NV_LIB_PATH/cuda_runtime/lib
+if ! grep -q "nvidia/cudnn/lib" ~/.bashrc; then
+    echo "export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:$NV_LIB_PATH/cudnn/lib:$NV_LIB_PATH/cublas/lib:$NV_LIB_PATH/cuda_nvrtc/lib:$NV_LIB_PATH/cuda_runtime/lib" >> ~/.bashrc
 fi
 
-# 4. Install NeuralDecoder package
+# 3. Check repo exists
+if [ ! -d "$REPO_ROOT/NeuralDecoder" ]; then
+    echo "  ERROR: NeuralDecoder directory not found at $REPO_ROOT/NeuralDecoder"
+    echo "  Please ensure setup_runpod.sh is in the speechBCI repo root."
+    exit 1
+fi
+
+# 4. Install NeuralDecoder package (--no-deps to avoid pulling conflicting transitive deps)
 echo "[4/5] Installing NeuralDecoder package..."
-if [ -d "speechBCI/NeuralDecoder" ]; then
-    cd speechBCI/NeuralDecoder
-    pip install -e . 2>/dev/null || pip install -e . --no-deps
-    cd $WORKSPACE
-fi
+cd "$REPO_ROOT/NeuralDecoder"
+pip install -e . --no-deps
+cd "$REPO_ROOT"
 
 # 5. Verify setup
 echo "[5/5] Verifying setup..."
@@ -71,11 +81,3 @@ echo ""
 echo "============================================="
 echo "  Setup complete!"
 echo "============================================="
-echo ""
-echo "To run Round 1 experiments:"
-echo "  cd /workspace/speechBCI"
-echo "  python AnalysisExamples/run_round1_experiments.py \\"
-echo "    --data-dir /workspace/speechBCI/data/derived/tfRecords \\"
-echo "    --output-dir /workspace/speechBCI/experiments/round1 \\"
-echo "    --gpu 0"
-echo ""

@@ -14,8 +14,18 @@ def app(config):
     #set the visible device to the gpu specified in 'args' (otherwise tensorflow will steal all the GPUs)
     if 'gpuNumber' in config:
         os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-        print(f'Setting CUDA_VISIBLE_DEVICES to {config["gpuNumber"]}')
-        os.environ["CUDA_VISIBLE_DEVICES"] = config['gpuNumber']
+        print(f"Setting CUDA_VISIBLE_DEVICES to {config['gpuNumber']}")
+        os.environ["CUDA_VISIBLE_DEVICES"] = str(config['gpuNumber'])
+
+    import tensorflow as tf
+    gpus = tf.config.list_physical_devices('GPU')
+    if gpus:
+        try:
+            for gpu in gpus:
+                tf.config.experimental.set_memory_growth(gpu, True)
+            print("Enabled GPU memory growth.")
+        except RuntimeError as e:
+            print(f"Memory growth exception: {e}")
 
     if 'Slurm' in HydraConfig.get().launcher._target_:
         # TF train saver doesn't support file name with '[' or ']'. So we'll use relative path here.

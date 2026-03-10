@@ -1,0 +1,64 @@
+
+======================================================================
+  ROUND 2: Successive Halving - Extended Training
+  8 promoted configs × 5000 batches each
+  Early stopping: patience=10, minDelta=0.0001
+======================================================================
+
+Promoted configs (sorted by Round 1 val PER):
+  1. transformer_256d_4L_8H_512ff (R1 PER: 0.6103)
+  2. transformer_512d_6L_4H_1024ff (R1 PER: 0.6104)
+  3. transformer_256d_4L_4H_1024ff (R1 PER: 0.6115)
+  4. transformer_512d_4L_4H_1024ff (R1 PER: 0.6154)
+  5. transformer_512d_4L_8H_2048ff (R1 PER: 0.6291)
+  6. transformer_512d_6L_8H_2048ff (R1 PER: 0.6437)
+  7. transformer_256d_6L_4H_512ff (R1 PER: 0.6493)
+  8. transformer_512d_4L_4H_2048ff (R1 PER: 0.6506)
+
+
+[1/8] Running: transformer_256d_4L_8H_512ff
+  d_model=256, layers=4, heads=8, d_ff=512
+  Round 1 val PER: 0.6103
+  FAILED (exit code 1)
+    
+    DNN library initialization failed. Look at the errors above for more details.
+    	 [[{{node cond/Adam/StatefulPartitionedCall_100}}]] [Op:__inference__trainStep_37411]
+    
+    Set the environment variable HYDRA_FULL_ERROR=1 for a complete stack trace.
+
+[2/8] Running: transformer_512d_6L_4H_1024ff
+  d_model=512, layers=6, heads=4, d_ff=1024
+  Round 1 val PER: 0.6104
+  FAILED (exit code 1)
+    
+    DNN library initialization failed. Look at the errors above for more details.
+    	 [[{{node cond/Adam/StatefulPartitionedCall_3}}]] [Op:__inference__trainStep_43127]
+    
+    Set the environment variable HYDRA_FULL_ERROR=1 for a complete stack trace.
+
+[3/8] Running: transformer_256d_4L_4H_1024ff
+  d_model=256, layers=4, heads=4, d_ff=1024
+  Round 1 val PER: 0.6115
+  FAILED (exit code 1)
+    
+    DNN library initialization failed. Look at the errors above for more details.
+    	 [[{{node cond/Adam/StatefulPartitionedCall_69}}]] [Op:__inference__trainStep_37411]
+    
+    Set the environment variable HYDRA_FULL_ERROR=1 for a complete stack trace.
+
+[4/8] Running: transformer_512d_4L_4H_1024ff
+  d_model=512, layers=4, heads=4, d_ff=1024
+  Round 1 val PER: 0.6154
+  FAILED (exit code 1)
+    
+    0 successful operations.
+    0 derived errors ignored. [Op:__inference__trainStep_37411]
+    
+    Set the environment variable HYDRA_FULL_ERROR=1 for a complete stack trace.
+Traceback (most recent call last):
+  File "/workspace/speechBCI/AnalysisExamples/run_round2_experiments.py", line 293, in <module>
+    run_experiments(args)
+  File "/workspace/speechBCI/AnalysisExamples/run_round2_experiments.py", line 219, in run_experiments
+    with open(os.path.join(exp_dir, 'error.log'), 'w') as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/workspace/speechBCI/experiments/round2/transformer_512d_4L_4H_1024ff/error.log'
