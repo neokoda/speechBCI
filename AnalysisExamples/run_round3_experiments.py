@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """
-Round 2 Experiment Runner: Successive Halving for Transformer Architecture Search.
+Round 3 Experiment Runner: Successive Halving for Transformer Architecture Search.
 
-Takes the top 8 configs promoted from Round 1 and trains each for 5,000 batches
-with early stopping. Promotes the top 4 to Round 3.
+Takes the top 4 configs promoted from Round 2 and trains each for 20,000 batches
+with early stopping. Promotes the top 2 as final candidates.
 
 Usage (on RunPod):
-    python run_round2_experiments.py \
+    python run_round3_experiments.py \
         --data-dir /workspace/speechBCI/data/derived/tfRecords \
-        --output-dir /workspace/speechBCI/experiments/round2 \
-        --round1-dir /workspace/speechBCI/experiments/round1 \
+        --output-dir /workspace/speechBCI/experiments/round3 \
+        --round2-dir /workspace/speechBCI/experiments/round2 \
         --gpu 0
 """
 
@@ -26,15 +26,15 @@ _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 NEURAL_DECODER_DIR = os.path.abspath(os.path.join(_SCRIPT_DIR, '..', 'NeuralDecoder'))
 
 
-# Fixed hyperparameters for Round 2 (5× budget vs Round 1)
+# Fixed hyperparameters for Round 3 (4× budget vs Round 2, 20× vs Round 1)
 FIXED = {
-    'nBatchesToTrain':     5000,
-    'batchesPerVal':       200,
+    'nBatchesToTrain':     20000,
+    'batchesPerVal':       500,
     'batchSize':           64,
     'learnRateStart':      0.001,
     'learnRateEnd':        0.0,
-    'learnRateDecaySteps': 5000,
-    'warmUpSteps':         250,
+    'learnRateDecaySteps': 20000,
+    'warmUpSteps':         500,
     'gradClipValue':       10,
     'lossType':            'ctc',
     'smoothInputs':        1,
@@ -43,7 +43,7 @@ FIXED = {
     'earlyStopMinDelta':   0.0001,
 }
 
-# Sessions to use (same as baseline & round 1)
+# Sessions to use (same as baseline & round 1 & round 2)
 SESSIONS = [
     't12.2022.04.28', 't12.2022.05.05', 't12.2022.05.17', 't12.2022.05.19',
     't12.2022.05.24', 't12.2022.05.26', 't12.2022.06.02', 't12.2022.06.07',
@@ -52,15 +52,15 @@ SESSIONS = [
     't12.2022.08.02', 't12.2022.08.11', 't12.2022.08.13',
 ]
 
-# Number of configs to promote to Round 3
-N_PROMOTE = 4
+# Number of configs to promote as final best
+N_PROMOTE = 2
 
 
-def load_promoted_configs(round1_dir):
-    """Load the promoted configs from Round 1 results."""
-    promotions_file = os.path.join(round1_dir, 'promoted_to_round2.json')
+def load_promoted_configs(round2_dir):
+    """Load the promoted configs from Round 2 results."""
+    promotions_file = os.path.join(round2_dir, 'promoted_to_round3.json')
     if not os.path.exists(promotions_file):
-        print(f"ERROR: {promotions_file} not found. Run Round 1 first.")
+        print(f"ERROR: {promotions_file} not found. Run Round 2 first.")
         sys.exit(1)
 
     with open(promotions_file, 'r') as f:
@@ -77,11 +77,11 @@ def load_promoted_configs(round1_dir):
                 'num_layers': r['num_layers'],
                 'nhead': r['nhead'],
                 'd_ff': r['d_ff'],
-                'round1_val_per': r['val_per'],
+                'round2_val_per': r['val_per'],
             })
 
-    # Sort by round 1 performance (best first)
-    configs.sort(key=lambda x: x['round1_val_per'])
+    # Sort by round 2 performance (best first)
+    configs.sort(key=lambda x: x['round2_val_per'])
     return configs
 
 
@@ -145,27 +145,27 @@ def parse_val_per(exp_dir):
 
 
 def run_experiments(args):
-    configs = load_promoted_configs(args.round1_dir)
+    configs = load_promoted_configs(args.round2_dir)
     print(f"\n{'='*70}")
-    print(f"  ROUND 2: Successive Halving - Extended Training")
+    print(f"  ROUND 3: Successive Halving - Full Training")
     print(f"  {len(configs)} promoted configs × {FIXED['nBatchesToTrain']} batches each")
     print(f"  Early stopping: patience={FIXED['earlyStopPatience']}, "
           f"minDelta={FIXED['earlyStopMinDelta']}")
     print(f"{'='*70}")
-    print(f"\nPromoted configs (sorted by Round 1 val PER):")
+    print(f"\nPromoted configs (sorted by Round 2 val PER):")
     for i, c in enumerate(configs):
-        print(f"  {i+1}. {c['name']} (R1 PER: {c['round1_val_per']:.4f})")
+        print(f"  {i+1}. {c['name']} (R2 PER: {c['round2_val_per']:.4f})")
     print()
 
     # Results CSV
-    results_csv = os.path.join(args.output_dir, 'round2_results.csv')
+    results_csv = os.path.join(args.output_dir, 'round3_results.csv')
     os.makedirs(args.output_dir, exist_ok=True)
 
     with open(results_csv, 'w', newline='') as f:
         writer = csv.writer(f)
         writer.writerow([
             'rank', 'config_name', 'd_model', 'num_layers', 'nhead', 'd_ff',
-            'round1_val_per', 'round2_val_per', 'status', 'start_time',
+            'round2_val_per', 'round3_val_per', 'status', 'start_time',
             'end_time', 'duration_min'
         ])
 
@@ -174,7 +174,7 @@ def run_experiments(args):
         print(f"\n[{i+1}/{len(configs)}] Running: {config['name']}")
         print(f"  d_model={config['d_model']}, layers={config['num_layers']}, "
               f"heads={config['nhead']}, d_ff={config['d_ff']}")
-        print(f"  Round 1 val PER: {config['round1_val_per']:.4f}")
+        print(f"  Round 2 val PER: {config['round2_val_per']:.4f}")
 
         exp_dir = os.path.join(args.output_dir, config['name'])
 
@@ -224,7 +224,7 @@ def run_experiments(args):
                 if any(kw in line for kw in ['Train batch', 'Val batch', 'Checkpoint',
                                              'Early stop', 'early stopping']):
                     print(f"  {line}", flush=True)
-            proc.wait(timeout=7200)  # 2hr timeout (longer budget)
+            proc.wait(timeout=21600)  # 6hr timeout (long budget for 20k batches)
             end_time = datetime.now()
             duration_min = (end_time - start_time).total_seconds() / 60
 
@@ -255,57 +255,60 @@ def run_experiments(args):
                            'duration_min': duration_min})
 
         except subprocess.TimeoutExpired:
-            print(f"  TIMEOUT (>120min)")
+            print(f"  TIMEOUT (>360min)")
             results.append({**config, 'val_per': float('inf'), 'status': 'timeout'})
 
     # Sort by val PER and write final results
     results.sort(key=lambda x: x['val_per'])
     print(f"\n{'='*70}")
-    print(f"  ROUND 2 RESULTS (ranked by val PER)")
+    print(f"  ROUND 3 FINAL RESULTS (ranked by val PER)")
     print(f"{'='*70}")
-    print(f"{'Rank':>4} {'Config':<40} {'R1 PER':>10} {'R2 PER':>10} {'Status':>14}")
+    print(f"{'Rank':>4} {'Config':<40} {'R2 PER':>10} {'R3 PER':>10} {'Status':>14}")
     print('-' * 80)
 
     with open(results_csv, 'w', newline='') as f:
         writer = csv.writer(f)
         writer.writerow([
             'rank', 'config_name', 'd_model', 'num_layers', 'nhead', 'd_ff',
-            'round1_val_per', 'round2_val_per', 'status', 'duration_min'
+            'round2_val_per', 'round3_val_per', 'status', 'duration_min'
         ])
         for rank, r in enumerate(results, 1):
             per_str = f"{r['val_per']:.4f}" if r['val_per'] < float('inf') else 'FAIL'
-            r1_str = f"{r['round1_val_per']:.4f}"
-            print(f"{rank:>4} {r['name']:<40} {r1_str:>10} {per_str:>10} {r.get('status','?'):>14}")
+            r2_str = f"{r['round2_val_per']:.4f}"
+            print(f"{rank:>4} {r['name']:<40} {r2_str:>10} {per_str:>10} {r.get('status','?'):>14}")
             writer.writerow([
                 rank, r['name'], r['d_model'], r['num_layers'], r['nhead'], r['d_ff'],
-                r['round1_val_per'], r['val_per'], r.get('status', '?'),
+                r['round2_val_per'], r['val_per'], r.get('status', '?'),
                 r.get('duration_min', '')
             ])
 
-    # Save promotions for Round 3
+    # Save final results
+    final_results_file = os.path.join(args.output_dir, 'final_results.json')
     promoted = [r['name'] for r in results[:N_PROMOTE] if r['val_per'] < float('inf')]
-    promotions_file = os.path.join(args.output_dir, 'promoted_to_round3.json')
-    with open(promotions_file, 'w') as f:
-        json.dump({'promoted': promoted, 'all_results': results}, f, indent=2, default=str)
+    with open(final_results_file, 'w') as f:
+        json.dump({
+            'best_configs': promoted,
+            'all_results': results
+        }, f, indent=2, default=str)
 
-    print(f"\n  Top {N_PROMOTE} promoted to Round 3: {promoted}")
+    print(f"\n  🏆 Top {N_PROMOTE} final configs: {promoted}")
     print(f"  Results saved to: {results_csv}")
-    print(f"  Promotions saved to: {promotions_file}")
+    print(f"  Final results saved to: {final_results_file}")
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
-        description='Round 2: Extended Training for Promoted Transformer Configs')
+        description='Round 3: Full Training for Promoted Transformer Configs')
     parser.add_argument('--data-dir', required=True,
                         help='Path to tfRecords directory')
     parser.add_argument('--output-dir', required=True,
-                        help='Output directory for round 2 experiments')
-    parser.add_argument('--round1-dir', required=True,
-                        help='Directory containing round 1 results (promoted_to_round2.json)')
+                        help='Output directory for round 3 experiments')
+    parser.add_argument('--round2-dir', required=True,
+                        help='Directory containing round 2 results (promoted_to_round3.json)')
     parser.add_argument('--gpu', default='0',
                         help='GPU number to use')
     args = parser.parse_args()
     args.data_dir = os.path.abspath(args.data_dir)
     args.output_dir = os.path.abspath(args.output_dir)
-    args.round1_dir = os.path.abspath(args.round1_dir)
+    args.round2_dir = os.path.abspath(args.round2_dir)
     run_experiments(args)

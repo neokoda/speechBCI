@@ -32,8 +32,9 @@ apt-get update -qq && apt-get install -y -qq git unzip wget > /dev/null 2>&1
 echo "[2/5] Installing Python packages..."
 pip install -q --ignore-installed blinker
 pip install -q tensorflow==2.15.0.post1 \
-    nvidia-cudnn-cu12 nvidia-cuda-nvrtc-cu12 nvidia-cublas-cu12 nvidia-cuda-runtime-cu12 \
-    omegaconf hydra-core wandb matplotlib tensorboard
+    "nvidia-cudnn-cu12==8.9.7.29" nvidia-cuda-nvrtc-cu12 nvidia-cublas-cu12 nvidia-cuda-runtime-cu12 \
+    omegaconf hydra-core wandb matplotlib tensorboard \
+    scipy "numpy<2"
 
 # Add NVIDIA pip libraries to LD_LIBRARY_PATH so TF finds the GPU
 NV_LIB_PATH="/usr/local/lib/python3.11/dist-packages/nvidia"

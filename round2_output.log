@@ -1,0 +1,116 @@
+nohup: ignoring input
+
+======================================================================
+  ROUND 2: Successive Halving - Extended Training
+  8 promoted configs × 5000 batches each
+  Early stopping: patience=10, minDelta=0.0001
+======================================================================
+
+Promoted configs (sorted by Round 1 val PER):
+  1. transformer_256d_4L_8H_512ff (R1 PER: 0.6103)
+  2. transformer_512d_6L_4H_1024ff (R1 PER: 0.6104)
+  3. transformer_256d_4L_4H_1024ff (R1 PER: 0.6115)
+  4. transformer_512d_4L_4H_1024ff (R1 PER: 0.6154)
+  5. transformer_512d_4L_8H_2048ff (R1 PER: 0.6291)
+  6. transformer_512d_6L_8H_2048ff (R1 PER: 0.6437)
+  7. transformer_256d_6L_4H_512ff (R1 PER: 0.6493)
+  8. transformer_512d_4L_4H_2048ff (R1 PER: 0.6506)
+
+
+[1/8] Running: transformer_256d_4L_8H_512ff
+  d_model=256, layers=4, heads=8, d_ff=512
+  Round 1 val PER: 0.6103
+  FAILED (exit code 1)
+      File "/workspace/speechBCI/NeuralDecoder/neuralDecoder/main.py", line 8, in <module>
+        from neuralDecoder.neuralSequenceDecoder import NeuralSequenceDecoder
+      File "/workspace/speechBCI/NeuralDecoder/neuralDecoder/neuralSequenceDecoder.py", line 8, in <module>
+        import scipy.io
+    ModuleNotFoundError: No module named 'scipy'
+
+[2/8] Running: transformer_512d_6L_4H_1024ff
+  d_model=512, layers=6, heads=4, d_ff=1024
+  Round 1 val PER: 0.6104
+  FAILED (exit code 1)
+      File "/workspace/speechBCI/NeuralDecoder/neuralDecoder/main.py", line 8, in <module>
+        from neuralDecoder.neuralSequenceDecoder import NeuralSequenceDecoder
+      File "/workspace/speechBCI/NeuralDecoder/neuralDecoder/neuralSequenceDecoder.py", line 8, in <module>
+        import scipy.io
+    ModuleNotFoundError: No module named 'scipy'
+
+[3/8] Running: transformer_256d_4L_4H_1024ff
+  d_model=256, layers=4, heads=4, d_ff=1024
+  Round 1 val PER: 0.6115
+  FAILED (exit code 1)
+      File "/workspace/speechBCI/NeuralDecoder/neuralDecoder/main.py", line 8, in <module>
+        from neuralDecoder.neuralSequenceDecoder import NeuralSequenceDecoder
+      File "/workspace/speechBCI/NeuralDecoder/neuralDecoder/neuralSequenceDecoder.py", line 8, in <module>
+        import scipy.io
+    ModuleNotFoundError: No module named 'scipy'
+
+[4/8] Running: transformer_512d_4L_4H_1024ff
+  d_model=512, layers=4, heads=4, d_ff=1024
+  Round 1 val PER: 0.6154
+  FAILED (exit code 1)
+      File "/workspace/speechBCI/NeuralDecoder/neuralDecoder/main.py", line 8, in <module>
+        from neuralDecoder.neuralSequenceDecoder import NeuralSequenceDecoder
+      File "/workspace/speechBCI/NeuralDecoder/neuralDecoder/neuralSequenceDecoder.py", line 8, in <module>
+        import scipy.io
+    ModuleNotFoundError: No module named 'scipy'
+
+[5/8] Running: transformer_512d_4L_8H_2048ff
+  d_model=512, layers=4, heads=8, d_ff=2048
+  Round 1 val PER: 0.6291
+  FAILED (exit code 1)
+      File "/workspace/speechBCI/NeuralDecoder/neuralDecoder/main.py", line 8, in <module>
+        from neuralDecoder.neuralSequenceDecoder import NeuralSequenceDecoder
+      File "/workspace/speechBCI/NeuralDecoder/neuralDecoder/neuralSequenceDecoder.py", line 8, in <module>
+        import scipy.io
+    ModuleNotFoundError: No module named 'scipy'
+
+[6/8] Running: transformer_512d_6L_8H_2048ff
+  d_model=512, layers=6, heads=8, d_ff=2048
+  Round 1 val PER: 0.6437
+  FAILED (exit code 1)
+      File "/workspace/speechBCI/NeuralDecoder/neuralDecoder/main.py", line 8, in <module>
+        from neuralDecoder.neuralSequenceDecoder import NeuralSequenceDecoder
+      File "/workspace/speechBCI/NeuralDecoder/neuralDecoder/neuralSequenceDecoder.py", line 8, in <module>
+        import scipy.io
+    ModuleNotFoundError: No module named 'scipy'
+
+[7/8] Running: transformer_256d_6L_4H_512ff
+  d_model=256, layers=6, heads=4, d_ff=512
+  Round 1 val PER: 0.6493
+  FAILED (exit code 1)
+      File "/workspace/speechBCI/NeuralDecoder/neuralDecoder/main.py", line 8, in <module>
+        from neuralDecoder.neuralSequenceDecoder import NeuralSequenceDecoder
+      File "/workspace/speechBCI/NeuralDecoder/neuralDecoder/neuralSequenceDecoder.py", line 8, in <module>
+        import scipy.io
+    ModuleNotFoundError: No module named 'scipy'
+
+[8/8] Running: transformer_512d_4L_4H_2048ff
+  d_model=512, layers=4, heads=4, d_ff=2048
+  Round 1 val PER: 0.6506
+  FAILED (exit code 1)
+      File "/workspace/speechBCI/NeuralDecoder/neuralDecoder/main.py", line 8, in <module>
+        from neuralDecoder.neuralSequenceDecoder import NeuralSequenceDecoder
+      File "/workspace/speechBCI/NeuralDecoder/neuralDecoder/neuralSequenceDecoder.py", line 8, in <module>
+        import scipy.io
+    ModuleNotFoundError: No module named 'scipy'
+
+======================================================================
+  ROUND 2 RESULTS (ranked by val PER)
+======================================================================
+Rank Config                                       R1 PER     R2 PER         Status
+--------------------------------------------------------------------------------
+   1 transformer_256d_4L_8H_512ff                 0.6103       FAIL         failed
+   2 transformer_512d_6L_4H_1024ff                0.6104       FAIL         failed
+   3 transformer_256d_4L_4H_1024ff                0.6115       FAIL         failed
+   4 transformer_512d_4L_4H_1024ff                0.6154       FAIL         failed
+   5 transformer_512d_4L_8H_2048ff                0.6291       FAIL         failed
+   6 transformer_512d_6L_8H_2048ff                0.6437       FAIL         failed
+   7 transformer_256d_6L_4H_512ff                 0.6493       FAIL         failed
+   8 transformer_512d_4L_4H_2048ff                0.6506       FAIL         failed
+
+  Top 4 promoted to Round 3: []
+  Results saved to: /workspace/speechBCI/experiments/round2/round2_results.csv
+  Promotions saved to: /workspace/speechBCI/experiments/round2/promoted_to_round3.json
