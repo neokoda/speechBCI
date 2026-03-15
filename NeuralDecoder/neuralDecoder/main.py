@@ -21,11 +21,18 @@ def app(config):
     gpus = tf.config.list_physical_devices('GPU')
     if gpus:
         try:
+            # Pre-allocate a fixed 20GB pool instead of using memory growth.
+            # memory_growth=True causes BFC allocator fragmentation over long runs —
+            # random long-sequence batches then fail to get a contiguous chunk even
+            # when total free VRAM is sufficient. A fixed upfront pool avoids this.
             for gpu in gpus:
-                tf.config.experimental.set_memory_growth(gpu, True)
-            print("Enabled GPU memory growth.")
+                tf.config.set_logical_device_configuration(
+                    gpu,
+                    [tf.config.LogicalDeviceConfiguration(memory_limit=20000)]
+                )
+            print("Set fixed GPU memory limit to 20000 MB.")
         except RuntimeError as e:
-            print(f"Memory growth exception: {e}")
+            print(f"GPU memory config exception: {e}")
 
     if 'Slurm' in HydraConfig.get().launcher._target_:
         # TF train saver doesn't support file name with '[' or ']'. So we'll use relative path here.

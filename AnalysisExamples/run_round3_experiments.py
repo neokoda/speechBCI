@@ -27,11 +27,14 @@ NEURAL_DECODER_DIR = os.path.abspath(os.path.join(_SCRIPT_DIR, '..', 'NeuralDeco
 
 
 # Fixed hyperparameters for Round 3 (4× budget vs Round 2, 20× vs Round 1)
+# batchSize reduced to 32 (from 64) to avoid OOM on 512d models with variable-length
+# sequences (transformer attention is O(T^2); long batches spike VRAM past 22GB).
+# learnRateStart halved to 0.0005 via linear scaling rule (lr proportional to batch size).
 FIXED = {
     'nBatchesToTrain':     20000,
     'batchesPerVal':       500,
-    'batchSize':           64,
-    'learnRateStart':      0.001,
+    'batchSize':           32,
+    'learnRateStart':      0.0005,
     'learnRateEnd':        0.0,
     'learnRateDecaySteps': 20000,
     'warmUpSteps':         500,
