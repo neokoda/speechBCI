@@ -95,3 +95,7 @@ warmUpSteps: 0
 # Early stopping: 0 = disabled, >0 = stop after N consecutive val cycles without improvement
 earlyStopPatience: 0
 earlyStopMinDelta: 0.0001
+
+# Mixed precision: use float16 activations to reduce VRAM usage (~2x reduction).
+# Weights stay float32. Output logit layer is forced to float32 for CTC loss stability.
+mixedPrecision: false

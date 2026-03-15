@@ -55,6 +55,8 @@ SESSIONS = [
     't12.2022.08.02', 't12.2022.08.11', 't12.2022.08.13',
 ]
 
+MAX_OOM_RETRIES = 3
+
 # Number of configs to promote as final best
 N_PROMOTE = 2
 
@@ -111,6 +113,8 @@ def build_command(config, data_dir, output_dir, gpu):
         f'model.d_ff={config["d_ff"]}',
         f'model.dropout=0.1',
         f'model.posEncType=sinusoidal',
+        f'model.gradientCheckpointing=true',
+        f'mixedPrecision=true',
         f'outputDir={exp_dir}',
         f'gpuNumber="{gpu}"',
         f'dataset.dataDir={data_dirs_str}',
@@ -127,21 +131,41 @@ def build_command(config, data_dir, output_dir, gpu):
     return cmd
 
 
-def parse_val_per(exp_dir):
-    """Parse the best validation PER from the experiment output."""
-    import scipy.io
-    snapshot_path = os.path.join(exp_dir, 'outputSnapshot')
-    if not os.path.exists(snapshot_path) and not os.path.exists(snapshot_path + ".mat"):
-        return float('inf')
-
+def parse_final_step(exp_dir):
+    """Parse the last training step reached from metrics.csv."""
+    metrics_path = os.path.join(exp_dir, 'metrics.csv')
+    if not os.path.exists(metrics_path):
+        return None
     try:
-        dat = scipy.io.loadmat(snapshot_path)
-        val_data = dat['perBatchData_val']
-        # Column 4 is seqErrorRate, find the last nonzero row
-        nonzero_rows = val_data[val_data[:, 0] > 0]
-        if len(nonzero_rows) == 0:
-            return float('inf')
-        return float(nonzero_rows[-1, 4])  # last val PER
+        with open(metrics_path, 'r') as f:
+            reader = csv.reader(f)
+            next(reader)  # skip header
+            last_row = None
+            for row in reader:
+                last_row = row
+            if last_row:
+                return int(last_row[0])
+    except Exception:
+        pass
+    return None
+
+
+def parse_val_per(exp_dir):
+    """Parse the best validation PER from metrics.csv."""
+    metrics_path = os.path.join(exp_dir, 'metrics.csv')
+    if not os.path.exists(metrics_path):
+        return float('inf')
+    try:
+        best = float('inf')
+        with open(metrics_path, 'r') as f:
+            reader = csv.reader(f)
+            next(reader)  # skip header
+            for row in reader:
+                if row:
+                    per = float(row[1])
+                    if per < best:
+                        best = per
+        return best if best < float('inf') else float('inf')
     except Exception as e:
         print(f"  Warning: Could not parse results from {exp_dir}: {e}")
         return float('inf')
@@ -186,8 +210,10 @@ def run_experiments(args):
         if os.path.exists(training_log):
             per = parse_val_per(exp_dir)
             if per < float('inf'):
-                print(f"  Already completed (PER: {per:.4f}), skipping.")
-                results.append({**config, 'val_per': per, 'status': 'cached'})
+                final_step = parse_final_step(exp_dir)
+                print(f"  Already completed (PER: {per:.4f}, step: {final_step}), skipping.")
+                results.append({**config, 'val_per': per, 'status': 'cached',
+                               'final_step': final_step})
                 continue
 
         # If checkpoint exists but no training.log, it's an incomplete run — will auto-resume
@@ -197,69 +223,90 @@ def run_experiments(args):
 
         cmd = build_command(config, args.data_dir, args.output_dir, args.gpu)
         start_time = datetime.now()
+        oom_retries = 0
 
-        try:
-            # Ensure neuralDecoder is importable by subprocess
-            env = os.environ.copy()
-            existing = env.get('PYTHONPATH', '')
-            env['PYTHONPATH'] = NEURAL_DECODER_DIR + (os.pathsep + existing if existing else '')
+        while True:
+            # Clear stale error log before each attempt
+            stale_error_log = os.path.join(exp_dir, 'error.log')
+            if os.path.exists(stale_error_log):
+                os.remove(stale_error_log)
 
-            # Ensure NVIDIA CUDA libraries are on LD_LIBRARY_PATH for GPU support
-            # (setup_runpod.sh adds this to ~/.bashrc, but subprocesses don't source it)
-            nv_base = '/usr/local/lib/python3.11/dist-packages/nvidia'
-            nv_paths = [
-                f'{nv_base}/cudnn/lib',
-                f'{nv_base}/cublas/lib',
-                f'{nv_base}/cuda_nvrtc/lib',
-                f'{nv_base}/cuda_runtime/lib',
-            ]
-            existing_ld = env.get('LD_LIBRARY_PATH', '')
-            env['LD_LIBRARY_PATH'] = ':'.join(nv_paths) + (':' + existing_ld if existing_ld else '')
+            try:
+                # Ensure neuralDecoder is importable by subprocess
+                env = os.environ.copy()
+                existing = env.get('PYTHONPATH', '')
+                env['PYTHONPATH'] = NEURAL_DECODER_DIR + (os.pathsep + existing if existing else '')
 
-            # Stream output in real-time so user sees progress
-            proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                    text=True, bufsize=1, env=env)
-            log_lines = []
-            for line in proc.stdout:
-                line = line.rstrip()
-                log_lines.append(line)
-                # Show key training progress lines
-                if any(kw in line for kw in ['Train batch', 'Val batch', 'Checkpoint',
-                                             'Early stop', 'early stopping']):
-                    print(f"  {line}", flush=True)
-            proc.wait(timeout=21600)  # 6hr timeout (long budget for 20k batches)
-            end_time = datetime.now()
-            duration_min = (end_time - start_time).total_seconds() / 60
+                # Ensure NVIDIA CUDA libraries are on LD_LIBRARY_PATH for GPU support
+                # (setup_runpod.sh adds this to ~/.bashrc, but subprocesses don't source it)
+                nv_base = '/usr/local/lib/python3.11/dist-packages/nvidia'
+                nv_paths = [
+                    f'{nv_base}/cudnn/lib',
+                    f'{nv_base}/cublas/lib',
+                    f'{nv_base}/cuda_nvrtc/lib',
+                    f'{nv_base}/cuda_runtime/lib',
+                ]
+                existing_ld = env.get('LD_LIBRARY_PATH', '')
+                env['LD_LIBRARY_PATH'] = ':'.join(nv_paths) + (':' + existing_ld if existing_ld else '')
 
-            if proc.returncode != 0:
-                print(f"  FAILED (exit code {proc.returncode})")
-                # Show last 5 lines for debugging
-                for l in log_lines[-5:]:
-                    print(f"    {l}")
-                os.makedirs(exp_dir, exist_ok=True)
-                with open(os.path.join(exp_dir, 'error.log'), 'w') as f:
+                # Stream output in real-time so user sees progress
+                proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                        text=True, bufsize=1, env=env)
+                log_lines = []
+                for line in proc.stdout:
+                    line = line.rstrip()
+                    log_lines.append(line)
+                    # Show key training progress lines
+                    if any(kw in line for kw in ['Train batch', 'Val batch', 'Checkpoint',
+                                                 'Early stop', 'early stopping']):
+                        print(f"  {line}", flush=True)
+                proc.wait(timeout=21600)  # 6hr timeout (long budget for 20k batches)
+                end_time = datetime.now()
+                duration_min = (end_time - start_time).total_seconds() / 60
+
+                if proc.returncode != 0:
+                    print(f"  FAILED (exit code {proc.returncode})")
+                    # Show last 5 lines for debugging
+                    for l in log_lines[-5:]:
+                        print(f"    {l}")
+                    os.makedirs(exp_dir, exist_ok=True)
+                    with open(os.path.join(exp_dir, 'error.log'), 'w') as f:
+                        f.write('\n'.join(log_lines))
+                    is_oom = any('RESOURCE_EXHAUSTED' in l or 'OOM when' in l for l in log_lines)
+                    if is_oom and oom_retries < MAX_OOM_RETRIES:
+                        oom_retries += 1
+                        final_step = parse_final_step(exp_dir)
+                        print(f"  OOM at step {final_step}, retrying from checkpoint "
+                              f"({oom_retries}/{MAX_OOM_RETRIES})...")
+                        continue
+                    final_step = parse_final_step(exp_dir)
+                    results.append({**config, 'val_per': float('inf'), 'status': 'failed',
+                                   'duration_min': duration_min, 'final_step': final_step})
+                    break
+
+                # Save stdout log
+                with open(os.path.join(exp_dir, 'training.log'), 'w') as f:
                     f.write('\n'.join(log_lines))
-                results.append({**config, 'val_per': float('inf'), 'status': 'failed',
-                               'duration_min': duration_min})
-                continue
 
-            # Save stdout log
-            with open(os.path.join(exp_dir, 'training.log'), 'w') as f:
-                f.write('\n'.join(log_lines))
+                # Check if early stopped
+                early_stopped = any('early stopping triggered' in l.lower() for l in log_lines)
+                status = 'early_stopped' if early_stopped else 'ok'
 
-            # Check if early stopped
-            early_stopped = any('early stopping triggered' in l.lower() for l in log_lines)
-            status = 'early_stopped' if early_stopped else 'ok'
+                per = parse_val_per(exp_dir)
+                final_step = parse_final_step(exp_dir)
+                print(f"  Completed in {duration_min:.1f} min, val PER: {per:.4f}"
+                      f" (step: {final_step})"
+                      f"{' (early stopped)' if early_stopped else ''}")
+                results.append({**config, 'val_per': per, 'status': status,
+                               'duration_min': duration_min, 'final_step': final_step})
+                break
 
-            per = parse_val_per(exp_dir)
-            print(f"  Completed in {duration_min:.1f} min, val PER: {per:.4f}"
-                  f"{' (early stopped)' if early_stopped else ''}")
-            results.append({**config, 'val_per': per, 'status': status,
-                           'duration_min': duration_min})
-
-        except subprocess.TimeoutExpired:
-            print(f"  TIMEOUT (>360min)")
-            results.append({**config, 'val_per': float('inf'), 'status': 'timeout'})
+            except subprocess.TimeoutExpired:
+                print(f"  TIMEOUT (>360min)")
+                final_step = parse_final_step(exp_dir)
+                results.append({**config, 'val_per': float('inf'), 'status': 'timeout',
+                               'final_step': final_step})
+                break
 
     # Sort by val PER and write final results
     results.sort(key=lambda x: x['val_per'])
@@ -273,7 +320,7 @@ def run_experiments(args):
         writer = csv.writer(f)
         writer.writerow([
             'rank', 'config_name', 'd_model', 'num_layers', 'nhead', 'd_ff',
-            'round2_val_per', 'round3_val_per', 'status', 'duration_min'
+            'round2_val_per', 'round3_val_per', 'status', 'duration_min', 'final_step'
         ])
         for rank, r in enumerate(results, 1):
             per_str = f"{r['val_per']:.4f}" if r['val_per'] < float('inf') else 'FAIL'
@@ -282,7 +329,7 @@ def run_experiments(args):
             writer.writerow([
                 rank, r['name'], r['d_model'], r['num_layers'], r['nhead'], r['d_ff'],
                 r['round2_val_per'], r['val_per'], r.get('status', '?'),
-                r.get('duration_min', '')
+                r.get('duration_min', ''), r.get('final_step', '')
             ])
 
     # Save final results

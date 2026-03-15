@@ -34,6 +34,10 @@ def app(config):
         except RuntimeError as e:
             print(f"GPU memory config exception: {e}")
 
+    if config.get('mixedPrecision', False):
+        tf.keras.mixed_precision.set_global_policy('mixed_float16')
+        print("Mixed precision enabled (float16 activations, float32 weights).")
+
     if 'Slurm' in HydraConfig.get().launcher._target_:
         # TF train saver doesn't support file name with '[' or ']'. So we'll use relative path here.
         config.outputDir = './'

@@ -9,6 +9,7 @@ d_ff: 2048                  # feedforward hidden dim
 posEncType: sinusoidal       # sinusoidal | learned
 dropout: 0.1
 attentionDropout: 0.0
+gradientCheckpointing: false
 
 # Shared params (same as GRU config)
 inputLayerSize: 256

@@ -41,6 +41,10 @@ class TransformerEncoderLayer(tf.keras.layers.Layer):
         x = x + ffn_out
         return x
 
+    def call_training(self, x):
+        """Forward pass with training=True. Used by gradient checkpointing."""
+        return self.call(x, training=True)
+
 
 class TransformerEncoder(Model):
     """Transformer encoder for sequence-to-sequence prediction with CTC.
@@ -62,13 +66,15 @@ class TransformerEncoder(Model):
                  posEncType='sinusoidal',
                  subsampleFactor=1,
                  stack_kwargs=None,
-                 max_seq_len=2000):
+                 max_seq_len=2000,
+                 gradient_checkpointing=False):
         super(TransformerEncoder, self).__init__()
 
         self.d_model = d_model
         self.subsampleFactor = subsampleFactor
         self.stack_kwargs = stack_kwargs
         self.posEncType = posEncType
+        self.gradient_checkpointing = gradient_checkpointing
 
         # Input projection: stack output dim → d_model
         if stack_kwargs is not None:
@@ -99,8 +105,9 @@ class TransformerEncoder(Model):
         # Final norm (needed for pre-norm architecture)
         self.final_norm = tf.keras.layers.LayerNormalization(epsilon=1e-6)
 
-        # Output projection
-        self.dense = tf.keras.layers.Dense(nClasses)
+        # Output projection — dtype=float32 ensures logits stay float32 for CTC
+        # loss stability even when mixed precision (float16) is enabled globally.
+        self.dense = tf.keras.layers.Dense(nClasses, dtype='float32')
 
     def call(self, x, training=False, **kwargs):
         # Stack/subsample (same logic as GRU)
@@ -116,12 +123,13 @@ class TransformerEncoder(Model):
         x = self.input_proj(x)
 
         # Scale by sqrt(d_model) as in "Attention Is All You Need"
-        x = x * tf.math.sqrt(tf.cast(self.d_model, tf.float32))
+        # Cast scalar to x.dtype to support mixed precision (float16) training.
+        x = x * tf.cast(tf.math.sqrt(float(self.d_model)), x.dtype)
 
         # Add positional encoding
         seq_len = tf.shape(x)[1]
         if self.posEncType == 'sinusoidal':
-            x = x + self.pos_encoding[:, :seq_len, :]
+            x = x + tf.cast(self.pos_encoding[:, :seq_len, :], x.dtype)
         elif self.posEncType == 'learned':
             positions = tf.range(seq_len)
             x = x + self.pos_embedding(positions)
@@ -130,7 +138,10 @@ class TransformerEncoder(Model):
 
         # Transformer encoder layers
         for layer in self.enc_layers:
-            x = layer(x, training=training)
+            if training and self.gradient_checkpointing:
+                x = tf.recompute_grad(layer.call_training)(x)
+            else:
+                x = layer(x, training=training)
 
         # Final norm
         x = self.final_norm(x)

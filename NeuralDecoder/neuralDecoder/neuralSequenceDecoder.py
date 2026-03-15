@@ -87,6 +87,7 @@ class NeuralSequenceDecoder(object):
                 posEncType=self.args['model'].get('posEncType', 'sinusoidal'),
                 subsampleFactor=self.args['model']['subsampleFactor'],
                 stack_kwargs=self.args['model'].get('stack_kwargs', None),
+                gradient_checkpointing=self.args['model'].get('gradientCheckpointing', False),
             )
         else:
             self.model = models.GRU(self.args['model']['nUnits'],
@@ -414,7 +415,10 @@ class NeuralSequenceDecoder(object):
     def _datasetLayerTransform(self, dat, normLayer, whiteNoiseSD, constantOffsetSD, randomWalkSD, staticGainSD, randomCut):
 
         features = dat['inputFeatures']
-        features = (features - normLayer.mean) / tf.math.sqrt(normLayer.variance + 1e-7)
+        # Cast norm params to features.dtype to support mixed precision (float16) training,
+        # where Normalization layer stores mean/variance as float16 but input is float32.
+        features = (features - tf.cast(normLayer.mean, features.dtype)) / tf.math.sqrt(
+            tf.cast(normLayer.variance, features.dtype) + 1e-7)
 
         featShape = tf.shape(features)
         batchSize = featShape[0]
