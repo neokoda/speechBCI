@@ -19,7 +19,7 @@ if gpus:
 else:
     print("⚠️  No GPU detected — running on CPU only.")
 
-baseDir = 'c:/Users/LENOVO/Koding/Semester 8/TA/speechBCI/data'
+baseDir = '/workspace/speechBCI/data'
 ckptDir = os.path.join(baseDir, 'derived', 'rnns', 'baselineRelease')
 
 # Evaluate the RNN on the test partition

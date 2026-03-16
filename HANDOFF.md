@@ -1,6 +1,6 @@
 # Speech BCI: Transformer Experiment Progress
 
-**Last Updated:** 2026-03-16
+**Last Updated:** 2026-03-16 (Session 2)
 
 This document is the primary handoff for anyone resuming work on this thesis project. It covers the long-term goal, what has been built and completed so far, the current state of the codebase, and what needs to be done next.
 
@@ -60,6 +60,9 @@ All modifications from the original Willett et al. repo:
 | `AnalysisExamples/run_round3_experiments.py` | Round 3 runner (top 4 × 20k batches); same OOM retry and cleanup; mixed precision + gradient checkpointing enabled |
 | `AnalysisExamples/run_final_training.py` | Final training runner (top 2 × 100k batches); OOM auto-retry (up to 10×); early stopping patience=20 |
 | `AnalysisExamples/run_cosine_ablation.py` | Cosine annealing ablation (256d model × 200k batches); LR=0.001, cosine decay to 0.0001, patience=30 |
+| `AnalysisExamples/eval_baseline.py` | Evaluates the pre-trained GRU baseline checkpoint on the test partition; reports raw PER without LM |
+| `AnalysisExamples/run_probe_experiments.py` | 30k-batch probe runs for hyperparameter screening (dropout and LR ablations); compares against cosine baseline PER at 30k steps |
+| `AnalysisExamples/run_full_lr015.py` | Full training run with LR=0.015→0.0015 cosine (best probe result); 200k max steps, patience=30 |
 
 ---
 
@@ -138,7 +141,68 @@ Script: `AnalysisExamples/run_cosine_ablation.py`
 
 Results: `experiments/cosine_ablation/cosine_ablation_result.json`
 
-### 5c. Hyperparameter Notes
+### 5c. LR Probe Experiments
+
+The cosine ablation (PER=0.335) plateaued early, suggesting the architecture's capacity hadn't been reached — the LR might be too low. We ran 30k-batch "probe" runs to screen hyperparameters cheaply before committing to full training.
+
+Script: `AnalysisExamples/run_probe_experiments.py`
+
+**Dropout probe (baseline LR=0.001):**
+
+| Probe | Dropout | PER at 30k | Delta vs baseline (0.3697) | Signal |
+|---|---|---|---|---|
+| A | 0.3 | 0.4269 | +0.057 | WORSE |
+
+**Conclusion:** Higher dropout hurts significantly at 256d model size — the model is too small to benefit from stronger regularization.
+
+**LR probes (baseline dropout=0.1):**
+
+| Probe | Peak LR | PER at 30k | Delta vs baseline (0.3697) | Signal |
+|---|---|---|---|---|
+| B1 | 0.003 | 0.3627 | -0.007 | BETTER |
+| B2 | 0.007 | 0.3619 | -0.008 | BETTER |
+| B3 | 0.01 | 0.3557 | -0.014 | BETTER |
+| B4 | 0.015 | 0.3494 | -0.020 | BETTER |
+
+**Conclusion:** Monotonically improving with higher LR, no sign of diminishing returns at 30k steps. Selected LR=0.015 for full training run.
+
+**Probe methodology note:** 30k-step probes are a heuristic (similar to Successive Halving / Hyperband). They can miss configs that converge slowly but reach better final PER — particularly regularization changes like dropout, whose benefits emerge late. The dropout=0.3 result should be interpreted with this caveat.
+
+Results: `experiments/probes/probe_results.json`
+
+### 5d. GRU Baseline Evaluation
+
+Evaluated the pre-trained Willett et al. GRU checkpoint (1024 units, 5 layers, kernel_size=32, stride=4, dropout=0.4, LR=0.02, 10k batches) on the same test partition used for Transformer evaluation.
+
+Script: `AnalysisExamples/eval_baseline.py`
+
+| Model | PER (test partition) | Notes |
+|---|---|---|
+| **GRU baseline (pre-trained)** | **0.1690** | Pre-trained checkpoint from Willett et al., evaluated on sessions 4–18 |
+
+**Decision:** We use the pre-trained checkpoint as the GRU baseline rather than retraining, because: (1) it IS the published Willett et al. model — a stronger comparison point for the thesis, (2) both models evaluate on the same test partition of the same 19-session tfRecords, (3) retraining risks introducing differences that make the comparison less authoritative.
+
+### 5e. Full Training with Higher LR
+
+Based on probe results, ran the 256d model with LR=0.015→0.0015 cosine (15× higher peak than cosine baseline).
+
+Script: `AnalysisExamples/run_full_lr015.py`
+
+| Run | Best PER | At Step | Early Stopped | Notes |
+|---|---|---|---|---|
+| Cosine baseline (LR=0.001) | 0.3351 | 118,500 | Yes (133.5k) | Stable throughout |
+| **LR=0.015** | **0.3157** | **46,500** | **Yes (61.5k)** | **NaN losses after step 58.5k** |
+
+**5.8% relative improvement** over cosine baseline. The higher LR found a better minimum (0.316 vs 0.335) and converged much faster (46.5k vs 118.5k steps).
+
+**Issues observed:**
+- **Overfitting after step 46.5k:** Val PER rose from 0.316→0.332 between steps 46.5k–57.5k while loss/gradients were still normal. The model hit its capacity ceiling and started memorizing.
+- **NaN instability after step 58.5k:** Loss and gradient norms went NaN, likely due to float16 overflow under mixed precision at high LR. The model's weights froze but the best checkpoint (step 46.5k) was already saved.
+- **1 OOM at step 16k:** Recovered automatically via checkpoint retry.
+
+Results: `experiments/full_lr015/full_lr015_result.json`
+
+### 5f. Hyperparameter Notes
 
 **Adam epsilon=0.1**: The optimizer in `neuralSequenceDecoder.py` uses `epsilon=1e-01` (line 224), which is unusually high (standard is 1e-8). This was inherited from the original Willett et al. GRU codebase. It makes Adam more conservative (behaves like SGD+momentum when gradients are small). All architecture search and training results use this value — do NOT change without a separate ablation, as it would invalidate all comparisons.
 
@@ -169,17 +233,7 @@ The Transformer's attention mechanism is O(T²) in memory (T = sequence length, 
 ### ~~7d. Complete Architecture Search (Successive Halving)~~ (DONE)
 ### ~~7e. Cosine Annealing Ablation~~ (DONE — see Section 5b)
 
-### 7f. GRU Baseline Comparison (Next Step)
-Train the original GRU model with the same 19 sessions and evaluation to get a fair PER comparison. The existing `AnalysisExamples/rnn_step2_trainBaselineRNN.py` uses different settings from the original Willett et al. paper (1024 units, kernel_size=32, LR=0.02, 10k batches) vs the yaml config defaults (512 units, kernel_size=14). Need to clarify which settings represent the "true" GRU baseline before running.
-
-**Important**: The GRU's raw PER (CTC greedy decode) has never been measured on our 19-session setup. The notebook `rnn_step3_baselineRNNInference.ipynb` only reports **WER after language model decoding (18.9%)**, which is not comparable to our raw Transformer PER of 0.3351.
-
-**Options:**
-1. Train GRU with original Willett settings (1024 units, kernel_size=32, LR=0.02) — matches the paper
-2. Train GRU with yaml defaults (512 units, kernel_size=14) — matches the config file
-3. Run both and report the better one as the baseline
-
-A runner script `AnalysisExamples/run_gru_baseline.py` was started but not finalized. It uses the yaml defaults (option 2). Consider updating to match the original paper settings (option 1) for a stronger baseline.
+### ~~7f. GRU Baseline Comparison~~ (DONE — see Section 5d)
 
 ### 7g. End-to-End Model (Thesis Contribution 2)
 Once the phoneme decoder is finalized, integrate it with a language model:
@@ -187,11 +241,26 @@ Once the phoneme decoder is finalized, integrate it with a language model:
 - The previous thesis (13521081) experimented with Transformer language models
 - Goal: wire the Transformer phoneme decoder output into the language model decoding pipeline and evaluate WER (word error rate) on the full vocabulary task
 
-### 7h. Further Improvements (Optional Ablations)
-If time permits, the following could potentially improve the Transformer PER further:
-1. **Attention dropout** (`model.attentionDropout`): Currently 0.0. The wiring exists in `models.py`. Setting to 0.05 could help regularization.
-2. **Adam epsilon ablation**: Test standard epsilon=1e-8 vs the current 0.1. Could unlock faster convergence but risky — may destabilize training.
-3. **SpecAugment / data augmentation**: Currently only white noise + constant offset. Adding time/frequency masking requires code changes to the data pipeline.
+### 7h. Error Analysis (Next Step)
+Before making further architectural changes, analyze *what* the Transformer gets wrong vs the GRU to guide improvements:
+1. **Decode phoneme indices to labels** — current decoded_samples.txt stores raw integer indices, need the phoneme vocabulary mapping to make them readable
+2. **Run full val-set inference** on the best Transformer checkpoint (LR=0.015, step 46.5k) and the GRU baseline
+3. **Categorize errors** into substitutions, insertions, deletions — this tells us whether the bottleneck is fine-grained temporal features (substitutions), CTC alignment (insertions/deletions), or sequence length (errors clustering on long sentences)
+4. **Per-session breakdown** — check if errors cluster on specific recording sessions (domain shift)
+
+This analysis directly informs which architectural change matters most (see 7i).
+
+### 7i. Architectural Improvements (After Error Analysis)
+The remaining PER gap (0.316 vs 0.169) is too large to close with hyperparameter tuning alone. Likely architectural changes needed:
+1. **Strided convolutional frontend** — the GRU uses a conv stack (kernel_size=32, stride=4) that downsamples input 4x before recurrent layers. The Transformer operates on full-length sequences (~500 timesteps). Adding temporal downsampling would: (a) make CTC alignment easier (~125 vs ~500 timesteps), (b) provide local feature extraction before global attention, (c) reduce attention's O(T²) cost
+2. **Conformer architecture** — combines convolution + attention in each layer (depthwise separable conv, kernel_size ~15–31). Standard approach in speech recognition
+3. **Relative positional encoding** — current sinusoidal encoding is absolute; relative encoding (e.g., RoPE, ALiBi) may generalize better across variable-length sequences
+
+### 7j. Further Hyperparameter Ablations (Optional)
+Lower priority now that LR tuning has been explored:
+1. **Dropout=0.2 at LR=0.015** — the LR=0.015 full run showed overfitting after step 46.5k; mild regularization increase might help (dropout=0.3 was too aggressive at LR=0.001, but LR=0.015 changes the dynamics)
+2. **Gradient checkpointing ablation** — currently enabled; disabling may give ~20-30% speedup if OOMs don't become too frequent at the 256d model size
+3. **Mixed precision stability** — LR=0.015 run hit NaN losses at step 58.5k, likely float16 overflow; could try disabling mixed precision or using loss scaling to allow higher LR without instability
 
 ---
 
@@ -216,10 +285,19 @@ python AnalysisExamples/run_cosine_ablation.py \
     --output-dir /workspace/speechBCI/experiments/cosine_ablation \
     --gpu 0
 
-# GRU baseline (TODO — script needs to be finalized)
-python AnalysisExamples/run_gru_baseline.py \
+# GRU baseline evaluation (pre-trained checkpoint)
+python AnalysisExamples/eval_baseline.py
+
+# Probe experiments (30k-batch hyperparameter screening)
+python AnalysisExamples/run_probe_experiments.py \
     --data-dir /workspace/speechBCI/data/derived/tfRecords \
-    --output-dir /workspace/speechBCI/experiments/gru_baseline \
+    --output-dir /workspace/speechBCI/experiments/probes \
+    --gpu 0
+
+# Full training with LR=0.015 (best probe result)
+python AnalysisExamples/run_full_lr015.py \
+    --data-dir /workspace/speechBCI/data/derived/tfRecords \
+    --output-dir /workspace/speechBCI/experiments/full_lr015 \
     --gpu 0
 ```
 
@@ -229,7 +307,10 @@ python AnalysisExamples/run_gru_baseline.py \
 
 | Model | Schedule | Best PER | Notes |
 |---|---|---|---|
-| **Transformer 256d_4L_8H_512ff** | **Cosine (0.001→0.0001)** | **0.3351** | **Best result. Early stopped at 133.5k steps.** |
+| **GRU baseline (Willett et al.)** | **Adam, LR=0.02, 10k batches** | **0.1690** | **Pre-trained checkpoint. Target to beat.** |
+| **Transformer 256d_4L_8H_512ff** | **Cosine (0.015→0.0015)** | **0.3157** | **Best Transformer result. Early stopped at 61.5k.** |
+| Transformer 256d_4L_8H_512ff | Cosine (0.001→0.0001) | 0.3351 | Previous best. LR was too low. |
 | Transformer 256d_4L_8H_512ff | Linear (0.0005→0.0) | 0.3671 | LR-limited in the tail |
 | Transformer 512d_4L_8H_2048ff | Linear (0.0005→0.0) | 0.3826 | Larger model, worse result |
-| GRU baseline (Willett et al.) | — | **TBD** | Raw PER not yet measured; WER after LM = 18.9% |
+
+**Current gap: 0.3157 − 0.1690 = 0.147 PER.** LR tuning improved PER by 0.051 (0.367→0.316) but the remaining gap is architectural — the Transformer lacks the GRU's strided convolutional frontend that downsamples input 4x before sequence modeling. Error analysis (Section 7h) should confirm whether this is the primary bottleneck before implementing architectural changes (Section 7i).
