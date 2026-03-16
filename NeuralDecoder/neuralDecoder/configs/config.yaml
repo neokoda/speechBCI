@@ -50,6 +50,9 @@ learnRateEnd: 0.0
 learnRateDecaySteps: 100000
 learnRatePower: 1.0
 
+# LR schedule type: 'polynomial' (default, linear when power=1) or 'cosine'
+lrScheduleType: polynomial
+
 #can optionally specify for only the input layers to train or only the back end
 trainableInput: 1
 trainableBackend: 1

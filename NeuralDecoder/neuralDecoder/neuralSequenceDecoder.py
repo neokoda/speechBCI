@@ -190,23 +190,33 @@ class NeuralSequenceDecoder(object):
 
     def _buildOptimizer(self):
         #define the gradient descent optimizer
-        if self.args['warmUpSteps'] > 0:
+        scheduleType = self.args.get('lrScheduleType', 'polynomial')
+        decay_steps = self.args.get('learnRateDecaySteps', self.args['nBatchesToTrain'])
+        warmup_steps = self.args['warmUpSteps']
+        effective_decay_steps = decay_steps - warmup_steps if warmup_steps > 0 else decay_steps
+
+        if scheduleType == 'cosine':
+            lr_schedule = tf.keras.optimizers.schedules.CosineDecay(
+                initial_learning_rate=self.args['learnRateStart'],
+                decay_steps=effective_decay_steps,
+                alpha=self.args['learnRateEnd'] / self.args['learnRateStart'] if self.args['learnRateStart'] > 0 else 0.0,
+            )
+        else:
             lr_schedule = tf.keras.optimizers.schedules.PolynomialDecay(
                 initial_learning_rate=self.args['learnRateStart'],
-                decay_steps=self.args.get('learnRateDecaySteps', self.args['nBatchesToTrain']) - self.args['warmUpSteps'],
+                decay_steps=effective_decay_steps,
                 end_learning_rate=self.args['learnRateEnd'],
                 power=self.args['learnRatePower'],
             )
+
+        if warmup_steps > 0:
             learning_rate_fn = lrSchedule.WarmUp(
                 initial_learning_rate=self.args['learnRateStart'],
                 decay_schedule_fn=lr_schedule,
-                warmup_steps=self.args['warmUpSteps']
+                warmup_steps=warmup_steps,
             )
         else:
-            learning_rate_fn = tf.keras.optimizers.schedules.PolynomialDecay(self.args['learnRateStart'],
-                                                                             self.args.get('learnRateDecaySteps', self.args['nBatchesToTrain']),
-                                                                             end_learning_rate=self.args['learnRateEnd'],
-                                                                             power=self.args['learnRatePower'], cycle=False, name=None)
+            learning_rate_fn = lr_schedule
 
         self.optimizer = tf.keras.optimizers.Adam(
             beta_1=0.9, beta_2=0.999, epsilon=1e-01, learning_rate=learning_rate_fn)
