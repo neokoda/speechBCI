@@ -1,6 +1,6 @@
 # Speech BCI: Transformer Experiment Progress
 
-**Last Updated:** 2026-03-16 (Session 2)
+**Last Updated:** 2026-03-18 (Session 4 — 512d Model Training)
 
 This document is the primary handoff for anyone resuming work on this thesis project. It covers the long-term goal, what has been built and completed so far, the current state of the codebase, and what needs to be done next.
 
@@ -23,9 +23,9 @@ This repo is the codebase for an undergraduate thesis (TA / Tugas Akhir). The st
 
 ---
 
-## 2. Environment Setup (RunPod)
+## 2. Environment Setup
 
-This project runs on a **RunPod RTX 4090** instance. On every new pod, run the setup script first:
+This project runs on a **vast.ai** GPU instance (previously RunPod RTX 4090). On every new instance, run the setup script first:
 
 ```bash
 bash setup_runpod.sh
@@ -37,7 +37,9 @@ This script:
 3. Installs the `NeuralDecoder` package in editable mode (`pip install -e NeuralDecoder/`)
 4. Runs a smoke test to verify TF detects the GPU and `TransformerEncoder` works
 
-**Why these specific versions?** The default RunPod PyTorch template ships with CUDA 12.4. TF 2.15.0.post1 + cudnn 8.9.7.29 is the combination that works correctly on CUDA 12.4 hardware without requiring a system-level CUDA install.
+**Why these specific versions?** TF 2.15.0.post1 + cudnn 8.9.7.29 is the combination that works correctly on CUDA 12.4 hardware without requiring a system-level CUDA install.
+
+**Important:** The `LD_LIBRARY_PATH` in `setup_runpod.sh` and runner scripts must match the Python version on the instance. RunPod uses Python 3.11 (`/usr/local/lib/python3.11/dist-packages/nvidia`), while vast.ai may use Python 3.10 (`python3.10`). If training runs on CPU instead of GPU, check this path first.
 
 **GPU memory:** `NeuralDecoder/neuralDecoder/main.py` sets a **fixed 20GB memory pool** (via `set_logical_device_configuration`) instead of using `memory_growth=True`. Memory growth mode causes BFC allocator fragmentation over long training runs — the pool fills up with non-contiguous free blocks, and a single long-sequence batch that needs a large contiguous attention matrix then crashes. The fixed pool gives the allocator one large contiguous slab to manage.
 
@@ -63,6 +65,8 @@ All modifications from the original Willett et al. repo:
 | `AnalysisExamples/eval_baseline.py` | Evaluates the pre-trained GRU baseline checkpoint on the test partition; reports raw PER without LM |
 | `AnalysisExamples/run_probe_experiments.py` | 30k-batch probe runs for hyperparameter screening (dropout and LR ablations); compares against cosine baseline PER at 30k steps |
 | `AnalysisExamples/run_full_lr015.py` | Full training run with LR=0.015→0.0015 cosine (best probe result); 200k max steps, patience=30 |
+| `AnalysisExamples/run_512d_lr015.py` | 512d model training with LR=0.015→0.0015 cosine; tests whether larger model benefits from high LR |
+| `AnalysisExamples/error_analysis.py` | Comprehensive error analysis: Needleman-Wunsch alignment, per-phoneme/session/length breakdown |
 
 ---
 
@@ -202,7 +206,26 @@ Script: `AnalysisExamples/run_full_lr015.py`
 
 Results: `experiments/full_lr015/full_lr015_result.json`
 
-### 5f. Hyperparameter Notes
+### 5f. 512d Model with Higher LR
+
+Based on the error analysis finding that the 256d model is capacity-limited (5x smaller than GRU), we tested the 512d_4L_8H_2048ff config with LR=0.015 cosine schedule — it had previously only been tested at LR=0.0005 (PER=0.383).
+
+Script: `AnalysisExamples/run_512d_lr015.py`
+
+| Run | Best PER | At Step | Early Stopped | Notes |
+|---|---|---|---|---|
+| 512d, LR=0.0005 (linear) | 0.3826 | ~100,000 | No | Original final training |
+| **512d, LR=0.015 (cosine)** | **0.2929** | **81,500** | **Yes (96.5k)** | **NaN losses in final ~15k steps** |
+
+**23.5% relative improvement** over the 512d linear baseline, and **7.2% relative improvement** over the best 256d result (0.316). This confirms:
+
+1. **Higher LR benefits the larger model even more** — the 512d model improved by 0.090 (0.383→0.293) vs the 256d's 0.051 (0.367→0.316).
+2. **More capacity helps** — 512d (0.293) now beats 256d (0.316) with the same LR schedule, reversing the ranking from the original linear-decay training.
+3. **NaN instability persists** — gradients went NaN after ~81.5k steps, similar to the 256d LR=0.015 run. The best checkpoint was already saved. A lower LR (e.g., 0.01) or tighter gradient clipping could allow longer stable training and potentially better PER.
+
+Results: `experiments/512d_lr015/512d_lr015_result.json`
+
+### 5g. Hyperparameter Notes
 
 **Adam epsilon=0.1**: The optimizer in `neuralSequenceDecoder.py` uses `epsilon=1e-01` (line 224), which is unusually high (standard is 1e-8). This was inherited from the original Willett et al. GRU codebase. It makes Adam more conservative (behaves like SGD+momentum when gradients are small). All architecture search and training results use this value — do NOT change without a separate ablation, as it would invalidate all comparisons.
 
@@ -235,32 +258,58 @@ The Transformer's attention mechanism is O(T²) in memory (T = sequence length, 
 
 ### ~~7f. GRU Baseline Comparison~~ (DONE — see Section 5d)
 
-### 7g. End-to-End Model (Thesis Contribution 2)
+### 7g. Error Analysis (DONE)
+
+**Script:** `AnalysisExamples/error_analysis.py`
+**Results:** `experiments/error_analysis/error_analysis_results.json`
+
+Ran full inference on both models (600 test samples, sessions 4-18) with Needleman-Wunsch alignment to decompose errors into substitutions, insertions, and deletions.
+
+**IMPORTANT CORRECTION:** The Transformer **already has** the same convolutional frontend as the GRU (`stack_kwargs: kernel_size=32, strides=4` via `tf.image.extract_patches`). The previous claim that the Transformer "operates on full-length sequences (~500 timesteps)" was wrong — both models downsample identically.
+
+| Metric | Transformer | GRU | Delta |
+|---|---|---|---|
+| **Overall PER** | **0.303** | **0.169** | **+0.134** |
+| Substitution rate | 17.7% | 10.6% | +7.2% |
+| Deletion rate | 8.3% | 4.7% | +3.6% |
+| Insertion rate | 4.3% | 1.7% | +2.6% |
+| Vowel error rate | 36.7% | 21.0% | +15.7% |
+| Consonant error rate | 30.9% | 18.5% | +12.3% |
+
+**Key findings:**
+
+1. **Substitutions dominate the gap** (+7.2% of the 13.4% total gap). The Transformer confuses phonemes more — this is a feature-discrimination problem, not a CTC alignment issue. Both models have the same top confusion patterns (IH↔AH, EH↔IH, S↔T, D↔T), but the Transformer makes them ~2x more often.
+
+2. **Vowels are hit hardest** (36.7% vs 21.0% error rate). Vowels require fine-grained spectral discrimination, suggesting the 256d representation may be too small.
+
+3. **Short and long sequences suffer most** — PER gap is largest for sequences <10 phonemes (0.55 vs 0.20) and >50 phonemes (0.44 vs 0.23). The sweet spot (31-40 phonemes) has the smallest gap.
+
+4. **Session-level gap is uniform** (~0.12-0.16 across all 15 sessions). No domain-shift outliers — the Transformer underperforms consistently, not on specific sessions.
+
+5. **Model capacity is the likely bottleneck** — GRU has ~21M params (5×1024 units), Transformer has ~4.2M params (256d). The Transformer is 5x smaller. The error pattern (feature-discrimination-limited, not architecture-limited) supports this hypothesis.
+
+### ~~7i. Scale Up to 512d~~ (DONE — see Section 5f)
+The 512d_4L_8H_2048ff model with LR=0.015 cosine achieved **PER=0.293**, beating the 256d model (0.316). This confirmed the error analysis hypothesis that capacity was the bottleneck.
+
+### 7j. Stabilize 512d Training (LR / Gradient Clipping)
+The 512d LR=0.015 run hit NaN losses after step 81.5k (same issue as the 256d run). The best checkpoint was saved, but longer stable training could yield better PER. Options:
+1. **Lower LR (0.01 or 0.007)** — still much higher than original 0.0005, may avoid NaN while training longer
+2. **Tighter gradient clipping** — current `gradClipValue=10`; try 5 or 1 to prevent explosive gradients under mixed precision
+3. **Disable mixed precision** — eliminates float16 overflow at the cost of ~2x slower training and higher VRAM usage
+
+### 7k. Train with All 24 Sessions
+Current training uses 19 sessions (~6,640 sentences) to match the GRU baseline. The 5 excluded sessions add ~2,160 more sentences. Training both 512d Transformer and GRU on 24 sessions would test whether the Transformer benefits more from additional data (larger models often do). This is a fair comparison as long as both models are retrained on the same data.
+
+### 7l. Architectural Improvements
+1. **Conformer architecture** — combines convolution + attention in each layer (depthwise separable conv, kernel_size ~15–31). Standard approach in speech recognition. The conv component could help with the local feature discrimination that the Transformer struggles with.
+2. **Relative positional encoding** — current sinusoidal encoding is absolute; relative encoding (e.g., RoPE, ALiBi) may generalize better across variable-length sequences. Lower priority given the error analysis results.
+3. **Test other eliminated configs with high LR** — several configs from the architecture search were eliminated after only 1k-5k steps at low LR. With LR=0.015, configs like 512d_4L_4H_2048ff or 512d_6L_4H_1024ff might perform differently.
+
+### 7m. End-to-End Model (Thesis Contribution 2)
 Once the phoneme decoder is finalized, integrate it with a language model:
 - The original Willett et al. uses a 5-gram language model with beam search (code in `LanguageModelDecoder/`)
 - The previous thesis (13521081) experimented with Transformer language models
 - Goal: wire the Transformer phoneme decoder output into the language model decoding pipeline and evaluate WER (word error rate) on the full vocabulary task
-
-### 7h. Error Analysis (Next Step)
-Before making further architectural changes, analyze *what* the Transformer gets wrong vs the GRU to guide improvements:
-1. **Decode phoneme indices to labels** — current decoded_samples.txt stores raw integer indices, need the phoneme vocabulary mapping to make them readable
-2. **Run full val-set inference** on the best Transformer checkpoint (LR=0.015, step 46.5k) and the GRU baseline
-3. **Categorize errors** into substitutions, insertions, deletions — this tells us whether the bottleneck is fine-grained temporal features (substitutions), CTC alignment (insertions/deletions), or sequence length (errors clustering on long sentences)
-4. **Per-session breakdown** — check if errors cluster on specific recording sessions (domain shift)
-
-This analysis directly informs which architectural change matters most (see 7i).
-
-### 7i. Architectural Improvements (After Error Analysis)
-The remaining PER gap (0.316 vs 0.169) is too large to close with hyperparameter tuning alone. Likely architectural changes needed:
-1. **Strided convolutional frontend** — the GRU uses a conv stack (kernel_size=32, stride=4) that downsamples input 4x before recurrent layers. The Transformer operates on full-length sequences (~500 timesteps). Adding temporal downsampling would: (a) make CTC alignment easier (~125 vs ~500 timesteps), (b) provide local feature extraction before global attention, (c) reduce attention's O(T²) cost
-2. **Conformer architecture** — combines convolution + attention in each layer (depthwise separable conv, kernel_size ~15–31). Standard approach in speech recognition
-3. **Relative positional encoding** — current sinusoidal encoding is absolute; relative encoding (e.g., RoPE, ALiBi) may generalize better across variable-length sequences
-
-### 7j. Further Hyperparameter Ablations (Optional)
-Lower priority now that LR tuning has been explored:
-1. **Dropout=0.2 at LR=0.015** — the LR=0.015 full run showed overfitting after step 46.5k; mild regularization increase might help (dropout=0.3 was too aggressive at LR=0.001, but LR=0.015 changes the dynamics)
-2. **Gradient checkpointing ablation** — currently enabled; disabling may give ~20-30% speedup if OOMs don't become too frequent at the 256d model size
-3. **Mixed precision stability** — LR=0.015 run hit NaN losses at step 58.5k, likely float16 overflow; could try disabling mixed precision or using loss scaling to allow higher LR without instability
 
 ---
 
@@ -294,11 +343,20 @@ python AnalysisExamples/run_probe_experiments.py \
     --output-dir /workspace/speechBCI/experiments/probes \
     --gpu 0
 
-# Full training with LR=0.015 (best probe result)
+# Full training with LR=0.015 (256d model)
 python AnalysisExamples/run_full_lr015.py \
     --data-dir /workspace/speechBCI/data/derived/tfRecords \
     --output-dir /workspace/speechBCI/experiments/full_lr015 \
     --gpu 0
+
+# 512d model with LR=0.015 (best overall result)
+python AnalysisExamples/run_512d_lr015.py \
+    --data-dir /workspace/speechBCI/data/derived/tfRecords \
+    --output-dir /workspace/speechBCI/experiments/512d_lr015 \
+    --gpu 0
+
+# Error analysis (Transformer vs GRU)
+python AnalysisExamples/error_analysis.py
 ```
 
 ---
@@ -308,9 +366,10 @@ python AnalysisExamples/run_full_lr015.py \
 | Model | Schedule | Best PER | Notes |
 |---|---|---|---|
 | **GRU baseline (Willett et al.)** | **Adam, LR=0.02, 10k batches** | **0.1690** | **Pre-trained checkpoint. Target to beat.** |
-| **Transformer 256d_4L_8H_512ff** | **Cosine (0.015→0.0015)** | **0.3157** | **Best Transformer result. Early stopped at 61.5k.** |
-| Transformer 256d_4L_8H_512ff | Cosine (0.001→0.0001) | 0.3351 | Previous best. LR was too low. |
+| **Transformer 512d_4L_8H_2048ff** | **Cosine (0.015→0.0015)** | **0.2929** | **Best Transformer result. Early stopped at 96.5k.** |
+| Transformer 256d_4L_8H_512ff | Cosine (0.015→0.0015) | 0.3157 | Previous best. Early stopped at 61.5k. |
+| Transformer 256d_4L_8H_512ff | Cosine (0.001→0.0001) | 0.3351 | LR was too low. |
 | Transformer 256d_4L_8H_512ff | Linear (0.0005→0.0) | 0.3671 | LR-limited in the tail |
-| Transformer 512d_4L_8H_2048ff | Linear (0.0005→0.0) | 0.3826 | Larger model, worse result |
+| Transformer 512d_4L_8H_2048ff | Linear (0.0005→0.0) | 0.3826 | Low LR, larger model underperformed |
 
-**Current gap: 0.3157 − 0.1690 = 0.147 PER.** LR tuning improved PER by 0.051 (0.367→0.316) but the remaining gap is architectural — the Transformer lacks the GRU's strided convolutional frontend that downsamples input 4x before sequence modeling. Error analysis (Section 7h) should confirm whether this is the primary bottleneck before implementing architectural changes (Section 7i).
+**Current gap: 0.293 − 0.169 = 0.124 PER.** The combination of higher LR (0.015 cosine) and larger model (512d) reduced the Transformer PER from 0.367 to 0.293 — a **20% relative improvement** over 3 sessions. Both runs hit NaN instability from mixed precision at high LR, meaning the true optimum may be even lower with a more stable training setup (see Section 7j). The remaining gap is **feature-discrimination-limited** — error analysis (Section 7h) showed substitutions account for 54% of the gap, with vowels hardest hit. Both models share the same conv frontend (kernel=32, stride=4).
