@@ -1,0 +1,27 @@
+{
+  "best_config": "transformer_256d_4L_8H_512ff",
+  "all_results": [
+    {
+      "name": "transformer_256d_4L_8H_512ff",
+      "d_model": 256,
+      "num_layers": 4,
+      "nhead": 8,
+      "d_ff": 512,
+      "val_per": 0.367063,
+      "status": "ok",
+      "duration_min": 20.13363275,
+      "final_step": 100000
+    },
+    {
+      "name": "transformer_512d_4L_8H_2048ff",
+      "d_model": 512,
+      "num_layers": 4,
+      "nhead": 8,
+      "d_ff": 2048,
+      "val_per": 0.382622,
+      "status": "ok",
+      "duration_min": 46.12325725,
+      "final_step": 100000
+    }
+  ]
+}

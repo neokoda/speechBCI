@@ -102,3 +102,6 @@ earlyStopMinDelta: 0.0001
 # Mixed precision: use float16 activations to reduce VRAM usage (~2x reduction).
 # Weights stay float32. Output logit layer is forced to float32 for CTC loss stability.
 mixedPrecision: false
+
+# Adam optimizer epsilon (default 0.1 for GRU compatibility)
+adamEpsilon: 0.1

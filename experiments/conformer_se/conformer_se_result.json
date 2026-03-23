@@ -1,0 +1,44 @@
+{
+  "config": {
+    "name": "conformer_512d_4L_se_r8",
+    "d_model": 512,
+    "num_layers": 4,
+    "nhead": 8,
+    "d_ff": 2048,
+    "conv_kernel_size": 31,
+    "se_reduction": 8
+  },
+  "fixed": {
+    "nBatchesToTrain": "150000",
+    "batchesPerVal": "500",
+    "batchSize": "32",
+    "learnRateStart": "0.04",
+    "learnRateEnd": "0.004",
+    "learnRateDecaySteps": "100000",
+    "lrScheduleType": "cosine",
+    "warmUpSteps": "1000",
+    "gradClipValue": "10",
+    "lossType": "ctc",
+    "smoothInputs": "1",
+    "smoothKernelSD": "2",
+    "earlyStopPatience": "30",
+    "earlyStopMinDelta": "0.0001"
+  },
+  "spec_augment": {
+    "freq_mask_param": 27,
+    "time_mask_param": 10,
+    "n_freq_masks": 2,
+    "n_time_masks": 2
+  },
+  "squeeze_excitation": {
+    "reduction": 8,
+    "bottleneck": 32
+  },
+  "best_per": 0.184136,
+  "best_step": 85000,
+  "final_step": 100000,
+  "early_stopped": true,
+  "duration_min": 34.84470498333334,
+  "prev_best_per": 0.185,
+  "gru_baseline_per": 0.169
+}

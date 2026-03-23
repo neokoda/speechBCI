@@ -1,0 +1,31 @@
+{
+  "config": {
+    "name": "conformer_vanilla_24sess",
+    "d_model": 512,
+    "num_layers": 4,
+    "nhead": 8,
+    "d_ff": 2048,
+    "conv_kernel_size": 31
+  },
+  "fixed": {
+    "nBatchesToTrain": "150000",
+    "batchesPerVal": "500",
+    "batchSize": "32",
+    "learnRateStart": "0.04",
+    "learnRateEnd": "0.004",
+    "learnRateDecaySteps": "100000",
+    "lrScheduleType": "cosine",
+    "warmUpSteps": "1000",
+    "gradClipValue": "10",
+    "lossType": "ctc",
+    "smoothInputs": "1",
+    "smoothKernelSD": "2",
+    "earlyStopPatience": "50",
+    "earlyStopMinDelta": "0.0001"
+  },
+  "best_per": 0.169989,
+  "best_step": 116500,
+  "final_step": 141500,
+  "early_stopped": true,
+  "duration_min": 124.03657275
+}

@@ -1,0 +1,158 @@
+{
+  "promoted": [
+    "transformer_256d_4L_8H_512ff",
+    "transformer_512d_6L_4H_1024ff",
+    "transformer_256d_4L_4H_1024ff",
+    "transformer_512d_4L_4H_1024ff",
+    "transformer_512d_4L_8H_2048ff",
+    "transformer_512d_6L_8H_2048ff",
+    "transformer_256d_6L_4H_512ff",
+    "transformer_512d_4L_4H_2048ff"
+  ],
+  "all_results": [
+    {
+      "name": "transformer_256d_4L_8H_512ff",
+      "d_model": 256,
+      "num_layers": 4,
+      "nhead": 8,
+      "d_ff": 512,
+      "val_per": 0.6102817493692179,
+      "status": "cached"
+    },
+    {
+      "name": "transformer_512d_6L_4H_1024ff",
+      "d_model": 512,
+      "num_layers": 6,
+      "nhead": 4,
+      "d_ff": 1024,
+      "val_per": 0.6103868797308662,
+      "status": "cached"
+    },
+    {
+      "name": "transformer_256d_4L_4H_1024ff",
+      "d_model": 256,
+      "num_layers": 4,
+      "nhead": 4,
+      "d_ff": 1024,
+      "val_per": 0.611490748528175,
+      "status": "cached"
+    },
+    {
+      "name": "transformer_512d_4L_4H_1024ff",
+      "d_model": 512,
+      "num_layers": 4,
+      "nhead": 4,
+      "d_ff": 1024,
+      "val_per": 0.6154331370899916,
+      "status": "cached"
+    },
+    {
+      "name": "transformer_512d_4L_8H_2048ff",
+      "d_model": 512,
+      "num_layers": 4,
+      "nhead": 8,
+      "d_ff": 2048,
+      "val_per": 0.6291000841042893,
+      "status": "cached"
+    },
+    {
+      "name": "transformer_512d_6L_8H_2048ff",
+      "d_model": 512,
+      "num_layers": 6,
+      "nhead": 8,
+      "d_ff": 2048,
+      "val_per": 0.6436606391925989,
+      "status": "cached"
+    },
+    {
+      "name": "transformer_256d_6L_4H_512ff",
+      "d_model": 256,
+      "num_layers": 6,
+      "nhead": 4,
+      "d_ff": 512,
+      "val_per": 0.6492851135407905,
+      "status": "cached"
+    },
+    {
+      "name": "transformer_512d_4L_4H_2048ff",
+      "d_model": 512,
+      "num_layers": 4,
+      "nhead": 4,
+      "d_ff": 2048,
+      "val_per": 0.6505992430613962,
+      "status": "cached"
+    },
+    {
+      "name": "transformer_512d_4L_8H_1024ff",
+      "d_model": 512,
+      "num_layers": 4,
+      "nhead": 8,
+      "d_ff": 1024,
+      "val_per": 0.6513351555929352,
+      "status": "cached"
+    },
+    {
+      "name": "transformer_512d_6L_8H_1024ff",
+      "d_model": 512,
+      "num_layers": 6,
+      "nhead": 8,
+      "d_ff": 1024,
+      "val_per": 0.6520185029436502,
+      "status": "cached"
+    },
+    {
+      "name": "transformer_256d_4L_8H_1024ff",
+      "d_model": 256,
+      "num_layers": 4,
+      "nhead": 8,
+      "d_ff": 1024,
+      "val_per": 0.6537005887300252,
+      "status": "cached"
+    },
+    {
+      "name": "transformer_512d_6L_4H_2048ff",
+      "d_model": 512,
+      "num_layers": 6,
+      "nhead": 4,
+      "d_ff": 2048,
+      "val_per": 0.6539634146341463,
+      "status": "cached"
+    },
+    {
+      "name": "transformer_256d_6L_4H_1024ff",
+      "d_model": 256,
+      "num_layers": 6,
+      "nhead": 4,
+      "d_ff": 1024,
+      "val_per": 0.6623738435660219,
+      "status": "cached"
+    },
+    {
+      "name": "transformer_256d_6L_8H_512ff",
+      "d_model": 256,
+      "num_layers": 6,
+      "nhead": 8,
+      "d_ff": 512,
+      "val_per": 0.6627943650126157,
+      "status": "cached"
+    },
+    {
+      "name": "transformer_256d_4L_4H_512ff",
+      "d_model": 256,
+      "num_layers": 4,
+      "nhead": 4,
+      "d_ff": 512,
+      "val_per": 0.6644764507989908,
+      "status": "cached"
+    },
+    {
+      "name": "transformer_256d_6L_8H_1024ff",
+      "d_model": 256,
+      "num_layers": 6,
+      "nhead": 8,
+      "d_ff": 1024,
+      "val_per": 0.6660534062237174,
+      "status": "cached"
+    }
+  ]
+}

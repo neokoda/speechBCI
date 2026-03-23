@@ -1,0 +1,5 @@
+rank,config_name,d_model,num_layers,nhead,d_ff,round2_val_per,round3_val_per,status,duration_min,final_step
+1,transformer_256d_4L_8H_512ff,256,4,8,512,0.575221,0.498423,ok,2.7666068999999998,20000
+2,transformer_512d_4L_8H_2048ff,512,4,8,2048,0.578953,0.501156,ok,2.9823114333333334,20000
+3,transformer_512d_4L_4H_2048ff,512,4,4,2048,0.580688,0.50368,cached,,20000
+4,transformer_512d_6L_4H_1024ff,512,6,4,1024,0.579163,0.505204,cached,,20000

@@ -1,6 +1,6 @@
 # Speech BCI: Transformer Experiment Progress
 
-**Last Updated:** 2026-03-18 (Session 4 — 512d Model Training)
+**Last Updated:** 2026-03-19 (Session 5 — LossScaleOptimizer, Scaling Tests, Conformer)
 
 This document is the primary handoff for anyone resuming work on this thesis project. It covers the long-term goal, what has been built and completed so far, the current state of the codebase, and what needs to be done next.
 
@@ -51,8 +51,9 @@ All modifications from the original Willett et al. repo:
 
 | File | Change |
 |---|---|
-| `NeuralDecoder/neuralDecoder/models.py` | Added `TransformerEncoder` model class with gradient checkpointing (`tf.recompute_grad`); output Dense layer forced to `dtype='float32'` for CTC stability under mixed precision; dtype-safe scaling and positional encoding addition |
-| `NeuralDecoder/neuralDecoder/neuralSequenceDecoder.py` | Added `TransformerEncoder` instantiation (with `gradientCheckpointing` passthrough); patience-based early stopping (`earlyStopPatience`, `earlyStopMinDelta`); cosine annealing LR schedule (`lrScheduleType: cosine`); dtype-safe normalization layer (`tf.cast` for mixed precision) |
+| `NeuralDecoder/neuralDecoder/models.py` | Added `TransformerEncoder` model class with gradient checkpointing (`tf.recompute_grad`); output Dense layer forced to `dtype='float32'` for CTC stability under mixed precision; dtype-safe scaling and positional encoding addition. Added `ConformerConvModule`, `ConformerBlock`, and `ConformerEncoder` classes (Macaron-style FFN + MHSA + depthwise conv module). |
+| `NeuralDecoder/neuralDecoder/neuralSequenceDecoder.py` | Added `TransformerEncoder` instantiation (with `gradientCheckpointing` passthrough); patience-based early stopping (`earlyStopPatience`, `earlyStopMinDelta`); cosine annealing LR schedule (`lrScheduleType: cosine`); dtype-safe normalization layer (`tf.cast` for mixed precision). Added `LossScaleOptimizer` wrapping for stable mixed precision training. Added `ConformerEncoder` instantiation (`modelType: conformer`). |
+| `NeuralDecoder/neuralDecoder/configs/model/conformer_stack_inputNet.yaml` | New config file for the Conformer model (`modelType: conformer`, `convKernelSize: 31`, same stack_kwargs and inputNetwork as Transformer) |
 | `NeuralDecoder/neuralDecoder/configs/config.yaml` | Added `earlyStopPatience: 0`, `earlyStopMinDelta: 0.0`, `mixedPrecision: false`, and `lrScheduleType: polynomial` defaults |
 | `NeuralDecoder/neuralDecoder/configs/model/transformer_stack_inputNet.yaml` | New config file for the Transformer model (includes `gradientCheckpointing: false` default) |
 | `NeuralDecoder/neuralDecoder/main.py` | Fixed 20GB GPU memory pool; mixed precision activation (`tf.keras.mixed_precision.set_global_policy('mixed_float16')` when `mixedPrecision=true`) |
@@ -66,6 +67,11 @@ All modifications from the original Willett et al. repo:
 | `AnalysisExamples/run_probe_experiments.py` | 30k-batch probe runs for hyperparameter screening (dropout and LR ablations); compares against cosine baseline PER at 30k steps |
 | `AnalysisExamples/run_full_lr015.py` | Full training run with LR=0.015→0.0015 cosine (best probe result); 200k max steps, patience=30 |
 | `AnalysisExamples/run_512d_lr015.py` | 512d model training with LR=0.015→0.0015 cosine; tests whether larger model benefits from high LR |
+| `AnalysisExamples/run_512d_lr015_lso.py` | 512d with LR=0.015 + LossScaleOptimizer; stable mixed precision training |
+| `AnalysisExamples/run_512d_lr020_lso.py` | 512d with LR=0.02 + LSO; tested higher LR (too aggressive) |
+| `AnalysisExamples/run_768d_lr015_lso.py` | 768d with LR=0.015 + LSO; tested wider model (no improvement) |
+| `AnalysisExamples/run_512d_6L_lr015_lso.py` | 512d 6-layer with LR=0.015 + LSO; tested deeper model (no improvement) |
+| `AnalysisExamples/run_conformer_512d_lr015_lso.py` | Conformer 512d with LR=0.015 + LSO; conv_kernel_size=31, best overall result |
 | `AnalysisExamples/error_analysis.py` | Comprehensive error analysis: Needleman-Wunsch alignment, per-phoneme/session/length breakdown |
 
 ---
@@ -225,7 +231,52 @@ Script: `AnalysisExamples/run_512d_lr015.py`
 
 Results: `experiments/512d_lr015/512d_lr015_result.json`
 
-### 5g. Hyperparameter Notes
+### 5g. LossScaleOptimizer + 512d (Best Transformer Result)
+
+The 512d LR=0.015 run (Section 5f) hit NaN losses after step 81.5k. Root cause: float16 overflow in mixed precision — large activations produce gradients that exceed float16 range (~65504). Fix: wrapped the Adam optimizer with `tf.keras.mixed_precision.LossScaleOptimizer` (LSO), which dynamically scales the loss to keep gradients in float16 range, halves the scale on NaN batches, and doubles it on success.
+
+Script: `AnalysisExamples/run_512d_lr015_lso.py`
+
+| Run | Best PER | At Step | Early Stopped | Notes |
+|---|---|---|---|---|
+| 512d, LR=0.015 (no LSO) | 0.2929 | 81,500 | Yes (96.5k) | NaN after 81.5k |
+| **512d, LR=0.015 + LSO** | **0.2754** | **83,000** | **Yes (98k)** | **Stable throughout, no NaN** |
+
+**6.0% relative improvement.** LSO eliminated all NaN instability, allowing the model to train longer and find a better minimum.
+
+Results: `experiments/512d_lr015_lso/512d_lr015_lso_result.json`
+
+### 5h. Scaling and LR Experiments
+
+With LSO solving the stability issue, we tested whether more capacity or higher LR could close the gap further.
+
+Scripts: `run_512d_lr020_lso.py`, `run_768d_lr015_lso.py`, `run_512d_6L_lr015_lso.py`
+
+| Run | Params | Best PER | At Step | Notes |
+|---|---|---|---|---|
+| 512d 4L, LR=0.015+LSO | 16M | **0.2754** | 83,000 | Baseline (Section 5g) |
+| 512d 4L, LR=0.02+LSO | 16M | 0.2947 | — | LR too high, overshot |
+| 768d 4L, LR=0.015+LSO | 36M | 0.2785 | — | Width doesn't help |
+| 512d 6L, LR=0.015+LSO | 20M | 0.2760 | — | Depth doesn't help |
+
+**Key finding: The bottleneck is architectural, not capacity.** Scaling width (768d, 2.25x params) and depth (6L, 1.25x params) gave no improvement over 512d 4L. Pure self-attention has reached its ceiling on this task — it lacks inductive bias for local temporal patterns in neural signals.
+
+### 5i. Conformer (Best Overall Result)
+
+Based on the scaling experiments showing an architectural bottleneck, we implemented a Conformer encoder — each block uses Macaron-style dual half-step FFNs (Swish activation), multi-head self-attention, and a convolution module (pointwise conv → GLU → depthwise conv1D kernel=31 → BatchNorm → Swish → pointwise conv). This adds explicit local temporal modeling that pure self-attention lacks.
+
+Script: `AnalysisExamples/run_conformer_512d_lr015_lso.py`
+
+| Run | Best PER | At Step | Early Stopped | Notes |
+|---|---|---|---|---|
+| Transformer 512d+LSO | 0.2754 | 83,000 | Yes (98k) | Best pure Transformer |
+| **Conformer 512d+LSO** | **0.2130** | **60,500** | **Yes (75.5k)** | **22.6% relative improvement** |
+
+**The Conformer achieved PER=0.2130**, a major improvement over the best Transformer (0.2754). The depthwise convolution module captures local temporal patterns that self-attention alone cannot efficiently learn. The model converged faster (best at 60.5k vs 83k) and early stopped at 75.5k — it plateaued quickly, suggesting the LR schedule (cosine over 300k steps) is too stretched for its convergence speed.
+
+Results: `experiments/conformer_512d_lr015_lso/conformer_512d_lr015_lso_result.json`
+
+### 5j. Hyperparameter Notes
 
 **Adam epsilon=0.1**: The optimizer in `neuralSequenceDecoder.py` uses `epsilon=1e-01` (line 224), which is unusually high (standard is 1e-8). This was inherited from the original Willett et al. GRU codebase. It makes Adam more conservative (behaves like SGD+momentum when gradients are small). All architecture search and training results use this value — do NOT change without a separate ablation, as it would invalidate all comparisons.
 
@@ -291,21 +342,31 @@ Ran full inference on both models (600 test samples, sessions 4-18) with Needlem
 ### ~~7i. Scale Up to 512d~~ (DONE — see Section 5f)
 The 512d_4L_8H_2048ff model with LR=0.015 cosine achieved **PER=0.293**, beating the 256d model (0.316). This confirmed the error analysis hypothesis that capacity was the bottleneck.
 
-### 7j. Stabilize 512d Training (LR / Gradient Clipping)
-The 512d LR=0.015 run hit NaN losses after step 81.5k (same issue as the 256d run). The best checkpoint was saved, but longer stable training could yield better PER. Options:
-1. **Lower LR (0.01 or 0.007)** — still much higher than original 0.0005, may avoid NaN while training longer
-2. **Tighter gradient clipping** — current `gradClipValue=10`; try 5 or 1 to prevent explosive gradients under mixed precision
-3. **Disable mixed precision** — eliminates float16 overflow at the cost of ~2x slower training and higher VRAM usage
+### ~~7j. Stabilize 512d Training~~ (DONE — see Section 5g)
+LossScaleOptimizer eliminated all NaN instability. PER improved from 0.2929 to 0.2754.
 
-### 7k. Train with All 24 Sessions
-Current training uses 19 sessions (~6,640 sentences) to match the GRU baseline. The 5 excluded sessions add ~2,160 more sentences. Training both 512d Transformer and GRU on 24 sessions would test whether the Transformer benefits more from additional data (larger models often do). This is a fair comparison as long as both models are retrained on the same data.
+### ~~7k. Scaling Experiments~~ (DONE — see Section 5h)
+Tested LR=0.02 (too high), 768d (no gain), 6L (no gain). Proved the bottleneck is architectural, not capacity.
 
-### 7l. Architectural Improvements
-1. **Conformer architecture** — combines convolution + attention in each layer (depthwise separable conv, kernel_size ~15–31). Standard approach in speech recognition. The conv component could help with the local feature discrimination that the Transformer struggles with.
-2. **Relative positional encoding** — current sinusoidal encoding is absolute; relative encoding (e.g., RoPE, ALiBi) may generalize better across variable-length sequences. Lower priority given the error analysis results.
-3. **Test other eliminated configs with high LR** — several configs from the architecture search were eliminated after only 1k-5k steps at low LR. With LR=0.015, configs like 512d_4L_4H_2048ff or 512d_6L_4H_1024ff might perform differently.
+### ~~7l. Conformer Architecture~~ (DONE — see Section 5i)
+Implemented and trained Conformer encoder. PER=0.2130, a 22.6% improvement over pure Transformer. Confirms local temporal modeling (depthwise conv) is the key missing ingredient.
 
-### 7m. End-to-End Model (Thesis Contribution 2)
+### 7m. Conformer LR Schedule Tuning
+The Conformer early stopped at 75.5k steps (best at 60.5k) with a 300k-step cosine schedule — it converged fast but couldn't refine because the LR was still high (~0.013 at step 60k). The schedule is mismatched to the Conformer's convergence speed.
+
+**Next experiment:** Shorter cosine cycle — `learnRateDecaySteps=100000` instead of 300k, keeping same start/end LR (0.015→0.0015). At step 60k, the LR would be ~0.004 instead of ~0.013, allowing fine-tuning at the plateau. If it still early stops before LR drops enough, try a lower floor (0.0001).
+
+### 7n. Additional Conformer Improvements
+After LR schedule tuning:
+1. **More Conformer layers (6L)** — unlike pure Transformer where 6L didn't help, each Conformer layer has a conv module, so more layers = richer local+global hierarchy
+2. **Larger conv kernel (63 or 127)** — current kernel=31 sees ±15 timesteps; neural signals may have longer temporal dependencies
+3. **Lower dropout (0.05)** — early stopping at 75k suggests possible underfitting, not overfitting
+4. **All 24 sessions** — more training data
+
+### 7o. Train with All 24 Sessions
+Current training uses 19 sessions (~6,640 sentences) to match the GRU baseline. The 5 excluded sessions add ~2,160 more sentences. Training both Conformer and GRU on 24 sessions would test whether the Conformer benefits more from additional data. Fair comparison requires retraining both.
+
+### 7p. End-to-End Model (Thesis Contribution 2)
 Once the phoneme decoder is finalized, integrate it with a language model:
 - The original Willett et al. uses a 5-gram language model with beam search (code in `LanguageModelDecoder/`)
 - The previous thesis (13521081) experimented with Transformer language models
@@ -366,10 +427,12 @@ python AnalysisExamples/error_analysis.py
 | Model | Schedule | Best PER | Notes |
 |---|---|---|---|
 | **GRU baseline (Willett et al.)** | **Adam, LR=0.02, 10k batches** | **0.1690** | **Pre-trained checkpoint. Target to beat.** |
-| **Transformer 512d_4L_8H_2048ff** | **Cosine (0.015→0.0015)** | **0.2929** | **Best Transformer result. Early stopped at 96.5k.** |
-| Transformer 256d_4L_8H_512ff | Cosine (0.015→0.0015) | 0.3157 | Previous best. Early stopped at 61.5k. |
-| Transformer 256d_4L_8H_512ff | Cosine (0.001→0.0001) | 0.3351 | LR was too low. |
-| Transformer 256d_4L_8H_512ff | Linear (0.0005→0.0) | 0.3671 | LR-limited in the tail |
-| Transformer 512d_4L_8H_2048ff | Linear (0.0005→0.0) | 0.3826 | Low LR, larger model underperformed |
+| **Conformer 512d_4L_8H_2048ff** | **Cosine (0.015→0.0015) + LSO** | **0.2130** | **Best result. Early stopped at 75.5k. Conv kernel=31.** |
+| Transformer 512d_4L_8H_2048ff + LSO | Cosine (0.015→0.0015) | 0.2754 | Best pure Transformer. Stable with LSO. |
+| Transformer 512d_4L_8H_2048ff | Cosine (0.015→0.0015) | 0.2929 | NaN after 81.5k (no LSO). |
+| Transformer 512d 6L + LSO | Cosine (0.015→0.0015) | 0.2760 | More depth didn't help. |
+| Transformer 768d 4L + LSO | Cosine (0.015→0.0015) | 0.2785 | More width didn't help. |
+| Transformer 512d, LR=0.02 + LSO | Cosine (0.02→0.002) | 0.2947 | LR too high. |
+| Transformer 256d_4L_8H_512ff | Cosine (0.015→0.0015) | 0.3157 | Capacity-limited at 256d. |
 
-**Current gap: 0.293 − 0.169 = 0.124 PER.** The combination of higher LR (0.015 cosine) and larger model (512d) reduced the Transformer PER from 0.367 to 0.293 — a **20% relative improvement** over 3 sessions. Both runs hit NaN instability from mixed precision at high LR, meaning the true optimum may be even lower with a more stable training setup (see Section 7j). The remaining gap is **feature-discrimination-limited** — error analysis (Section 7h) showed substitutions account for 54% of the gap, with vowels hardest hit. Both models share the same conv frontend (kernel=32, stride=4).
+**Current gap: 0.213 − 0.169 = 0.044 PER.** The Conformer reduced PER from 0.293 (best Transformer) to 0.213 — a **27% relative improvement**. The depthwise convolution module provides local temporal modeling that pure self-attention cannot efficiently learn. The Conformer early stopped quickly (75.5k steps with a 300k schedule), suggesting the LR schedule is too stretched for its convergence speed. A shorter cosine cycle (100k steps) should allow the model to fine-tune at the plateau and potentially close more of the remaining gap. See Section 7m for next steps.

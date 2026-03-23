@@ -1,0 +1,712 @@
+{
+  "transformer": {
+    "per": 0.30280677627055075,
+    "substitutions": 2837,
+    "deletions": 1327,
+    "insertions": 680,
+    "sub_rate": 0.17734575232856162,
+    "del_rate": 0.0829530536975683,
+    "ins_rate": 0.04250797024442083,
+    "vowel_error_rate": 0.36718430731507967,
+    "consonant_error_rate": 0.3088433540037746,
+    "top_substitutions": [
+      [
+        [
+          "S",
+          "T"
+        ],
+        46
+      ],
+      [
+        [
+          "IH",
+          "AH"
+        ],
+        42
+      ],
+      [
+        [
+          "EH",
+          "IH"
+        ],
+        38
+      ],
+      [
+        [
+          "AH",
+          "IH"
+        ],
+        32
+      ],
+      [
+        [
+          "D",
+          "T"
+        ],
+        28
+      ],
+      [
+        [
+          "NG",
+          "N"
+        ],
+        27
+      ],
+      [
+        [
+          "AH",
+          "AA"
+        ],
+        27
+      ],
+      [
+        [
+          "IH",
+          "EH"
+        ],
+        25
+      ],
+      [
+        [
+          "T",
+          "D"
+        ],
+        24
+      ],
+      [
+        [
+          "R",
+          "ER"
+        ],
+        23
+      ],
+      [
+        [
+          "AY",
+          "AH"
+        ],
+        22
+      ],
+      [
+        [
+          "AE",
+          "EH"
+        ],
+        21
+      ],
+      [
+        [
+          "IY",
+          "IH"
+        ],
+        21
+      ],
+      [
+        [
+          "R",
+          "AH"
+        ],
+        21
+      ],
+      [
+        [
+          "EH",
+          "AE"
+        ],
+        20
+      ],
+      [
+        [
+          "IH",
+          "N"
+        ],
+        20
+      ],
+      [
+        [
+          "T",
+          "S"
+        ],
+        20
+      ],
+      [
+        [
+          "EY",
+          "IY"
+        ],
+        19
+      ],
+      [
+        [
+          "EY",
+          "EH"
+        ],
+        19
+      ],
+      [
+        [
+          "ER",
+          "R"
+        ],
+        19
+      ]
+    ],
+    "top_insertions": [
+      [
+        "T",
+        69
+      ],
+      [
+        "S",
+        49
+      ],
+      [
+        "AH",
+        40
+      ],
+      [
+        "R",
+        40
+      ],
+      [
+        "D",
+        37
+      ],
+      [
+        "IY",
+        33
+      ],
+      [
+        "IH",
+        33
+      ],
+      [
+        "N",
+        31
+      ],
+      [
+        "L",
+        26
+      ],
+      [
+        "Z",
+        25
+      ]
+    ],
+    "top_deletions": [
+      [
+        "T",
+        119
+      ],
+      [
+        "AH",
+        112
+      ],
+      [
+        "S",
+        103
+      ],
+      [
+        "R",
+        101
+      ],
+      [
+        "D",
+        94
+      ],
+      [
+        "IH",
+        84
+      ],
+      [
+        "EH",
+        49
+      ],
+      [
+        "Z",
+        46
+      ],
+      [
+        "K",
+        40
+      ],
+      [
+        "IY",
+        39
+      ]
+    ],
+    "per_by_length": {
+      "31-40": {
+        "per": 0.29138283378746593,
+        "n_samples": 168
+      },
+      "11-20": {
+        "per": 0.30987821380243574,
+        "n_samples": 176
+      },
+      "21-30": {
+        "per": 0.29741616272677296,
+        "n_samples": 216
+      },
+      "41-50": {
+        "per": 0.3299319727891156,
+        "n_samples": 34
+      },
+      "51+": {
+        "per": 0.44144144144144143,
+        "n_samples": 4
+      },
+      "1-10": {
+        "per": 0.55,
+        "n_samples": 2
+      }
+    },
+    "per_session": {
+      "t12.2022.05.24": {
+        "per": 0.2717488789237668,
+        "n_samples": 40,
+        "total_edit_distance": 303,
+        "total_true_length": 1115
+      },
+      "t12.2022.05.26": {
+        "per": 0.2824858757062147,
+        "n_samples": 40,
+        "total_edit_distance": 300,
+        "total_true_length": 1062
+      },
+      "t12.2022.06.02": {
+        "per": 0.28098391674550616,
+        "n_samples": 40,
+        "total_edit_distance": 297,
+        "total_true_length": 1057
+      },
+      "t12.2022.06.07": {
+        "per": 0.3172905525846702,
+        "n_samples": 40,
+        "total_edit_distance": 356,
+        "total_true_length": 1122
+      },
+      "t12.2022.06.14": {
+        "per": 0.29880478087649404,
+        "n_samples": 40,
+        "total_edit_distance": 375,
+        "total_true_length": 1255
+      },
+      "t12.2022.06.16": {
+        "per": 0.3675,
+        "n_samples": 40,
+        "total_edit_distance": 441,
+        "total_true_length": 1200
+      },
+      "t12.2022.06.21": {
+        "per": 0.34995625546806647,
+        "n_samples": 40,
+        "total_edit_distance": 400,
+        "total_true_length": 1143
+      },
+      "t12.2022.06.28": {
+        "per": 0.32620817843866173,
+        "n_samples": 40,
+        "total_edit_distance": 351,
+        "total_true_length": 1076
+      },
+      "t12.2022.07.05": {
+        "per": 0.2729331823329558,
+        "n_samples": 40,
+        "total_edit_distance": 241,
+        "total_true_length": 883
+      },
+      "t12.2022.07.14": {
+        "per": 0.2925958965209634,
+        "n_samples": 40,
+        "total_edit_distance": 328,
+        "total_true_length": 1121
+      },
+      "t12.2022.07.21": {
+        "per": 0.2933212996389892,
+        "n_samples": 40,
+        "total_edit_distance": 325,
+        "total_true_length": 1108
+      },
+      "t12.2022.07.27": {
+        "per": 0.28994708994708995,
+        "n_samples": 40,
+        "total_edit_distance": 274,
+        "total_true_length": 945
+      },
+      "t12.2022.08.02": {
+        "per": 0.28492239467849223,
+        "n_samples": 40,
+        "total_edit_distance": 257,
+        "total_true_length": 902
+      },
+      "t12.2022.08.11": {
+        "per": 0.31786771964461996,
+        "n_samples": 40,
+        "total_edit_distance": 322,
+        "total_true_length": 1013
+      },
+      "t12.2022.08.13": {
+        "per": 0.27537688442211056,
+        "n_samples": 40,
+        "total_edit_distance": 274,
+        "total_true_length": 995
+      }
+    }
+  },
+  "gru": {
+    "per": 0.16890667000062512,
+    "substitutions": 1689,
+    "deletions": 746,
+    "insertions": 267,
+    "sub_rate": 0.10558229668062762,
+    "del_rate": 0.046633743826967555,
+    "ins_rate": 0.016690629493029942,
+    "vowel_error_rate": 0.21005312627707398,
+    "consonant_error_rate": 0.18549474251819897,
+    "top_substitutions": [
+      [
+        [
+          "IH",
+          "AH"
+        ],
+        29
+      ],
+      [
+        [
+          "AH",
+          "IH"
+        ],
+        28
+      ],
+      [
+        [
+          "IH",
+          "EH"
+        ],
+        28
+      ],
+      [
+        [
+          "T",
+          "D"
+        ],
+        24
+      ],
+      [
+        [
+          "IY",
+          "IH"
+        ],
+        23
+      ],
+      [
+        [
+          "S",
+          "T"
+        ],
+        23
+      ],
+      [
+        [
+          "EH",
+          "IH"
+        ],
+        19
+      ],
+      [
+        [
+          "EH",
+          "AE"
+        ],
+        17
+      ],
+      [
+        [
+          "AE",
+          "EH"
+        ],
+        16
+      ],
+      [
+        [
+          "R",
+          "AH"
+        ],
+        16
+      ],
+      [
+        [
+          "D",
+          "T"
+        ],
+        14
+      ],
+      [
+        [
+          "Z",
+          "S"
+        ],
+        14
+      ],
+      [
+        [
+          "W",
+          "R"
+        ],
+        13
+      ],
+      [
+        [
+          "AH",
+          "AA"
+        ],
+        13
+      ],
+      [
+        [
+          "AE",
+          "AH"
+        ],
+        12
+      ],
+      [
+        [
+          "EH",
+          "AH"
+        ],
+        12
+      ],
+      [
+        [
+          "T",
+          "S"
+        ],
+        12
+      ],
+      [
+        [
+          "EY",
+          "IY"
+        ],
+        12
+      ],
+      [
+        [
+          "K",
+          "T"
+        ],
+        12
+      ],
+      [
+        [
+          "AY",
+          "AH"
+        ],
+        11
+      ]
+    ],
+    "top_insertions": [
+      [
+        "T",
+        39
+      ],
+      [
+        "S",
+        30
+      ],
+      [
+        "AH",
+        22
+      ],
+      [
+        "R",
+        21
+      ],
+      [
+        "Z",
+        17
+      ],
+      [
+        "D",
+        15
+      ],
+      [
+        "N",
+        13
+      ],
+      [
+        "L",
+        11
+      ],
+      [
+        "EH",
+        10
+      ],
+      [
+        "P",
+        8
+      ]
+    ],
+    "top_deletions": [
+      [
+        "S",
+        81
+      ],
+      [
+        "T",
+        76
+      ],
+      [
+        "R",
+        60
+      ],
+      [
+        "AH",
+        56
+      ],
+      [
+        "D",
+        42
+      ],
+      [
+        "Z",
+        37
+      ],
+      [
+        "IH",
+        32
+      ],
+      [
+        "L",
+        30
+      ],
+      [
+        "N",
+        29
+      ],
+      [
+        "IY",
+        25
+      ]
+    ],
+    "per_by_length": {
+      "31-40": {
+        "per": 0.15701634877384196,
+        "n_samples": 168
+      },
+      "11-20": {
+        "per": 0.17523680649526388,
+        "n_samples": 176
+      },
+      "21-30": {
+        "per": 0.16749129558365403,
+        "n_samples": 216
+      },
+      "41-50": {
+        "per": 0.19863945578231293,
+        "n_samples": 34
+      },
+      "51+": {
+        "per": 0.23423423423423423,
+        "n_samples": 4
+      },
+      "1-10": {
+        "per": 0.2,
+        "n_samples": 2
+      }
+    },
+    "per_session": {
+      "t12.2022.05.24": {
+        "per": 0.14260089686098654,
+        "n_samples": 40,
+        "total_edit_distance": 159,
+        "total_true_length": 1115
+      },
+      "t12.2022.05.26": {
+        "per": 0.14124293785310735,
+        "n_samples": 40,
+        "total_edit_distance": 150,
+        "total_true_length": 1062
+      },
+      "t12.2022.06.02": {
+        "per": 0.14947965941343425,
+        "n_samples": 40,
+        "total_edit_distance": 158,
+        "total_true_length": 1057
+      },
+      "t12.2022.06.07": {
+        "per": 0.20053475935828877,
+        "n_samples": 40,
+        "total_edit_distance": 225,
+        "total_true_length": 1122
+      },
+      "t12.2022.06.14": {
+        "per": 0.16733067729083664,
+        "n_samples": 40,
+        "total_edit_distance": 210,
+        "total_true_length": 1255
+      },
+      "t12.2022.06.16": {
+        "per": 0.2075,
+        "n_samples": 40,
+        "total_edit_distance": 249,
+        "total_true_length": 1200
+      },
+      "t12.2022.06.21": {
+        "per": 0.1889763779527559,
+        "n_samples": 40,
+        "total_edit_distance": 216,
+        "total_true_length": 1143
+      },
+      "t12.2022.06.28": {
+        "per": 0.19237918215613384,
+        "n_samples": 40,
+        "total_edit_distance": 207,
+        "total_true_length": 1076
+      },
+      "t12.2022.07.05": {
+        "per": 0.159682899207248,
+        "n_samples": 40,
+        "total_edit_distance": 141,
+        "total_true_length": 883
+      },
+      "t12.2022.07.14": {
+        "per": 0.1623550401427297,
+        "n_samples": 40,
+        "total_edit_distance": 182,
+        "total_true_length": 1121
+      },
+      "t12.2022.07.21": {
+        "per": 0.16877256317689532,
+        "n_samples": 40,
+        "total_edit_distance": 187,
+        "total_true_length": 1108
+      },
+      "t12.2022.07.27": {
+        "per": 0.15661375661375662,
+        "n_samples": 40,
+        "total_edit_distance": 148,
+        "total_true_length": 945
+      },
+      "t12.2022.08.02": {
+        "per": 0.1696230598669623,
+        "n_samples": 40,
+        "total_edit_distance": 153,
+        "total_true_length": 902
+      },
+      "t12.2022.08.11": {
+        "per": 0.16683119447186576,
+        "n_samples": 40,
+        "total_edit_distance": 169,
+        "total_true_length": 1013
+      },
+      "t12.2022.08.13": {
+        "per": 0.1487437185929648,
+        "n_samples": 40,
+        "total_edit_distance": 148,
+        "total_true_length": 995
+      }
+    }
+  }
+}

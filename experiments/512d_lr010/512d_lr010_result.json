@@ -1,0 +1,32 @@
+{
+  "config": {
+    "name": "transformer_512d_4L_8H_2048ff_lr010",
+    "d_model": 512,
+    "num_layers": 4,
+    "nhead": 8,
+    "d_ff": 2048
+  },
+  "fixed": {
+    "nBatchesToTrain": "300000",
+    "batchesPerVal": "500",
+    "batchSize": "32",
+    "learnRateStart": "0.01",
+    "learnRateEnd": "0.001",
+    "learnRateDecaySteps": "300000",
+    "lrScheduleType": "cosine",
+    "warmUpSteps": "1000",
+    "gradClipValue": "5",
+    "lossType": "ctc",
+    "smoothInputs": "1",
+    "smoothKernelSD": "2",
+    "earlyStopPatience": "30",
+    "earlyStopMinDelta": "0.0001"
+  },
+  "best_per": 0.307506,
+  "best_step": 137500,
+  "final_step": 152500,
+  "early_stopped": true,
+  "duration_min": 86.20808648333333,
+  "baseline_512d_lr015_per": 0.2929,
+  "gru_baseline_per": 0.169
+}

@@ -1,0 +1,32 @@
+{
+  "config": {
+    "name": "transformer_768d_4L_8H_3072ff_lr015_lso",
+    "d_model": 768,
+    "num_layers": 4,
+    "nhead": 8,
+    "d_ff": 3072
+  },
+  "fixed": {
+    "nBatchesToTrain": "300000",
+    "batchesPerVal": "500",
+    "batchSize": "32",
+    "learnRateStart": "0.015",
+    "learnRateEnd": "0.0015",
+    "learnRateDecaySteps": "300000",
+    "lrScheduleType": "cosine",
+    "warmUpSteps": "1000",
+    "gradClipValue": "10",
+    "lossType": "ctc",
+    "smoothInputs": "1",
+    "smoothKernelSD": "2",
+    "earlyStopPatience": "30",
+    "earlyStopMinDelta": "0.0001"
+  },
+  "best_per": 0.278543,
+  "best_step": 143500,
+  "final_step": 158500,
+  "early_stopped": true,
+  "duration_min": 113.49141713333333,
+  "baseline_512d_lr015_lso_per": 0.2754,
+  "gru_baseline_per": 0.169
+}

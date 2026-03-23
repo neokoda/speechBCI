@@ -1,0 +1,33 @@
+{
+  "config": {
+    "name": "conformer_512d_4L_8H_2048ff_shortLR",
+    "d_model": 512,
+    "num_layers": 4,
+    "nhead": 8,
+    "d_ff": 2048,
+    "conv_kernel_size": 31
+  },
+  "fixed": {
+    "nBatchesToTrain": "150000",
+    "batchesPerVal": "500",
+    "batchSize": "32",
+    "learnRateStart": "0.015",
+    "learnRateEnd": "0.0015",
+    "learnRateDecaySteps": "100000",
+    "lrScheduleType": "cosine",
+    "warmUpSteps": "1000",
+    "gradClipValue": "10",
+    "lossType": "ctc",
+    "smoothInputs": "1",
+    "smoothKernelSD": "2",
+    "earlyStopPatience": "30",
+    "earlyStopMinDelta": "0.0001"
+  },
+  "best_per": 0.198013,
+  "best_step": 101500,
+  "final_step": 116500,
+  "early_stopped": true,
+  "duration_min": 98.930055,
+  "prev_conformer_per": 0.213,
+  "gru_baseline_per": 0.169
+}

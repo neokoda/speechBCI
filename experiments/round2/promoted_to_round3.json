@@ -1,0 +1,104 @@
+{
+  "promoted": [
+    "transformer_256d_4L_8H_512ff",
+    "transformer_512d_4L_8H_2048ff",
+    "transformer_512d_6L_4H_1024ff",
+    "transformer_512d_4L_4H_2048ff"
+  ],
+  "all_results": [
+    {
+      "name": "transformer_256d_4L_8H_512ff",
+      "d_model": 256,
+      "num_layers": 4,
+      "nhead": 8,
+      "d_ff": 512,
+      "round1_val_per": 0.6102817493692179,
+      "val_per": 0.575221,
+      "status": "ok",
+      "duration_min": 1.5761707166666667,
+      "final_step": 5000
+    },
+    {
+      "name": "transformer_512d_4L_8H_2048ff",
+      "d_model": 512,
+      "num_layers": 4,
+      "nhead": 8,
+      "d_ff": 2048,
+      "round1_val_per": 0.6291000841042893,
+      "val_per": 0.578953,
+      "status": "ok",
+      "duration_min": 2.1210266166666667,
+      "final_step": 5000
+    },
+    {
+      "name": "transformer_512d_6L_4H_1024ff",
+      "d_model": 512,
+      "num_layers": 6,
+      "nhead": 4,
+      "d_ff": 1024,
+      "round1_val_per": 0.6103868797308662,
+      "val_per": 0.579163,
+      "status": "ok",
+      "duration_min": 1.9194695833333335,
+      "final_step": 5000
+    },
+    {
+      "name": "transformer_512d_4L_4H_2048ff",
+      "d_model": 512,
+      "num_layers": 4,
+      "nhead": 4,
+      "d_ff": 2048,
+      "round1_val_per": 0.6505992430613962,
+      "val_per": 0.580688,
+      "status": "ok",
+      "duration_min": 4.55816785,
+      "final_step": 5000
+    },
+    {
+      "name": "transformer_256d_4L_4H_1024ff",
+      "d_model": 256,
+      "num_layers": 4,
+      "nhead": 4,
+      "d_ff": 1024,
+      "round1_val_per": 0.611490748528175,
+      "val_per": 0.581897,
+      "status": "cached",
+      "final_step": 5000
+    },
+    {
+      "name": "transformer_512d_4L_4H_1024ff",
+      "d_model": 512,
+      "num_layers": 4,
+      "nhead": 4,
+      "d_ff": 1024,
+      "round1_val_per": 0.6154331370899916,
+      "val_per": 0.587889,
+      "status": "cached",
+      "final_step": 5000
+    },
+    {
+      "name": "transformer_256d_6L_4H_512ff",
+      "d_model": 256,
+      "num_layers": 6,
+      "nhead": 4,
+      "d_ff": 512,
+      "round1_val_per": 0.6492851135407905,
+      "val_per": 0.589519,
+      "status": "ok",
+      "duration_min": 1.0568141,
+      "final_step": 5000
+    },
+    {
+      "name": "transformer_512d_6L_8H_2048ff",
+      "d_model": 512,
+      "num_layers": 6,
+      "nhead": 8,
+      "d_ff": 2048,
+      "round1_val_per": 0.6436606391925989,
+      "val_per": Infinity,
+      "status": "failed",
+      "duration_min": 3.0481760166666665,
+      "final_step": 4000
+    }
+  ]
+}

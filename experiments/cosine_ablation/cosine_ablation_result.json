@@ -1,0 +1,31 @@
+{
+  "config": {
+    "name": "transformer_256d_4L_8H_512ff_cosine",
+    "d_model": 256,
+    "num_layers": 4,
+    "nhead": 8,
+    "d_ff": 512
+  },
+  "fixed": {
+    "nBatchesToTrain": "200000",
+    "batchesPerVal": "500",
+    "batchSize": "32",
+    "learnRateStart": "0.001",
+    "learnRateEnd": "0.0001",
+    "learnRateDecaySteps": "200000",
+    "lrScheduleType": "cosine",
+    "warmUpSteps": "1000",
+    "gradClipValue": "10",
+    "lossType": "ctc",
+    "smoothInputs": "1",
+    "smoothKernelSD": "2",
+    "earlyStopPatience": "30",
+    "earlyStopMinDelta": "0.0001"
+  },
+  "best_per": 0.33505,
+  "best_step": 118500,
+  "final_step": 133500,
+  "early_stopped": true,
+  "duration_min": 23.617865233333337,
+  "baseline_per": 0.3671
+}

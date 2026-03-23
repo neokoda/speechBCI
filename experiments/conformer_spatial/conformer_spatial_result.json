@@ -1,0 +1,45 @@
+{
+  "config": {
+    "name": "conformer_512d_4L_spatial",
+    "d_model": 512,
+    "num_layers": 4,
+    "nhead": 8,
+    "d_ff": 2048,
+    "conv_kernel_size": 31,
+    "spatial_attn_dim": 64,
+    "spatial_attn_heads": 4
+  },
+  "fixed": {
+    "nBatchesToTrain": "150000",
+    "batchesPerVal": "500",
+    "batchSize": "32",
+    "learnRateStart": "0.04",
+    "learnRateEnd": "0.004",
+    "learnRateDecaySteps": "100000",
+    "lrScheduleType": "cosine",
+    "warmUpSteps": "1000",
+    "gradClipValue": "10",
+    "lossType": "ctc",
+    "smoothInputs": "1",
+    "smoothKernelSD": "2",
+    "earlyStopPatience": "30",
+    "earlyStopMinDelta": "0.0001"
+  },
+  "spec_augment": {
+    "freq_mask_param": 27,
+    "time_mask_param": 10,
+    "n_freq_masks": 2,
+    "n_time_masks": 2
+  },
+  "spatial_attention": {
+    "d_attn": 64,
+    "heads": 4
+  },
+  "best_per": 0.183873,
+  "best_step": 90500,
+  "final_step": 92000,
+  "early_stopped": true,
+  "duration_min": 82.14392705,
+  "prev_best_per": 0.1841,
+  "gru_baseline_per": 0.169
+}

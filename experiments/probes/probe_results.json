@@ -1,0 +1,50 @@
+{
+  "baseline_per_at_30k": 0.3697,
+  "probes": [
+    {
+      "name": "probe_A_dropout03",
+      "description": "Probe A: dropout=0.3 (baseline=0.1)",
+      "dropout": 0.3,
+      "learnRateStart": 0.001,
+      "learnRateEnd": 0.0001,
+      "best_per": 0.426934,
+      "best_step": 29500
+    },
+    {
+      "name": "probe_B1_lr003",
+      "description": "Probe B1: LR 0.003->0.0003 (baseline=0.001->0.0001)",
+      "dropout": 0.1,
+      "learnRateStart": 0.003,
+      "learnRateEnd": 0.0003,
+      "best_per": 0.3627,
+      "best_step": 27500
+    },
+    {
+      "name": "probe_B2_lr007",
+      "description": "Probe B2: LR 0.007->0.0007 (baseline=0.001->0.0001)",
+      "dropout": 0.1,
+      "learnRateStart": 0.007,
+      "learnRateEnd": 0.0007,
+      "best_per": 0.361859,
+      "best_step": 27500
+    },
+    {
+      "name": "probe_B3_lr01",
+      "description": "Probe B3: LR 0.01->0.001 (baseline=0.001->0.0001)",
+      "dropout": 0.1,
+      "learnRateStart": 0.01,
+      "learnRateEnd": 0.001,
+      "best_per": 0.355656,
+      "best_step": 28500
+    },
+    {
+      "name": "probe_B4_lr015",
+      "description": "Probe B4: LR 0.015->0.0015 (baseline=0.001->0.0001)",
+      "dropout": 0.1,
+      "learnRateStart": 0.015,
+      "learnRateEnd": 0.0015,
+      "best_per": 0.349401,
+      "best_step": 28500
+    }
+  ]
+}

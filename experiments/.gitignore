@@ -1,0 +1,36 @@
+# Checkpoint weight blobs (14GB+)
+*.data-00000-of-00001
+
+# Temp checkpoint files
+*.tempstate*
+
+# TensorBoard event files (1.4GB, regenerable)
+events.out.tfevents.*
+
+# Numpy inference snapshots (~650MB)
+outputSnapshot
+
+# All logs (verbose training logs, error logs, main logs)
+training.log
+error.log
+main.log
+
+# All Hydra files (config info already in result JSONs)
+.hydra/
+
+# Redundant configs (same info as result JSONs)
+args.yaml
+overrides.yaml
+
+# Checkpoint files (best step already in result JSONs)
+checkpoint
+*.index
+
+# Stdout logs from runner scripts (large)
+*_stdout.log
+
+# Large runner logs in 24sess/
+24sess/extended_lr_run.log
+24sess/run_v3.log
+24sess/run_v4_lr04.log
+24sess/run_lr08.log

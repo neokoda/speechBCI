@@ -89,6 +89,34 @@ class NeuralSequenceDecoder(object):
                 stack_kwargs=self.args['model'].get('stack_kwargs', None),
                 gradient_checkpointing=self.args['model'].get('gradientCheckpointing', False),
             )
+        elif modelType == 'conformer':
+            self.model = models.ConformerEncoder(
+                d_model=self.args['model']['d_model'],
+                nhead=self.args['model']['nhead'],
+                num_layers=self.args['model']['num_layers'],
+                d_ff=self.args['model']['d_ff'],
+                nClasses=self.args['dataset']['nClasses'] + 1,
+                conv_kernel_size=self.args['model'].get('convKernelSize', 31),
+                weightReg=self.args['model']['weightReg'],
+                dropout=self.args['model']['dropout'],
+                attention_dropout=self.args['model'].get('attentionDropout', 0.0),
+                posEncType=self.args['model'].get('posEncType', 'sinusoidal'),
+                subsampleFactor=self.args['model']['subsampleFactor'],
+                stack_kwargs=self.args['model'].get('stack_kwargs', None),
+                gradient_checkpointing=self.args['model'].get('gradientCheckpointing', False),
+                spec_augment=self.args['model'].get('specAugment', False),
+                freq_mask_param=self.args['model'].get('freqMaskParam', 27),
+                time_mask_param=self.args['model'].get('timeMaskParam', 10),
+                n_freq_masks=self.args['model'].get('nFreqMasks', 2),
+                n_time_masks=self.args['model'].get('nTimeMasks', 2),
+                squeeze_excitation=self.args['model'].get('squeezeExcitation', False),
+                se_n_channels=self.args['model'].get('seNChannels', 256),
+                se_reduction=self.args['model'].get('seReduction', 8),
+                spatial_attention=self.args['model'].get('spatialAttention', False),
+                spatial_attn_dim=self.args['model'].get('spatialAttnDim', 64),
+                spatial_attn_heads=self.args['model'].get('spatialAttnHeads', 4),
+                attn_window=self.args['model'].get('attnWindow', 0),
+            )
         else:
             self.model = models.GRU(self.args['model']['nUnits'],
                              self.args['model']['weightReg'],
@@ -218,8 +246,12 @@ class NeuralSequenceDecoder(object):
         else:
             learning_rate_fn = lr_schedule
 
+        adam_epsilon = self.args.get('adamEpsilon', 1e-01)
         self.optimizer = tf.keras.optimizers.Adam(
-            beta_1=0.9, beta_2=0.999, epsilon=1e-01, learning_rate=learning_rate_fn)
+            beta_1=0.9, beta_2=0.999, epsilon=adam_epsilon, learning_rate=learning_rate_fn)
+
+        if self.args.get('mixedPrecision', False):
+            self.optimizer = tf.keras.mixed_precision.LossScaleOptimizer(self.optimizer)
 
     def _prepareForTraining(self):
         #build the dataset pipelines
@@ -778,8 +810,15 @@ class NeuralSequenceDecoder(object):
 
             total_loss = pred_loss + regularization_loss
 
+            if self.args.get('mixedPrecision', False):
+                scaled_loss = self.optimizer.get_scaled_loss(total_loss)
+
         #compute gradients + clip
-        grads = tape.gradient(total_loss, self.trainableVariables)
+        if self.args.get('mixedPrecision', False):
+            scaled_grads = tape.gradient(scaled_loss, self.trainableVariables)
+            grads = self.optimizer.get_unscaled_gradients(scaled_grads)
+        else:
+            grads = tape.gradient(total_loss, self.trainableVariables)
         grads, gradNorm = tf.clip_by_global_norm(
             grads, self.args['gradClipValue'])
 
@@ -790,7 +829,11 @@ class NeuralSequenceDecoder(object):
                 allIsFinite.append(tf.reduce_all(tf.math.is_finite(g)))
         gradIsFinite = tf.reduce_all(tf.stack(allIsFinite))
 
-        if gradIsFinite:
+        if self.args.get('mixedPrecision', False):
+            # LossScaleOptimizer handles finite checks internally and
+            # adjusts the loss scale dynamically (halves on NaN, doubles on success)
+            self.optimizer.apply_gradients(zip(grads, self.trainableVariables))
+        elif gradIsFinite:
             self.optimizer.apply_gradients(zip(grads, self.trainableVariables))
 
         #compute sequence-element error rate (edit distance) if we are in validation & ctc mode

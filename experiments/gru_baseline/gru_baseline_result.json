@@ -1,0 +1,29 @@
+{
+  "config": {
+    "name": "gru_1024u_5L_baseline",
+    "nUnits": 1024,
+    "nLayers": 5,
+    "dropout": 0.4,
+    "kernel_size": 32,
+    "strides": 4
+  },
+  "fixed": {
+    "nBatchesToTrain": "10000",
+    "batchesPerVal": "50",
+    "batchSize": "64",
+    "learnRateStart": "0.02",
+    "learnRateEnd": "0.0",
+    "learnRateDecaySteps": "10000",
+    "learnRatePower": "1.0",
+    "warmUpSteps": "0",
+    "gradClipValue": "10",
+    "lossType": "ctc",
+    "smoothInputs": "1",
+    "smoothKernelSD": "2"
+  },
+  "best_per": 0.192546,
+  "best_step": 9450,
+  "final_step": 10000,
+  "duration_min": 17.95005615,
+  "pretrained_per": 0.169
+}
