@@ -165,10 +165,13 @@ def run(args):
             existing = env.get('PYTHONPATH', '')
             env['PYTHONPATH'] = NEURAL_DECODER_DIR + (os.pathsep + existing if existing else '')
 
-            nv_base = '/usr/local/lib/python3.10/dist-packages/nvidia'
+            import site
+            nv_base = os.path.join(site.getsitepackages()[0], 'nvidia')
             nv_paths = [
                 f'{nv_base}/cudnn/lib', f'{nv_base}/cublas/lib',
                 f'{nv_base}/cuda_nvrtc/lib', f'{nv_base}/cuda_runtime/lib',
+                f'{nv_base}/cufft/lib', f'{nv_base}/cusolver/lib',
+                f'{nv_base}/cusparse/lib', f'{nv_base}/nvjitlink/lib',
             ]
             existing_ld = env.get('LD_LIBRARY_PATH', '')
             env['LD_LIBRARY_PATH'] = ':'.join(nv_paths) + (':' + existing_ld if existing_ld else '')
