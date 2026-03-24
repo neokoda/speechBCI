@@ -8,21 +8,23 @@
     "strides": 4
   },
   "fixed": {
-    "nBatchesToTrain": "50000",
+    "nBatchesToTrain": "150000",
     "batchesPerVal": "500",
     "batchSize": "64",
     "learnRateStart": "0.02",
     "learnRateEnd": "0.002",
-    "learnRateDecaySteps": "50000",
+    "learnRateDecaySteps": "100000",
     "lrScheduleType": "cosine",
     "warmUpSteps": "1000",
     "gradClipValue": "10",
     "lossType": "ctc",
     "smoothInputs": "1",
-    "smoothKernelSD": "2"
+    "smoothKernelSD": "2",
+    "earlyStopPatience": "50",
+    "earlyStopMinDelta": "0.0001"
   },
-  "best_per": 0.183236,
-  "best_step": 50000,
-  "final_step": 50000,
-  "duration_min": 0.11107589999999999
+  "best_per": 0.181751,
+  "best_step": 96500,
+  "final_step": 121500,
+  "duration_min": 186.47740301666667
 }
