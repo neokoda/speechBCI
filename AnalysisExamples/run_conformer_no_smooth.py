@@ -1,17 +1,4 @@
-#!/usr/bin/env python3
-"""
-Conformer training: short LR + no grad ckpt + SpecAugment + NO Gaussian smoothing.
-
-Hypothesis: Gaussian smoothing (σ=2) was designed for GRU and blurs temporal
-detail that the Conformer's conv module is built to extract. Removing it
-should let the conv module learn directly from the raw (z-scored) signal.
-
-Usage:
-    python run_conformer_no_smooth.py \
-        --data-dir /workspace/speechBCI/data/derived/tfRecords \
-        --output-dir /workspace/speechBCI/experiments/conformer_no_smooth \
-        --gpu 0
-"""
+                      
 
 import argparse
 import os

@@ -5,11 +5,11 @@ import numpy as np
 from omegaconf import OmegaConf
 from neuralDecoder.neuralSequenceDecoder import NeuralSequenceDecoder
 
-# GPU config
+            
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
-# --- GPU Check ---
+                   
 gpus = tf.config.list_physical_devices('GPU')
 if gpus:
     print(f"✅ GPU available: {[g.name for g in gpus]}")
@@ -22,7 +22,7 @@ else:
 baseDir = '/workspace/speechBCI/data'
 ckptDir = os.path.join(baseDir, 'derived', 'rnns', 'baselineRelease')
 
-# Evaluate the RNN on the test partition
+                                        
 testDirs = ['test', 'competitionHoldOut']
 
 for dirIdx, testDir in enumerate(testDirs):
@@ -33,7 +33,7 @@ for dirIdx, testDir in enumerate(testDirs):
     args['mode'] = 'infer'
     args['loadCheckpointIdx'] = None
 
-    # We evaluate sequentially all validation subsets
+                                                     
     for x in range(len(args['dataset']['datasetProbabilityVal'])):
         args['dataset']['datasetProbabilityVal'][x] = 0.0
 
@@ -43,12 +43,12 @@ for dirIdx, testDir in enumerate(testDirs):
 
     args['testDir'] = testDir
 
-    # Initialize model
+                      
     tf.compat.v1.reset_default_graph()
     print("Initializing NeuralSequenceDecoder...")
     nsd = NeuralSequenceDecoder(args)
 
-    # Monkey-patch _valStep to show progress during inference
+                                                             
     print("Running inference. This may take a while...")
     original_val_step = nsd._valStep
     batch_count = [0]

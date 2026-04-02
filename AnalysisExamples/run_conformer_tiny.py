@@ -1,26 +1,4 @@
-#!/usr/bin/env python3
-"""
-Tiny Conformer with windowed attention.
-
-Hypothesis: our standard Conformer (d_model=512, 4L, d_ff=2048) has too much
-capacity for 19 sessions of data and overfits. Full self-attention learns
-spurious long-range correlations. This experiment tests a drastically smaller
-model with local attention:
-
-  - d_model=256 (half), 2 layers (half), d_ff=512 (quarter), 4 heads
-  - Windowed attention: each position attends only within +/- 64 positions
-  - No SE, no spatial attention — minimal model
-  - SpecAugment enabled for regularization
-
-The idea: constrain the model so it can't overfit, and add locality bias
-so attention focuses on nearby timesteps (like the GRU's natural recency).
-
-Usage:
-    python run_conformer_tiny.py \
-        --data-dir /workspace/speechBCI/data/derived/tfRecords \
-        --output-dir /workspace/speechBCI/experiments/conformer_tiny \
-        --gpu 0
-"""
+                      
 
 import argparse
 import os

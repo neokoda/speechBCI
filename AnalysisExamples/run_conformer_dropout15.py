@@ -1,22 +1,4 @@
-#!/usr/bin/env python3
-"""
-Conformer training: dropout 0.15 (up from 0.1).
-
-Our experiments show a clear pattern: dropout 0.05 was worse (0.1945) than
-dropout 0.1 (0.1850), and adding more capacity (6L) also hurt (0.1941).
-This suggests the model benefits from more regularization, not less.
-
-The GRU baseline uses dropout 0.4. We haven't tried going above 0.1 for the
-Conformer. This experiment tests 0.15 as a step toward stronger regularization.
-
-Keeps all other best settings: SE r=8, LR 0.04, SpecAugment, kernel_size=32.
-
-Usage:
-    python run_conformer_dropout15.py \
-        --data-dir /workspace/speechBCI/data/derived/tfRecords \
-        --output-dir /workspace/speechBCI/experiments/conformer_dropout15 \
-        --gpu 0
-"""
+                      
 
 import argparse
 import os

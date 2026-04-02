@@ -1,16 +1,4 @@
-#!/usr/bin/env python3
-"""
-Conformer training: higher LR (0.025) + SpecAugment + short LR cycle + no grad ckpt.
-
-Tests whether a higher starting LR improves performance. User observed a trend
-of higher LR -> better results in previous experiments.
-
-Usage:
-    python run_conformer_highLR.py \
-        --data-dir /workspace/speechBCI/data/derived/tfRecords \
-        --output-dir /workspace/speechBCI/experiments/conformer_highLR \
-        --gpu 0
-"""
+                      
 
 import argparse
 import os

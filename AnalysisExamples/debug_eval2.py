@@ -1,7 +1,3 @@
-"""
-Minimal debug: compare a single session's test vs competitionHoldOut TFRecords.
-Output to file for clean reading.
-"""
 import os
 import tensorflow as tf
 import numpy as np
@@ -18,19 +14,19 @@ def log(msg):
     with open(LOG_FILE, 'a') as f:
         f.write(msg + '\n')
 
-# Clear log
+           
 open(LOG_FILE, 'w').close()
 
 baseDir = 'c:/Users/LENOVO/Koding/Semester 8/TA/speechBCI/data'
 ckptDir = os.path.join(baseDir, 'derived', 'rnns', 'baselineRelease')
 
-# Pick one session that has both test and competitionHoldOut
-testSession = 't12.2022.05.24'  # index 4
+                                                            
+testSession = 't12.2022.05.24'           
 sessIdx = 4
 
-# =====================================================
-# STEP 1: Compare raw TFRecord data between partitions
-# =====================================================
+                                                       
+                                                      
+                                                       
 log("=" * 70)
 log("STEP 1: RAW TFRECORD COMPARISON")
 log("=" * 70)
@@ -43,7 +39,7 @@ for partition in ['test', 'competitionHoldOut']:
     log(f"  Files: {files}")
     log(f"  Num files: {len(files)}")
 
-    # Read one TFRecord and inspect its structure
+                                                 
     tfFiles = [os.path.join(tfDir, f) for f in files if f.endswith('.tfrecord')]
     if not tfFiles:
         log(f"  NO .tfrecord files found!")
@@ -73,9 +69,9 @@ for partition in ['test', 'competitionHoldOut']:
                     log(f"    {key}: EMPTY")
     log(f"  Total records in partition: {count}")
 
-# =====================================================
-# STEP 2: Run model on single session, both partitions
-# =====================================================
+                                                       
+                                                      
+                                                       
 log("\n" + "=" * 70)
 log("STEP 2: MODEL OUTPUT COMPARISON (session t12.2022.05.24, idx=4)")
 log("=" * 70)
@@ -93,7 +89,7 @@ for partition in ['test', 'competitionHoldOut']:
     for x in range(len(args['dataset']['datasetProbabilityVal'])):
         args['dataset']['datasetProbabilityVal'][x] = 0.0
 
-    # Only enable session 4
+                           
     args['dataset']['datasetProbabilityVal'][sessIdx] = 1.0
     args['dataset']['dataDir'][sessIdx] = os.path.join(baseDir, 'derived', 'tfRecords')
 
@@ -130,7 +126,7 @@ for partition in ['test', 'competitionHoldOut']:
             log(f"    nTimeSteps: {data['nTimeSteps'].numpy()[:5]}")
             log(f"    nSeqElements: {nSeq[:5]}")
 
-            # Show first 5 samples
+                                  
             for sampleIdx in range(min(5, len(nSeq))):
                 true_len = int(nSeq[sampleIdx])
                 true_ids = (trueSeq[sampleIdx, :true_len] - 1).tolist()
@@ -138,11 +134,11 @@ for partition in ['test', 'competitionHoldOut']:
                 dec_ids = dec_ids[dec_ids >= 0].tolist()
                 sample_ed = ed[sampleIdx]
 
-                # Also show logit argmax for this sample to see what model predicts
+                                                                                   
                 sample_logits = logits[sampleIdx]
                 sample_nTime = int(data['nTimeSteps'].numpy()[sampleIdx])
                 argmax_seq = np.argmax(sample_logits[:sample_nTime], axis=-1)
-                # Count non-blank predictions (blank = last class = 40)
+                                                                       
                 non_blank = argmax_seq[argmax_seq < 40]
 
                 log(f"\n    Sample {sampleIdx}:")

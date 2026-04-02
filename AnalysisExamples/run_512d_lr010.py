@@ -1,19 +1,4 @@
-#!/usr/bin/env python3
-"""
-Full training run: 512d_4L_8H_2048ff with LR=0.01 cosine schedule.
-
-Stabilized version of the LR=0.015 run (which hit NaN at step 81.5k).
-Changes from LR=0.015 run:
-  - LR: 0.01 -> 0.001 (lower to avoid float16 overflow)
-  - gradClipValue: 5 (tighter, safety net against gradient spikes)
-  - nBatchesToTrain: 300k (more steps to compensate for lower LR)
-
-Usage:
-    python run_512d_lr010.py \
-        --data-dir /workspace/speechBCI/data/derived/tfRecords \
-        --output-dir /workspace/speechBCI/experiments/512d_lr010 \
-        --gpu 0
-"""
+                      
 
 import argparse
 import os
@@ -155,7 +140,7 @@ def run(args):
     exp_dir = os.path.join(args.output_dir, CONFIG['name'])
     os.makedirs(args.output_dir, exist_ok=True)
 
-    # Skip if already completed
+                               
     training_log = os.path.join(exp_dir, 'training.log')
     if os.path.exists(training_log):
         per, step = parse_best_per(exp_dir)
@@ -163,7 +148,7 @@ def run(args):
             print(f"Already completed (best PER: {per:.4f} at step {step}), skipping.")
             return
 
-    # Check for resumable checkpoint
+                                    
     ckpt_file = os.path.join(exp_dir, 'checkpoint')
     if os.path.exists(ckpt_file):
         print(f"Resuming from checkpoint...")
@@ -199,7 +184,7 @@ def run(args):
                 if any(kw in line for kw in ['Train batch', 'Val batch', 'Checkpoint',
                                              'Early stop', 'early stopping']):
                     print(f"  {line}", flush=True)
-            proc.wait(timeout=43200)  # 12hr timeout
+            proc.wait(timeout=43200)                
             end_time = datetime.now()
             duration_min = (end_time - start_time).total_seconds() / 60
 
@@ -220,7 +205,7 @@ def run(args):
                 print(f"  Training failed after {oom_retries} OOM retries.")
                 return
 
-            # Save log
+                      
             with open(os.path.join(exp_dir, 'training.log'), 'w') as f:
                 f.write('\n'.join(log_lines))
 
@@ -235,7 +220,7 @@ def run(args):
             print(f"  Compare: GRU baseline = {GRU_BASELINE_PER} PER")
             print(f"{'='*70}")
 
-            # Save result
+                         
             result = {
                 'config': CONFIG,
                 'fixed': {k: str(v) for k, v in FIXED.items()},

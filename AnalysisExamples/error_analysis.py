@@ -1,18 +1,3 @@
-"""
-Comprehensive Error Analysis: Transformer vs GRU Phoneme Decoder
-
-Runs full inference on both models and produces:
-1. Overall PER with substitution/insertion/deletion breakdown
-2. Per-phoneme error rates (which phonemes are hardest?)
-3. Phoneme confusion matrix (what gets confused with what?)
-4. Vowel vs consonant error rates
-5. Per-session PER breakdown (domain shift detection)
-6. PER vs sequence length (does the Transformer struggle on long sequences?)
-7. Most common error patterns (top substitution/insertion/deletion patterns)
-
-Usage:
-    python AnalysisExamples/error_analysis.py
-"""
 
 import os
 import sys
@@ -22,7 +7,7 @@ import tensorflow as tf
 from collections import defaultdict, Counter
 from omegaconf import OmegaConf
 
-# ── GPU setup ──────────────────────────────────────────────────────────────
+                                                                             
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
@@ -35,9 +20,9 @@ else:
 from neuralDecoder.neuralSequenceDecoder import NeuralSequenceDecoder
 from neuralDecoder.datasets.speechDataset import PHONE_DEF_SIL, CONSONANT_DEF, VOWEL_DEF, SIL_DEF
 
-# ── Phoneme mapping ───────────────────────────────────────────────────────
-# Model outputs 0-indexed phoneme indices (0-38 = phonemes, 39 = SIL)
-# PHONE_DEF_SIL[i] gives the label for index i
+                                                                            
+                                                                     
+                                              
 IDX_TO_PHONE = {i: p for i, p in enumerate(PHONE_DEF_SIL)}
 PHONE_TO_IDX = {p: i for i, p in enumerate(PHONE_DEF_SIL)}
 
@@ -47,20 +32,14 @@ SILENCE = set(SIL_DEF)
 
 
 def decode_indices(indices):
-    """Convert list of phoneme indices to phoneme labels."""
     return [IDX_TO_PHONE.get(i, f'UNK({i})') for i in indices if i >= 0]
 
 
-# ── Needleman-Wunsch alignment ────────────────────────────────────────────
+                                                                            
 def align_sequences(ref, hyp):
-    """
-    Align reference and hypothesis sequences using Needleman-Wunsch.
-    Returns list of (op, ref_phone, hyp_phone) tuples where op is one of:
-      'C' = correct, 'S' = substitution, 'I' = insertion, 'D' = deletion
-    """
     n, m = len(ref), len(hyp)
 
-    # DP table
+              
     dp = np.zeros((n + 1, m + 1), dtype=int)
     for i in range(n + 1):
         dp[i][0] = i
@@ -70,15 +49,15 @@ def align_sequences(ref, hyp):
     for i in range(1, n + 1):
         for j in range(1, m + 1):
             if ref[i - 1] == hyp[j - 1]:
-                dp[i][j] = dp[i - 1][j - 1]  # match
+                dp[i][j] = dp[i - 1][j - 1]         
             else:
                 dp[i][j] = min(
-                    dp[i - 1][j - 1] + 1,  # substitution
-                    dp[i - 1][j] + 1,       # deletion
-                    dp[i][j - 1] + 1,       # insertion
+                    dp[i - 1][j - 1] + 1,                
+                    dp[i - 1][j] + 1,                 
+                    dp[i][j - 1] + 1,                  
                 )
 
-    # Traceback
+               
     ops = []
     i, j = n, m
     while i > 0 or j > 0:
@@ -101,9 +80,8 @@ def align_sequences(ref, hyp):
     return ops
 
 
-# ── Run inference for a model ─────────────────────────────────────────────
+                                                                            
 def run_inference(ckpt_dir, model_name, data_base_dir='/workspace/speechBCI/data'):
-    """Load a model from checkpoint and run full inference on val sessions 4-18."""
     print(f"\n{'='*60}")
     print(f"Running inference: {model_name}")
     print(f"Checkpoint: {ckpt_dir}")
@@ -111,7 +89,7 @@ def run_inference(ckpt_dir, model_name, data_base_dir='/workspace/speechBCI/data
 
     args = OmegaConf.load(os.path.join(ckpt_dir, 'args.yaml'))
 
-    # Enable mixed precision if the checkpoint was trained with it
+                                                                  
     if args.get('mixedPrecision', False):
         tf.keras.mixed_precision.set_global_policy('mixed_float16')
         print("  Mixed precision enabled (checkpoint was trained with float16).")
@@ -123,7 +101,7 @@ def run_inference(ckpt_dir, model_name, data_base_dir='/workspace/speechBCI/data
     args['mode'] = 'infer'
     args['loadCheckpointIdx'] = None
 
-    # Zero out all val probabilities, then enable sessions 4-18
+                                                               
     for x in range(len(args['dataset']['datasetProbabilityVal'])):
         args['dataset']['datasetProbabilityVal'][x] = 0.0
 
@@ -136,7 +114,7 @@ def run_inference(ckpt_dir, model_name, data_base_dir='/workspace/speechBCI/data
     tf.compat.v1.reset_default_graph()
     nsd = NeuralSequenceDecoder(args)
 
-    # Progress tracking
+                       
     batch_count = [0]
     original_val_step = nsd._valStep
 
@@ -153,9 +131,8 @@ def run_inference(ckpt_dir, model_name, data_base_dir='/workspace/speechBCI/data
     return out
 
 
-# ── Per-session inference ─────────────────────────────────────────────────
+                                                                            
 def run_per_session_inference(ckpt_dir, model_name, data_base_dir='/workspace/speechBCI/data'):
-    """Run inference session-by-session to get per-session PER."""
     print(f"\n  Per-session inference for {model_name}...")
     session_results = {}
     sessions = [
@@ -170,7 +147,7 @@ def run_per_session_inference(ckpt_dir, model_name, data_base_dir='/workspace/sp
         sess_name = sessions[sessIdx]
         args = OmegaConf.load(os.path.join(ckpt_dir, 'args.yaml'))
 
-        # Enable mixed precision if checkpoint was trained with it
+                                                                  
         if args.get('mixedPrecision', False):
             tf.keras.mixed_precision.set_global_policy('mixed_float16')
         else:
@@ -208,46 +185,45 @@ def run_per_session_inference(ckpt_dir, model_name, data_base_dir='/workspace/sp
     return session_results
 
 
-# ── Detailed error analysis ───────────────────────────────────────────────
+                                                                            
 def analyze_errors(inf_out, model_name):
-    """Compute detailed error breakdown from inference output."""
     print(f"\n{'='*60}")
     print(f"Error Analysis: {model_name}")
     print(f"{'='*60}")
 
-    decoded_seqs = inf_out['decodedSeqs']     # (N, maxSeqElements), padded with -1
-    true_seqs = inf_out['trueSeqs']           # (N, maxSeqElements), 0-indexed, padded
-    true_lengths = inf_out['trueSeqLengths']  # (N,)
-    edit_distances = inf_out['editDistances']  # (N,)
+    decoded_seqs = inf_out['decodedSeqs']                                          
+    true_seqs = inf_out['trueSeqs']                                                   
+    true_lengths = inf_out['trueSeqLengths']        
+    edit_distances = inf_out['editDistances']        
 
     n_samples = len(true_lengths)
 
-    # Counters
+              
     total_correct = 0
     total_substitutions = 0
     total_insertions = 0
     total_deletions = 0
 
-    sub_patterns = Counter()    # (ref_phone, hyp_phone) → count
-    ins_patterns = Counter()    # hyp_phone → count
-    del_patterns = Counter()    # ref_phone → count
+    sub_patterns = Counter()                                    
+    ins_patterns = Counter()                       
+    del_patterns = Counter()                       
 
     per_phone_stats = defaultdict(lambda: {'correct': 0, 'substituted': 0, 'deleted': 0, 'inserted_as': 0})
 
-    # Confusion matrix: confusion[true_phone][pred_phone] = count
+                                                                 
     confusion = defaultdict(lambda: defaultdict(int))
 
-    per_by_length = []  # (true_length, edit_distance)
+    per_by_length = []                                
 
     for i in range(n_samples):
         true_len = int(true_lengths[i])
         ref = list(true_seqs[i, :true_len])
 
-        # Extract hypothesis (decoded), removing -1 padding
+                                                           
         hyp_raw = decoded_seqs[i]
         hyp = [int(x) for x in hyp_raw if x >= 0]
 
-        # Align
+               
         ops = align_sequences(ref, hyp)
 
         for op, r, h in ops:
@@ -288,7 +264,7 @@ def analyze_errors(inf_out, model_name):
     print(f"    Deletions:     {total_deletions} ({total_deletions/total_ref*100:.1f}%)")
     print(f"    Insertions:    {total_insertions} ({total_insertions/total_ref*100:.1f}%)")
 
-    # ── Vowel vs consonant vs silence ──
+                                         
     vowel_stats = {'correct': 0, 'errors': 0}
     consonant_stats = {'correct': 0, 'errors': 0}
     silence_stats = {'correct': 0, 'errors': 0}
@@ -312,7 +288,7 @@ def analyze_errors(inf_out, model_name):
         if total > 0:
             print(f"    {cat_name}: {cat_stats['errors']}/{total} errors ({cat_stats['errors']/total*100:.1f}% error rate)")
 
-    # ── Per-phoneme error rates (sorted by error rate) ──
+                                                          
     print(f"\n  Per-phoneme error rates (sorted by error rate):")
     phone_error_rates = []
     for phone in PHONE_DEF_SIL:
@@ -328,25 +304,25 @@ def analyze_errors(inf_out, model_name):
         cat = 'V' if phone in VOWELS else ('C' if phone in CONSONANTS else 'S')
         print(f"    {phone:<6} {err_rate:>7.1%}  {total:>5}  {sub:>5}  {del_:>5}  [{cat}]")
 
-    # ── Top substitution patterns ──
+                                     
     print(f"\n  Top 20 substitution patterns:")
     print(f"    {'True → Pred':<20} {'Count':>6}")
     for (r, h), count in sub_patterns.most_common(20):
         print(f"    {r} → {h:<14} {count:>6}")
 
-    # ── Top insertion patterns ──
+                                  
     print(f"\n  Top 10 inserted phonemes:")
     print(f"    {'Phone':<10} {'Count':>6}")
     for phone, count in ins_patterns.most_common(10):
         print(f"    {phone:<10} {count:>6}")
 
-    # ── Top deletion patterns ──
+                                 
     print(f"\n  Top 10 deleted phonemes:")
     print(f"    {'Phone':<10} {'Count':>6}")
     for phone, count in del_patterns.most_common(10):
         print(f"    {phone:<10} {count:>6}")
 
-    # ── PER vs sequence length ──
+                                  
     print(f"\n  PER by sequence length bucket:")
     length_buckets = defaultdict(lambda: {'ed': 0, 'len': 0, 'n': 0})
     for true_len, ed in per_by_length:
@@ -397,10 +373,9 @@ def analyze_errors(inf_out, model_name):
     }
 
 
-# ── Print comparison ──────────────────────────────────────────────────────
+                                                                            
 def print_comparison(transformer_analysis, gru_analysis,
                      transformer_sessions, gru_sessions):
-    """Print side-by-side comparison."""
     print(f"\n{'='*70}")
     print(f"COMPARISON: Transformer vs GRU")
     print(f"{'='*70}")
@@ -416,7 +391,7 @@ def print_comparison(transformer_analysis, gru_analysis,
     print(f"  {'Vowel error rate':<30} {t['vowel_error_rate']:>13.4f}  {g['vowel_error_rate']:>13.4f}  {t['vowel_error_rate']-g['vowel_error_rate']:>+9.4f}")
     print(f"  {'Consonant error rate':<30} {t['consonant_error_rate']:>13.4f}  {g['consonant_error_rate']:>13.4f}  {t['consonant_error_rate']-g['consonant_error_rate']:>+9.4f}")
 
-    # Per-session comparison
+                            
     print(f"\n  Per-session PER comparison:")
     print(f"  {'Session':<22} {'Transformer':>14} {'GRU':>14} {'Delta':>10}")
     print(f"  {'-'*60}")
@@ -427,7 +402,7 @@ def print_comparison(transformer_analysis, gru_analysis,
         delta = t_per - g_per
         print(f"  {sess:<22} {t_per:>13.4f}  {g_per:>13.4f}  {delta:>+9.4f}")
 
-    # PER by length comparison
+                              
     print(f"\n  PER by sequence length:")
     print(f"  {'Bucket':<10} {'Transformer':>14} {'GRU':>14} {'Delta':>10}")
     print(f"  {'-'*48}")
@@ -437,7 +412,7 @@ def print_comparison(transformer_analysis, gru_analysis,
         delta = t_per - g_per
         print(f"  {bucket:<10} {t_per:>13.4f}  {g_per:>13.4f}  {delta:>+9.4f}")
 
-    # Per-phoneme comparison (top 10 biggest gaps)
+                                                  
     print(f"\n  Top 10 phonemes with largest PER gap (Transformer worse):")
     phone_gaps = []
     t_phones = {p[0]: p[1] for p in t['phone_error_rates']}
@@ -453,7 +428,7 @@ def print_comparison(transformer_analysis, gru_analysis,
         print(f"  {phone:<8} {t_er:>9.1%}  {g_er:>9.1%}  {gap:>+9.1%}  [{cat}]")
 
 
-# ── Main ──────────────────────────────────────────────────────────────────
+                                                                            
 def main():
     output_dir = '/workspace/speechBCI/experiments/error_analysis'
     os.makedirs(output_dir, exist_ok=True)
@@ -461,7 +436,7 @@ def main():
     transformer_ckpt = '/workspace/speechBCI/experiments/full_lr015/transformer_256d_4L_8H_512ff_lr015'
     gru_ckpt = '/workspace/speechBCI/data/derived/rnns/baselineRelease'
 
-    # ── Step 1: Full inference ──
+                                  
     print("\n" + "=" * 70)
     print("STEP 1: Running full inference on both models")
     print("=" * 70)
@@ -469,7 +444,7 @@ def main():
     transformer_out = run_inference(transformer_ckpt, "Transformer (256d, LR=0.015)")
     gru_out = run_inference(gru_ckpt, "GRU Baseline (Willett et al.)")
 
-    # ── Step 2: Detailed error analysis ──
+                                           
     print("\n" + "=" * 70)
     print("STEP 2: Detailed error analysis")
     print("=" * 70)
@@ -477,7 +452,7 @@ def main():
     transformer_analysis = analyze_errors(transformer_out, "Transformer")
     gru_analysis = analyze_errors(gru_out, "GRU Baseline")
 
-    # ── Step 3: Per-session breakdown ──
+                                         
     print("\n" + "=" * 70)
     print("STEP 3: Per-session breakdown")
     print("=" * 70)
@@ -487,11 +462,11 @@ def main():
     gru_sessions = run_per_session_inference(
         gru_ckpt, "GRU Baseline")
 
-    # ── Step 4: Side-by-side comparison ──
+                                           
     print_comparison(transformer_analysis, gru_analysis,
                      transformer_sessions, gru_sessions)
 
-    # ── Save results ──
+                        
     results = {
         'transformer': {
             'per': transformer_analysis['per'],

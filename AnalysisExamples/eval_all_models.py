@@ -1,23 +1,4 @@
-#!/usr/bin/env python3
-"""
-Evaluate all models under multiple val-set configurations.
-
-For 19-session models:
-  1. All 19 sessions
-  2. Sessions 4-18 only (matches pretrained GRU baseline eval)
-
-For 24-session models:
-  1. All 24 sessions
-  2. Willett 19 sessions only
-  3. Willett sessions 4-18 only
-
-Usage:
-    # Must set LD_LIBRARY_PATH before running!
-    export PATH="/opt/miniconda/bin:$PATH" && source activate bci
-    NV_BASE="/venv/bci/lib/python3.10/site-packages/nvidia"
-    export LD_LIBRARY_PATH="$NV_BASE/cudnn/lib:$NV_BASE/cublas/lib:$NV_BASE/cuda_nvrtc/lib:$NV_BASE/cuda_runtime/lib:$NV_BASE/cufft/lib:$NV_BASE/cusolver/lib:$NV_BASE/cusparse/lib:$NV_BASE/nvjitlink/lib:/usr/lib/x86_64-linux-gnu"
-    python eval_all_models.py
-"""
+                      
 
 import os
 import sys
@@ -39,7 +20,7 @@ from neuralDecoder.neuralSequenceDecoder import NeuralSequenceDecoder
 DATA_DIR = '/workspace/speechBCI/data/derived/tfRecords'
 EXPERIMENTS_DIR = '/workspace/speechBCI/experiments'
 
-# 19 sessions used by Willett et al.
+                                    
 WILLETT_19 = [
     't12.2022.04.28', 't12.2022.05.05', 't12.2022.05.17', 't12.2022.05.19',
     't12.2022.05.24', 't12.2022.05.26', 't12.2022.06.02', 't12.2022.06.07',
@@ -48,7 +29,7 @@ WILLETT_19 = [
     't12.2022.08.02', 't12.2022.08.11', 't12.2022.08.13',
 ]
 
-# All 24 sessions
+                 
 ALL_24 = [
     't12.2022.04.28', 't12.2022.05.05', 't12.2022.05.17', 't12.2022.05.19',
     't12.2022.05.24', 't12.2022.05.26', 't12.2022.06.02', 't12.2022.06.07',
@@ -60,7 +41,6 @@ ALL_24 = [
 
 
 def find_ckpt_dir(experiment_path):
-    """Find the checkpoint directory (may be nested one level). Verify data file exists."""
     candidates = [experiment_path]
     if os.path.isdir(experiment_path):
         for sub in os.listdir(experiment_path):
@@ -68,7 +48,7 @@ def find_ckpt_dir(experiment_path):
     for d in candidates:
         ckpt_file = os.path.join(d, 'checkpoint')
         if os.path.exists(ckpt_file):
-            # Verify the actual data file exists (not just the pointer)
+                                                                       
             with open(ckpt_file) as f:
                 line = f.readline()
             ckpt_name = line.split('"')[1] if '"' in line else None
@@ -78,7 +58,6 @@ def find_ckpt_dir(experiment_path):
 
 
 def evaluate_with_sessions(ckpt_dir, session_indices, label):
-    """Run inference on a model with specific sessions enabled."""
     args = OmegaConf.load(os.path.join(ckpt_dir, 'args.yaml'))
     args['loadDir'] = ckpt_dir
     args['outputDir'] = ckpt_dir
@@ -90,11 +69,11 @@ def evaluate_with_sessions(ckpt_dir, session_indices, label):
     else:
         tf.keras.mixed_precision.set_global_policy('float32')
 
-    # Fix data dirs
+                   
     for i in range(len(args['dataset']['dataDir'])):
         args['dataset']['dataDir'][i] = DATA_DIR
 
-    # Zero out all val probabilities, then enable selected sessions
+                                                                   
     for x in range(len(args['dataset']['datasetProbabilityVal'])):
         args['dataset']['datasetProbabilityVal'][x] = 0.0
     for idx in session_indices:
@@ -111,7 +90,6 @@ def evaluate_with_sessions(ckpt_dir, session_indices, label):
 
 
 def eval_19sess_model(name, ckpt_dir):
-    """Evaluate a 19-session model: all 19, and sessions 4-18."""
     print(f"\n{'='*60}")
     print(f"  {name}")
     print(f"  {ckpt_dir}")
@@ -119,12 +97,12 @@ def eval_19sess_model(name, ckpt_dir):
 
     results = {}
 
-    # All 19 sessions
+                     
     per, t = evaluate_with_sessions(ckpt_dir, list(range(19)), "All 19 sessions")
     results['all_19'] = {'per': per, 'time': t}
     print(f"  All 19 sessions:    PER = {per:.4f}  ({t:.1f}s)")
 
-    # Sessions 4-18
+                   
     per, t = evaluate_with_sessions(ckpt_dir, list(range(4, 19)), "Sessions 4-18")
     results['sess_4_18'] = {'per': per, 'time': t}
     print(f"  Sessions 4-18:      PER = {per:.4f}  ({t:.1f}s)")
@@ -133,7 +111,6 @@ def eval_19sess_model(name, ckpt_dir):
 
 
 def eval_24sess_model(name, ckpt_dir):
-    """Evaluate a 24-session model: all 24, Willett 19, and Willett 4-18."""
     print(f"\n{'='*60}")
     print(f"  {name}")
     print(f"  {ckpt_dir}")
@@ -141,18 +118,18 @@ def eval_24sess_model(name, ckpt_dir):
 
     results = {}
 
-    # All 24 sessions
+                     
     per, t = evaluate_with_sessions(ckpt_dir, list(range(24)), "All 24 sessions")
     results['all_24'] = {'per': per, 'time': t}
     print(f"  All 24 sessions:    PER = {per:.4f}  ({t:.1f}s)")
 
-    # Willett 19 sessions mapped to 24-session indices
+                                                      
     w19_indices = [ALL_24.index(s) for s in WILLETT_19]
     per, t = evaluate_with_sessions(ckpt_dir, w19_indices, "Willett 19 sessions")
     results['willett_19'] = {'per': per, 'time': t}
     print(f"  Willett 19 sess:    PER = {per:.4f}  ({t:.1f}s)")
 
-    # Willett sessions 4-18 mapped to 24-session indices
+                                                        
     w4_18 = WILLETT_19[4:19]
     w4_18_indices = [ALL_24.index(s) for s in w4_18]
     per, t = evaluate_with_sessions(ckpt_dir, w4_18_indices, "Willett sessions 4-18")
@@ -165,15 +142,15 @@ def eval_24sess_model(name, ckpt_dir):
 def main():
     all_results = {}
 
-    # === 19-session models ===
+                               
 
-    # Top conformers (19sess) — vanilla checkpoint data was deleted in cleanup
+                                                                              
     conformer_19sess = [
         ('Conformer Spatial (19sess)', 'experiments/19sess/conformer/spatial/conformer_512d_4L_spatial'),
         ('Conformer SE (19sess)', 'experiments/19sess/conformer/se/conformer_512d_4L_se_r8'),
     ]
 
-    # GRU baseline (19sess)
+                           
     gru_19sess = [
         ('GRU Baseline (19sess)', 'experiments/19sess/gru/baseline/gru_1024u_5L_baseline'),
     ]
@@ -186,7 +163,7 @@ def main():
         results = eval_19sess_model(name, ckpt_dir)
         all_results[name] = results
 
-    # === 24-session models ===
+                               
 
     models_24sess = [
         ('GRU 24sess', 'experiments/24sess/gru_1024u_5L_24sess'),
@@ -203,7 +180,7 @@ def main():
         results = eval_24sess_model(name, ckpt_dir)
         all_results[name] = results
 
-    # === Summary ===
+                     
     print(f"\n\n{'='*80}")
     print(f"  SUMMARY")
     print(f"{'='*80}")
@@ -222,7 +199,7 @@ def main():
     print(f"  Pretrained GRU baseline (Willett):               0.1690")
     print(f"{'='*80}")
 
-    # Save results
+                  
     out_path = os.path.join(EXPERIMENTS_DIR, 'eval_results.json')
     serializable = {}
     for name, res in all_results.items():

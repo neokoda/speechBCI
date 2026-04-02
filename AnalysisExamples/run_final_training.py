@@ -1,14 +1,4 @@
-#!/usr/bin/env python3
-"""
-Final Training Runner: Train the top 2 Transformer configs from successive halving
-for 100k batches with early stopping.
-
-Usage (on RunPod):
-    python run_final_training.py \
-        --data-dir /workspace/speechBCI/data/derived/tfRecords \
-        --output-dir /workspace/speechBCI/experiments/final_training \
-        --gpu 0
-"""
+                      
 
 import argparse
 import os
@@ -18,12 +8,12 @@ import csv
 import json
 from datetime import datetime
 
-# Path to NeuralDecoder source directory (contains the neuralDecoder package)
+                                                                             
 _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 NEURAL_DECODER_DIR = os.path.abspath(os.path.join(_SCRIPT_DIR, '..', 'NeuralDecoder'))
 
 
-# Top 2 configs from successive halving (Round 3 winners)
+                                                         
 FINAL_CONFIGS = [
     {
         'name': 'transformer_256d_4L_8H_512ff',
@@ -35,10 +25,10 @@ FINAL_CONFIGS = [
     },
 ]
 
-# Fixed hyperparameters for final training (5x budget vs Round 3)
-# batchSize=32 and learnRateStart=0.0005 carried over from Round 2/3
-# (linear scaling rule: half batch size -> half LR)
-# earlyStopPatience increased to 20 (from 10) to tolerate longer plateaus
+                                                                 
+                                                                    
+                                                   
+                                                                         
 FIXED = {
     'nBatchesToTrain':     100000,
     'batchesPerVal':       500,
@@ -55,7 +45,7 @@ FIXED = {
     'earlyStopMinDelta':   0.0001,
 }
 
-# Sessions to use (same 19 as baseline & all rounds)
+                                                    
 SESSIONS = [
     't12.2022.04.28', 't12.2022.05.05', 't12.2022.05.17', 't12.2022.05.19',
     't12.2022.05.24', 't12.2022.05.26', 't12.2022.06.02', 't12.2022.06.07',
@@ -68,11 +58,10 @@ MAX_OOM_RETRIES = 10
 
 
 def build_command(config, data_dir, output_dir, gpu):
-    """Build the hydra command to run a single experiment."""
     exp_dir = os.path.join(output_dir, config['name'])
     os.makedirs(exp_dir, exist_ok=True)
 
-    # Build data dir list for all sessions
+                                          
     data_dirs_str = '[' + ','.join([data_dir] * len(SESSIONS)) + ']'
     sessions_str = '[' + ','.join(SESSIONS) + ']'
     layer_map = list(range(len(SESSIONS)))
@@ -101,7 +90,7 @@ def build_command(config, data_dir, output_dir, gpu):
         f'dataset.datasetProbabilityVal={prob_str}',
     ]
 
-    # Add fixed params
+                      
     for key, val in FIXED.items():
         cmd.append(f'{key}={val}')
 
@@ -109,14 +98,13 @@ def build_command(config, data_dir, output_dir, gpu):
 
 
 def parse_final_step(exp_dir):
-    """Parse the last training step reached from metrics.csv."""
     metrics_path = os.path.join(exp_dir, 'metrics.csv')
     if not os.path.exists(metrics_path):
         return None
     try:
         with open(metrics_path, 'r') as f:
             reader = csv.reader(f)
-            next(reader)  # skip header
+            next(reader)               
             last_row = None
             for row in reader:
                 last_row = row
@@ -128,7 +116,6 @@ def parse_final_step(exp_dir):
 
 
 def parse_val_per(exp_dir):
-    """Parse the best validation PER from metrics.csv."""
     metrics_path = os.path.join(exp_dir, 'metrics.csv')
     if not os.path.exists(metrics_path):
         return float('inf')
@@ -136,7 +123,7 @@ def parse_val_per(exp_dir):
         best = float('inf')
         with open(metrics_path, 'r') as f:
             reader = csv.reader(f)
-            next(reader)  # skip header
+            next(reader)               
             for row in reader:
                 if row:
                     per = float(row[1])
@@ -162,7 +149,7 @@ def run_experiments(args):
               f"(d={c['d_model']}, L={c['num_layers']}, H={c['nhead']}, ff={c['d_ff']})")
     print()
 
-    # Results CSV
+                 
     results_csv = os.path.join(args.output_dir, 'final_training_results.csv')
     os.makedirs(args.output_dir, exist_ok=True)
 
@@ -174,7 +161,7 @@ def run_experiments(args):
 
         exp_dir = os.path.join(args.output_dir, config['name'])
 
-        # Skip only if FULLY completed (training.log is written on successful completion)
+                                                                                         
         training_log = os.path.join(exp_dir, 'training.log')
         if os.path.exists(training_log):
             per = parse_val_per(exp_dir)
@@ -185,7 +172,7 @@ def run_experiments(args):
                                'final_step': final_step})
                 continue
 
-        # If checkpoint exists but no training.log, it's an incomplete run — will auto-resume
+                                                                                             
         ckpt_file = os.path.join(exp_dir, 'checkpoint')
         if os.path.exists(ckpt_file):
             print(f"  Resuming from checkpoint (incomplete previous run)...")
@@ -195,18 +182,18 @@ def run_experiments(args):
         oom_retries = 0
 
         while True:
-            # Clear stale error log before each attempt
+                                                       
             stale_error_log = os.path.join(exp_dir, 'error.log')
             if os.path.exists(stale_error_log):
                 os.remove(stale_error_log)
 
             try:
-                # Ensure neuralDecoder is importable by subprocess
+                                                                  
                 env = os.environ.copy()
                 existing = env.get('PYTHONPATH', '')
                 env['PYTHONPATH'] = NEURAL_DECODER_DIR + (os.pathsep + existing if existing else '')
 
-                # Ensure NVIDIA CUDA libraries are on LD_LIBRARY_PATH for GPU support
+                                                                                     
                 nv_base = '/usr/local/lib/python3.11/dist-packages/nvidia'
                 nv_paths = [
                     f'{nv_base}/cudnn/lib',
@@ -217,24 +204,24 @@ def run_experiments(args):
                 existing_ld = env.get('LD_LIBRARY_PATH', '')
                 env['LD_LIBRARY_PATH'] = ':'.join(nv_paths) + (':' + existing_ld if existing_ld else '')
 
-                # Stream output in real-time so user sees progress
+                                                                  
                 proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                         text=True, bufsize=1, env=env)
                 log_lines = []
                 for line in proc.stdout:
                     line = line.rstrip()
                     log_lines.append(line)
-                    # Show key training progress lines
+                                                      
                     if any(kw in line for kw in ['Train batch', 'Val batch', 'Checkpoint',
                                                  'Early stop', 'early stopping']):
                         print(f"  {line}", flush=True)
-                proc.wait(timeout=21600)  # 6hr timeout
+                proc.wait(timeout=21600)               
                 end_time = datetime.now()
                 duration_min = (end_time - start_time).total_seconds() / 60
 
                 if proc.returncode != 0:
                     print(f"  FAILED (exit code {proc.returncode})")
-                    # Show last 5 lines for debugging
+                                                     
                     for l in log_lines[-5:]:
                         print(f"    {l}")
                     os.makedirs(exp_dir, exist_ok=True)
@@ -252,11 +239,11 @@ def run_experiments(args):
                                    'duration_min': duration_min, 'final_step': final_step})
                     break
 
-                # Save stdout log
+                                 
                 with open(os.path.join(exp_dir, 'training.log'), 'w') as f:
                     f.write('\n'.join(log_lines))
 
-                # Check if early stopped
+                                        
                 early_stopped = any('early stopping triggered' in l.lower() for l in log_lines)
                 status = 'early_stopped' if early_stopped else 'ok'
 
@@ -276,7 +263,7 @@ def run_experiments(args):
                                'final_step': final_step})
                 break
 
-    # Sort by val PER and write final results
+                                             
     results.sort(key=lambda x: x['val_per'])
     print(f"\n{'='*70}")
     print(f"  FINAL TRAINING RESULTS (ranked by val PER)")
@@ -300,7 +287,7 @@ def run_experiments(args):
                 r.get('duration_min', ''), r.get('final_step', '')
             ])
 
-    # Save final results as JSON
+                                
     final_results_file = os.path.join(args.output_dir, 'final_training_results.json')
     with open(final_results_file, 'w') as f:
         json.dump({

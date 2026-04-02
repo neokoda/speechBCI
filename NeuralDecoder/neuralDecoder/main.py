@@ -9,9 +9,9 @@ from neuralDecoder.neuralSequenceDecoder import NeuralSequenceDecoder
 
 @hydra.main(config_path='configs', config_name='config')
 def app(config):
-    #print(OmegaConf.to_yaml(config))
+                                     
 
-    #set the visible device to the gpu specified in 'args' (otherwise tensorflow will steal all the GPUs)
+                                                                                                         
     if 'gpuNumber' in config:
         os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
         print(f"Setting CUDA_VISIBLE_DEVICES to {config['gpuNumber']}")
@@ -21,10 +21,10 @@ def app(config):
     gpus = tf.config.list_physical_devices('GPU')
     if gpus:
         try:
-            # Pre-allocate a fixed 20GB pool instead of using memory growth.
-            # memory_growth=True causes BFC allocator fragmentation over long runs —
-            # random long-sequence batches then fail to get a contiguous chunk even
-            # when total free VRAM is sufficient. A fixed upfront pool avoids this.
+                                                                            
+                                                                                    
+                                                                                   
+                                                                                   
             for gpu in gpus:
                 tf.config.set_logical_device_configuration(
                     gpu,
@@ -39,7 +39,7 @@ def app(config):
         print("Mixed precision enabled (float16 activations, float32 weights).")
 
     if 'Slurm' in HydraConfig.get().launcher._target_:
-        # TF train saver doesn't support file name with '[' or ']'. So we'll use relative path here.
+                                                                                                    
         config.outputDir = './'
     print(f'Output dir {config.outputDir}')
     os.makedirs(config.outputDir, exist_ok=True)
@@ -50,10 +50,10 @@ def app(config):
                          sync_tensorboard=True,
                          resume=True)
 
-    #instantiate the RNN model
+                              
     nsd = NeuralSequenceDecoder(args=config)
 
-    #train or infer
+                   
     if config['mode'] == 'train':
         cer = nsd.train()
         return cer

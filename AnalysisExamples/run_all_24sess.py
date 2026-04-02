@@ -1,16 +1,4 @@
-#!/usr/bin/env python3
-"""
-Run all three 24-session experiments sequentially:
-  1. GRU (50k steps, cosine LR)
-  2. Conformer + SE r=8
-  3. Conformer + Spatial Attention
-
-Usage:
-    python run_all_24sess.py \
-        --data-dir /workspace/speechBCI/data/derived/tfRecords \
-        --output-dir /workspace/speechBCI/experiments/24sess \
-        --gpu 0
-"""
+                      
 
 import argparse
 import os

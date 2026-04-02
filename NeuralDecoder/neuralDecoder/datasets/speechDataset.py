@@ -97,7 +97,7 @@ class SpeechDataset():
 
         datasetFeatures = {
             "inputFeatures": tf.io.FixedLenSequenceFeature([self.nInputFeatures], tf.float32, allow_missing=True),
-            #"classLabelsOneHot": tf.io.FixedLenSequenceFeature([self.nClasses+1], tf.float32, allow_missing=True),
+                                                                                                                   
             "newClassSignal": tf.io.FixedLenSequenceFeature([], tf.float32, allow_missing=True),
             "ceMask": tf.io.FixedLenSequenceFeature([], tf.float32, allow_missing=True),
             "seqClassIDs": tf.io.FixedLenFeature((self.maxSeqElements), tf.int64),
@@ -174,15 +174,15 @@ class SpeechDataset():
             dataset = dataset.map(parseDatasetFunctionSimple, num_parallel_calls=tf.data.AUTOTUNE)
 
         if isTraining:
-            # Use all elements to adapt normalization layer
+                                                           
             datasetForAdapt = dataset.map(lambda x: x['inputFeatures'] + 0.001,
                 num_parallel_calls=tf.data.AUTOTUNE)
             
-            # Take a subset of the data if specified
+                                                    
             if self.subsetSize > 0:
                 dataset = dataset.take(self.subsetSize)
 
-            # Shuffle and transform data if training
+                                                    
             dataset = dataset.shuffle(self.bufferSize)
             if self.syntheticMixingRate == 0:
                 dataset = dataset.repeat()

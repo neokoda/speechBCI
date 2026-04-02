@@ -82,13 +82,13 @@ def plotPreamble():
     MEDIUM_SIZE=6
     BIGGER_SIZE=7
 
-    plt.rc('font', size=SMALL_SIZE)          # controls default text sizes
-    plt.rc('axes', titlesize=MEDIUM_SIZE)     # fontsize of the axes title
-    plt.rc('axes', labelsize=MEDIUM_SIZE)    # fontsize of the x and y labels
-    plt.rc('xtick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
-    plt.rc('ytick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
-    plt.rc('legend', fontsize=SMALL_SIZE)    # legend fontsize
-    plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
+    plt.rc('font', size=SMALL_SIZE)                                       
+    plt.rc('axes', titlesize=MEDIUM_SIZE)                                 
+    plt.rc('axes', labelsize=MEDIUM_SIZE)                                    
+    plt.rc('xtick', labelsize=SMALL_SIZE)                                 
+    plt.rc('ytick', labelsize=SMALL_SIZE)                                 
+    plt.rc('legend', fontsize=SMALL_SIZE)                     
+    plt.rc('figure', titlesize=BIGGER_SIZE)                                
     plt.rcParams['svg.fonttype'] = 'none'
     
 def werWithCI(allTrueSeq, allDecSeq):
@@ -126,7 +126,7 @@ def makeTuningHeatmap(dat, sets, window):
     for t in range(nTrials):
         trialVectors[t,:] = np.mean(features[(dat['goTrialEpochs'][t,0]+window[0]):(dat['goTrialEpochs'][t,0]+window[1])], axis=0)
         
-    #split observations into folds
+                                  
     nFolds = 5
     heldOutIdx = []
     minPerFold = np.floor(trialVectors.shape[0]/nFolds).astype(np.int32)
@@ -234,7 +234,7 @@ def heatmapPlot(tuning, clim, titles, layout):
             if arrIdx==0:
                 plt.title(titles[plotIdx],fontsize=6)
                 
-#gaussian naive bayes classifier with variable time window and channel set
+                                                                          
 def gnb_loo(trials_input, timeWindow, chanIdx):
     unroll_Feat = []
     for t in range(len(trials_input)):

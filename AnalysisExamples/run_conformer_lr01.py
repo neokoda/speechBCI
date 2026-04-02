@@ -1,15 +1,4 @@
-#!/usr/bin/env python3
-"""
-Conformer training: LR 0.1 + SpecAugment + short LR cycle + no grad ckpt.
-
-Testing aggressive LR following the trend: 0.015 -> 0.025 -> 0.04 all improved PER.
-
-Usage:
-    python run_conformer_lr01.py \
-        --data-dir /workspace/speechBCI/data/derived/tfRecords \
-        --output-dir /workspace/speechBCI/experiments/conformer_lr01 \
-        --gpu 0
-"""
+                      
 
 import argparse
 import os

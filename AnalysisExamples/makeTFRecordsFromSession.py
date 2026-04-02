@@ -26,10 +26,10 @@ def makeTFRecordsFromCompetitionFiles(sessionName, dataPath, tfRecordFolder):
         block_stds = []
         n_trials = dat['sentenceText'].shape[0]
 
-        #collect area 6v tx1 and spikePow features
+                                                  
         for i in range(n_trials):    
-            #get time series of TX and spike power for this trial
-            #first 128 columns = area 6v only
+                                                                 
+                                             
             features = np.concatenate([dat['tx1'][0,i][:,0:128], dat['spikePow'][0,i][:,0:128]], axis=1)
 
             sentence_len = features.shape[0]
@@ -39,7 +39,7 @@ def makeTFRecordsFromCompetitionFiles(sessionName, dataPath, tfRecordFolder):
             transcriptions.append(sentence)
             frame_lens.append(sentence_len)
 
-        #block-wise feature normalization
+                                         
         blockNums = np.squeeze(dat['blockIdx'])
         blockList = np.unique(blockNums)
         blocks = []
@@ -55,7 +55,7 @@ def makeTFRecordsFromCompetitionFiles(sessionName, dataPath, tfRecordFolder):
             for i in blocks[b]:
                 input_features[i] = (input_features[i] - feats_mean) / (feats_std + 1e-8)
 
-        #convert to tfRecord file
+                                 
         session_data = {
             'inputFeatures': input_features,
             'transcriptions': transcriptions,
@@ -99,7 +99,7 @@ def convertToTFRecord(sessionData, recordFolder, partIdx):
 
             thisTranscription = sessionData['transcriptions'][trialIdx]
 
-            # Remove punctuation
+                                
             thisTranscription = re.sub(r'[^a-zA-Z\- \']', '', thisTranscription)
             thisTranscription = thisTranscription.replace('--', '').lower()
             phonemes = []
@@ -110,11 +110,11 @@ def convertToTFRecord(sessionData, recordFolder, partIdx):
                     if p==' ':
                         phonemes.append('SIL')
 
-                    p = re.sub(r'[0-9]', '', p)  # Remove stress
-                    if re.match(r'[A-Z]+', p):  # Only keep phonemes
+                    p = re.sub(r'[0-9]', '', p)                 
+                    if re.match(r'[A-Z]+', p):                      
                         phonemes.append(p)
 
-                #add one SIL symbol at the end so there's one at the end of each word
+                                                                                     
                 phonemes.append('SIL')
 
             seqLen = len(phonemes)
@@ -137,7 +137,7 @@ def convertToTFRecord(sessionData, recordFolder, partIdx):
                 'ceMask': _floats_feature(np.ravel(ceMask).tolist()),
                 'transcription': _ints_feature(paddedTranscription)}
 
-            #print(paddedTranscription[0:10])
+                                             
             print(seqClassIDs[0:10])
             example = tf.train.Example(features=tf.train.Features(feature=feature))
             writer.write(example.SerializeToString())    

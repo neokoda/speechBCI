@@ -1,24 +1,4 @@
-#!/usr/bin/env python3
-"""
-GRU baseline training from scratch — replicating Willett et al. (2023).
-
-Matches the exact config from the pre-trained baseline checkpoint:
-  - 1024 units, 5 layers, unidirectional
-  - Dropout 0.4, weight regularization 1e-5
-  - Stack kernel_size=32, strides=4
-  - LR 0.02 → 0.0 (linear decay over 10k steps)
-  - Batch size 64, no warmup, no mixed precision
-  - Adam epsilon=0.1 (default in codebase)
-  - Gaussian smoothing (kernelSD=2)
-
-Goal: verify the 0.169 PER by training independently.
-
-Usage:
-    python run_gru_baseline.py \
-        --data-dir /workspace/speechBCI/data/derived/tfRecords \
-        --output-dir /workspace/speechBCI/experiments/gru_baseline \
-        --gpu 0
-"""
+                      
 
 import argparse
 import os

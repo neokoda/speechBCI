@@ -1,18 +1,4 @@
-#!/usr/bin/env python3
-"""
-Cosine Annealing Ablation: Aggressive LR schedule for the winning 256d model.
-
-Tests whether the plateau observed in final training was LR-limited by using:
-- Higher peak LR (0.001 vs 0.0005)
-- Cosine annealing with min LR floor (0.0001)
-- 200k steps (2x longer)
-
-Usage:
-    python run_cosine_ablation.py \
-        --data-dir /workspace/speechBCI/data/derived/tfRecords \
-        --output-dir /workspace/speechBCI/experiments/cosine_ablation \
-        --gpu 0
-"""
+                      
 
 import argparse
 import os
@@ -145,7 +131,7 @@ def run(args):
     exp_dir = os.path.join(args.output_dir, CONFIG['name'])
     os.makedirs(args.output_dir, exist_ok=True)
 
-    # Skip if already completed
+                               
     training_log = os.path.join(exp_dir, 'training.log')
     if os.path.exists(training_log):
         per, step = parse_best_per(exp_dir)
@@ -153,7 +139,7 @@ def run(args):
             print(f"Already completed (best PER: {per:.4f} at step {step}), skipping.")
             return
 
-    # Check for resumable checkpoint
+                                    
     ckpt_file = os.path.join(exp_dir, 'checkpoint')
     if os.path.exists(ckpt_file):
         print(f"Resuming from checkpoint...")
@@ -189,7 +175,7 @@ def run(args):
                 if any(kw in line for kw in ['Train batch', 'Val batch', 'Checkpoint',
                                              'Early stop', 'early stopping']):
                     print(f"  {line}", flush=True)
-            proc.wait(timeout=43200)  # 12hr timeout
+            proc.wait(timeout=43200)                
             end_time = datetime.now()
             duration_min = (end_time - start_time).total_seconds() / 60
 
@@ -210,7 +196,7 @@ def run(args):
                 print(f"  Training failed after {oom_retries} OOM retries.")
                 return
 
-            # Save log
+                      
             with open(os.path.join(exp_dir, 'training.log'), 'w') as f:
                 f.write('\n'.join(log_lines))
 
@@ -224,7 +210,7 @@ def run(args):
             print(f"  Compare: linear decay baseline = 0.3671 PER")
             print(f"{'='*70}")
 
-            # Save result
+                         
             result = {
                 'config': CONFIG,
                 'fixed': {k: str(v) for k, v in FIXED.items()},

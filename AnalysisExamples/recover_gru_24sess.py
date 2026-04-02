@@ -1,16 +1,4 @@
-#!/usr/bin/env python3
-"""
-Recover GRU 24sess weights from a TF 2.21 (Keras 3) checkpoint.
-
-The checkpoint was saved by TF 2.21 which failed to track GRU sublayers
-under the model. The GRU weights ended up in optimizer/_trainable_variables
-instead of net/. This script extracts them and assigns them to the model
-built under TF 2.15 (Keras 2), then runs inference.
-
-Usage:
-    # Set LD_LIBRARY_PATH first (see eval_all_models.py header)
-    python recover_gru_24sess.py
-"""
+                      
 
 import os
 import sys
@@ -34,9 +22,8 @@ CKPT_PATH = os.path.join(CKPT_DIR, 'ckpt-96500')
 
 
 def build_fresh_model():
-    """Build the model without loading any checkpoint."""
     args = OmegaConf.load(os.path.join(CKPT_DIR, 'args.yaml'))
-    args['loadDir'] = None  # Skip checkpoint loading
+    args['loadDir'] = None                           
     args['outputDir'] = CKPT_DIR
     args['mode'] = 'infer'
     for i in range(len(args['dataset']['dataDir'])):
@@ -46,27 +33,26 @@ def build_fresh_model():
 
 
 def recover_weights(nsd):
-    """Load weights from the broken checkpoint into the model."""
     reader = tf.train.load_checkpoint(CKPT_PATH)
     shape_map = reader.get_variable_to_shape_map()
 
-    # 1. GRU weights from optimizer/_trainable_variables/0-14
-    #    5 GRU layers × 3 vars each (kernel, recurrent_kernel, bias)
-    gru_vars = nsd.model.trainable_variables[:15]  # First 15 are GRU
+                                                             
+                                                                    
+    gru_vars = nsd.model.trainable_variables[:15]                    
     for i, var in enumerate(gru_vars):
         ckpt_key = f'optimizer/_trainable_variables/{i}/.ATTRIBUTES/VARIABLE_VALUE'
         if ckpt_key not in shape_map:
             print(f"  WARNING: {ckpt_key} not found in checkpoint!")
             continue
         val = reader.get_tensor(ckpt_key)
-        assert val.shape == tuple(var.shape), \
+        assert val.shape == tuple(var.shape),\
             f"Shape mismatch for {var.name}: ckpt {val.shape} vs model {var.shape}"
         var.assign(val)
         print(f"  Loaded {var.name:50s} from optimizer/_trainable_variables/{i}")
 
-    # 2. Dense layer from net/dense/
-    dense_kernel = nsd.model.trainable_variables[15]  # gru/dense/kernel
-    dense_bias = nsd.model.trainable_variables[16]    # gru/dense/bias
+                                    
+    dense_kernel = nsd.model.trainable_variables[15]                    
+    dense_bias = nsd.model.trainable_variables[16]                    
     dk = reader.get_tensor('net/dense/_kernel/.ATTRIBUTES/VARIABLE_VALUE')
     db = reader.get_tensor('net/dense/bias/.ATTRIBUTES/VARIABLE_VALUE')
     dense_kernel.assign(dk)
@@ -74,15 +60,15 @@ def recover_weights(nsd):
     print(f"  Loaded {dense_kernel.name:50s} from net/dense/_kernel")
     print(f"  Loaded {dense_bias.name:50s} from net/dense/bias")
 
-    # 3. initStates from net/initStates
-    init_states = nsd.model.trainable_variables[17]  # Variable:0 (initStates)
+                                       
+    init_states = nsd.model.trainable_variables[17]                           
     ist = reader.get_tensor('net/initStates/.ATTRIBUTES/VARIABLE_VALUE')
     init_states.assign(ist)
     print(f"  Loaded {init_states.name:50s} from net/initStates")
 
-    # 4. Input network layers from optimizer/_trainable_variables/17-64
-    #    24 input layers × 2 vars each (kernel + bias)
-    #    Note: indices 15,16 are skipped in the checkpoint (they were the dense layer)
+                                                                       
+                                                      
+                                                                                      
     opt_idx = 17
     for layer_idx, input_layer in enumerate(nsd.inputLayers):
         for var in input_layer.trainable_variables:
@@ -92,13 +78,13 @@ def recover_weights(nsd):
                 opt_idx += 1
                 continue
             val = reader.get_tensor(ckpt_key)
-            assert val.shape == tuple(var.shape), \
+            assert val.shape == tuple(var.shape),\
                 f"Shape mismatch for input layer {layer_idx} {var.name}: ckpt {val.shape} vs model {var.shape}"
             var.assign(val)
             print(f"  Loaded input_layer[{layer_idx:2d}] {var.name:40s} from opt/_trainable_variables/{opt_idx}")
             opt_idx += 1
 
-    # 5. Normalization layers
+                             
     for i in range(24):
         mean_key = f'normLayer_{i}/adapt_mean/.ATTRIBUTES/VARIABLE_VALUE'
         var_key = f'normLayer_{i}/adapt_variance/.ATTRIBUTES/VARIABLE_VALUE'
@@ -116,7 +102,6 @@ def recover_weights(nsd):
 
 
 def evaluate(nsd, session_indices, label):
-    """Run inference with specific sessions enabled."""
     for x in range(len(nsd.args['dataset']['datasetProbabilityVal'])):
         nsd.args['dataset']['datasetProbabilityVal'][x] = 0.0
     for idx in session_indices:
