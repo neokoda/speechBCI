@@ -235,9 +235,7 @@ class SpatialAttention(tf.keras.layers.Layer):
             trainable=True)
         super().build(input_shape)
 
-    def call(self, x, training=False):
-                                                 
-                                                
+    def call(self, x, training=False):                      
         se = tf.reduce_mean(x, axis=1)          
         se = se[:, :, tf.newaxis]             
                                                        

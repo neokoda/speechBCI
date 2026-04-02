@@ -1,7 +1,6 @@
 # Model type selector
 modelType: conformer
 
-# Conformer architecture params
 d_model: 512
 nhead: 8
 num_layers: 4
@@ -24,7 +23,6 @@ spatialAttnDim: 64
 spatialAttnHeads: 4
 attnWindow: 0
 
-# Shared params (same as Transformer/GRU config)
 inputLayerSize: 256
 subsampleFactor: 1
 weightReg: 1e-5
