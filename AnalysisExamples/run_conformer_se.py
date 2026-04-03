@@ -1,4 +1,21 @@
-                      
+#!/usr/bin/env python3
+"""
+Conformer training: Squeeze-and-Excitation (SE) + best config (LR 0.04).
+
+Adds a lightweight SE block before the stacking layer to learn per-sample
+channel importance weights across the 256 electrodes. The SE block uses
+global average pooling + a bottleneck FC (256->32->256) with sigmoid gating.
+
+Hypothesis: not all 256 electrodes are equally informative for speech
+decoding. SE can learn to suppress noisy/irrelevant channels and amplify
+speech-relevant ones, giving the Conformer cleaner input features.
+
+Usage:
+    python run_conformer_se.py \
+        --data-dir /workspace/speechBCI/data/derived/tfRecords \
+        --output-dir /workspace/speechBCI/experiments/conformer_se \
+        --gpu 0
+"""
 
 import argparse
 import os

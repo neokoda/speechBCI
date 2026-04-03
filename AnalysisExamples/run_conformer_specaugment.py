@@ -1,4 +1,17 @@
-                      
+#!/usr/bin/env python3
+"""
+Conformer training: shorter LR cycle (100k) + no grad ckpt + SpecAugment.
+
+Builds on the short-LR run (PER=0.198) by adding SpecAugment regularization.
+SpecAugment randomly masks time steps and feature channels during training,
+reducing overfitting — standard technique for Conformer ASR.
+
+Usage:
+    python run_conformer_specaugment.py \
+        --data-dir /workspace/speechBCI/data/derived/tfRecords \
+        --output-dir /workspace/speechBCI/experiments/conformer_specaugment \
+        --gpu 0
+"""
 
 import argparse
 import os
@@ -148,7 +161,7 @@ def run(args):
     exp_dir = os.path.join(args.output_dir, CONFIG['name'])
     os.makedirs(args.output_dir, exist_ok=True)
 
-                               
+    # Skip if already completed
     training_log = os.path.join(exp_dir, 'training.log')
     if os.path.exists(training_log):
         per, step = parse_best_per(exp_dir)
@@ -156,7 +169,7 @@ def run(args):
             print(f"Already completed (best PER: {per:.4f} at step {step}), skipping.")
             return
 
-                                    
+    # Check for resumable checkpoint
     ckpt_file = os.path.join(exp_dir, 'checkpoint')
     if os.path.exists(ckpt_file):
         print(f"Resuming from checkpoint...")

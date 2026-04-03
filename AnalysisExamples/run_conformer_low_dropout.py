@@ -1,4 +1,16 @@
-                      
+#!/usr/bin/env python3
+"""
+Conformer training: lower dropout (0.05) + high LR (0.025) + SpecAugment + short LR cycle + no grad ckpt.
+
+Tests whether reducing dropout from 0.1 to 0.05 improves performance,
+since SpecAugment already provides regularization.
+
+Usage:
+    python run_conformer_low_dropout.py \
+        --data-dir /workspace/speechBCI/data/derived/tfRecords \
+        --output-dir /workspace/speechBCI/experiments/conformer_low_dropout \
+        --gpu 0
+"""
 
 import argparse
 import os

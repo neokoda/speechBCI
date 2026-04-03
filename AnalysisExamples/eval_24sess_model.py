@@ -1,4 +1,14 @@
-                      
+#!/usr/bin/env python3
+"""
+Evaluate a 24-session trained model under three val-set configurations:
+
+  1. All 24 sessions (default training eval)
+  2. Willett 19 sessions only (same sessions as baseline, within 24-sess index space)
+  3. Willett sessions 4-18 only (matches pretrained GRU baseline eval methodology)
+
+Usage:
+    python eval_24sess_model.py --ckpt-dir /workspace/speechBCI/experiments/24sess/gru_1024u_5L_24sess
+"""
 
 import os
 import sys
@@ -8,7 +18,7 @@ import json
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
-                                   
+# Set up LD_LIBRARY_PATH for TF GPU
 import site
 nv_base = os.path.join(site.getsitepackages()[0], 'nvidia')
 nv_libs = ':'.join([
@@ -28,7 +38,7 @@ from neuralDecoder.neuralSequenceDecoder import NeuralSequenceDecoder
 
 DATA_DIR = '/workspace/speechBCI/data/derived/tfRecords'
 
-                          
+# The 24 sessions in order
 ALL_24 = [
     't12.2022.04.28', 't12.2022.05.05', 't12.2022.05.17', 't12.2022.05.19',
     't12.2022.05.24', 't12.2022.05.26', 't12.2022.06.02', 't12.2022.06.07',
@@ -38,7 +48,7 @@ ALL_24 = [
     't12.2022.08.13', 't12.2022.08.18', 't12.2022.08.23', 't12.2022.08.25',
 ]
 
-                                                 
+# The 19 sessions used by Willett et al. baseline
 WILLETT_19 = [
     't12.2022.04.28', 't12.2022.05.05', 't12.2022.05.17', 't12.2022.05.19',
     't12.2022.05.24', 't12.2022.05.26', 't12.2022.06.02', 't12.2022.06.07',
@@ -47,10 +57,10 @@ WILLETT_19 = [
     't12.2022.08.02', 't12.2022.08.11', 't12.2022.08.13',
 ]
 
-                                                        
+# Willett sessions 4-18 (indices in the 19-session list)
 WILLETT_4_18 = WILLETT_19[4:19]
 
-                                       
+# Map to indices in the 24-session list
 WILLETT_19_INDICES = [ALL_24.index(s) for s in WILLETT_19]
 WILLETT_4_18_INDICES = [ALL_24.index(s) for s in WILLETT_4_18]
 ALL_24_INDICES = list(range(24))
@@ -66,7 +76,7 @@ def evaluate_with_sessions(ckpt_dir, session_indices, label):
     if args.get('mixedPrecision', False):
         tf.keras.mixed_precision.set_global_policy('mixed_float16')
 
-                                                                   
+    # Zero out all val probabilities, then enable selected sessions
     for x in range(len(args['dataset']['datasetProbabilityVal'])):
         args['dataset']['datasetProbabilityVal'][x] = 0.0
 

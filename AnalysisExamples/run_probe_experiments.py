@@ -1,4 +1,22 @@
-                      
+#!/usr/bin/env python3
+"""
+Probe experiments: 30k-batch runs to get directional signal on dropout and LR.
+
+Five probes, each changing ONE variable from the cosine ablation baseline:
+  A:  dropout=0.3  (baseline: 0.1)
+  B1: LR 0.003->0.0003  (baseline: 0.001->0.0001)
+  B2: LR 0.007->0.0007  (baseline: 0.001->0.0001)
+  B3: LR 0.01->0.001    (baseline: 0.001->0.0001)
+  B4: LR 0.015->0.0015  (baseline: 0.001->0.0001)
+
+Baseline reference: cosine ablation PER at 30k steps = 0.3697
+
+Usage:
+    python run_probe_experiments.py \
+        --data-dir /workspace/speechBCI/data/derived/tfRecords \
+        --output-dir /workspace/speechBCI/experiments/probes \
+        --gpu 0
+"""
 
 import argparse
 import os
@@ -168,7 +186,7 @@ def run_probe(probe, data_dir, output_dir, gpu):
     print(f"  Compare against baseline PER at 30k: {BASELINE_PER_AT_30K}")
     print(f"{'='*70}\n")
 
-                               
+    # Skip if already completed
     training_log = os.path.join(exp_dir, 'training.log')
     if os.path.exists(training_log):
         per, step = parse_best_per(exp_dir)
@@ -176,7 +194,7 @@ def run_probe(probe, data_dir, output_dir, gpu):
             print(f"  Already completed (best PER: {per:.4f} at step {step}), skipping.")
             return per, step
 
-                                    
+    # Check for resumable checkpoint
     ckpt_file = os.path.join(exp_dir, 'checkpoint')
     if os.path.exists(ckpt_file):
         print(f"  Resuming from checkpoint...")
@@ -211,7 +229,7 @@ def run_probe(probe, data_dir, output_dir, gpu):
                 log_lines.append(line)
                 if any(kw in line for kw in ['Train batch', 'Val batch', 'Checkpoint']):
                     print(f"  {line}", flush=True)
-            proc.wait(timeout=21600)               
+            proc.wait(timeout=21600)  # 6hr timeout
             end_time = datetime.now()
             duration_min = (end_time - start_time).total_seconds() / 60
 
@@ -232,7 +250,7 @@ def run_probe(probe, data_dir, output_dir, gpu):
                 print(f"  Training failed after {oom_retries} OOM retries.")
                 return None, None
 
-                      
+            # Save log
             with open(os.path.join(exp_dir, 'training.log'), 'w') as f:
                 f.write('\n'.join(log_lines))
 
@@ -279,7 +297,7 @@ def main():
             'best_step': step,
         })
 
-             
+    # Summary
     print(f"\n{'#'*70}")
     print(f"  PROBE RESULTS SUMMARY")
     print(f"{'#'*70}")
@@ -294,7 +312,7 @@ def main():
         else:
             print(f"  {r['name']:<28s} {'FAILED':>8s}")
 
-                  
+    # Save results
     results_path = os.path.join(args.output_dir, 'probe_results.json')
     with open(results_path, 'w') as f:
         json.dump({

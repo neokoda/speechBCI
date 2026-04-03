@@ -1,4 +1,16 @@
-                      
+#!/usr/bin/env python3
+"""
+Vanilla Conformer (no SE, no spatial attention) with all 24 sessions.
+
+Best vanilla config: 512d, 4L, 8 heads, d_ff=2048, conv_kernel=31.
+SpecAugment enabled, dropout 0.1.
+
+Usage:
+    python run_conformer_vanilla_24sess.py \
+        --data-dir /workspace/speechBCI/data/derived/tfRecords \
+        --output-dir /workspace/speechBCI/experiments/24sess \
+        --gpu 0
+"""
 
 import argparse
 import os

@@ -1,4 +1,17 @@
-                      
+#!/usr/bin/env python3
+"""
+GRU training with all 24 sessions and extended training (50k steps).
+
+Original baseline: 19 sessions, 10k steps, LR 0.02→0.0 linear.
+This experiment: 24 sessions, 50k steps, LR 0.02→0.002 cosine.
+Gives the GRU 5x more training time and 26% more data.
+
+Usage:
+    python run_gru_24sess.py \
+        --data-dir /workspace/speechBCI/data/derived/tfRecords \
+        --output-dir /workspace/speechBCI/experiments/gru_24sess \
+        --gpu 0
+"""
 
 import argparse
 import os

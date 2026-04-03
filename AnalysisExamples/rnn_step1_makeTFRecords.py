@@ -1,17 +1,17 @@
-                     
-               
+#!/usr/bin/env python
+# coding: utf-8
 
-        
+# In[1]:
 
 
-                                                                                                       
+#formats the competitionData into tfRecords for RNN training, including blockwise feature normalization
 baseDir = 'c:/Users/LENOVO/Koding/Semester 8/TA/speechBCI/data'
 
 import os
 os.makedirs(baseDir+'/derived/tfRecords', exist_ok=True)
 
 
-        
+# In[ ]:
 
 
 from makeTFRecordsFromSession import makeTFRecordsFromCompetitionFiles 

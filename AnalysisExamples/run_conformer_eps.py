@@ -1,4 +1,25 @@
-                      
+#!/usr/bin/env python3
+"""
+Conformer training: Adam epsilon=1e-7 (down from 1e-1).
+
+The training code hardcodes Adam epsilon=0.1, which is 10 million times larger
+than the default (1e-8). Epsilon appears in the denominator of Adam updates:
+param_update = grad / (sqrt(v) + eps). When eps dominates, it caps effective
+step sizes and prevents fine-grained parameter updates.
+
+This was tuned for GRU stability, but may significantly limit the Conformer
+which has LayerNorm, BatchNorm, and multi-head attention with diverse parameter
+scales requiring precise updates.
+
+Keeps all other best settings: SE r=8, LR 0.04, SpecAugment, dropout 0.1,
+stack kernel_size=32.
+
+Usage:
+    python run_conformer_eps.py \
+        --data-dir /workspace/speechBCI/data/derived/tfRecords \
+        --output-dir /workspace/speechBCI/experiments/conformer_eps \
+        --gpu 0
+"""
 
 import argparse
 import os

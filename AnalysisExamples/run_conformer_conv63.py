@@ -1,4 +1,17 @@
-                      
+#!/usr/bin/env python3
+"""
+Conformer training: conv kernel 63 (up from 31) + LR 0.04 + SpecAugment.
+
+Larger conv kernel gives wider temporal receptive field without adding
+significant parameters. Tests whether the Conformer benefits from seeing
+more temporal context in its depthwise conv module.
+
+Usage:
+    python run_conformer_conv63.py \
+        --data-dir /workspace/speechBCI/data/derived/tfRecords \
+        --output-dir /workspace/speechBCI/experiments/conformer_conv63 \
+        --gpu 0
+"""
 
 import argparse
 import os

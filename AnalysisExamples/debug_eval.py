@@ -1,3 +1,7 @@
+"""
+Debug script to investigate why competitionHoldOut PER = 2.8532.
+Logs per-session and per-batch metrics to prove the root cause.
+"""
 import os
 import tensorflow as tf
 import numpy as np
@@ -10,9 +14,9 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 baseDir = 'c:/Users/LENOVO/Koding/Semester 8/TA/speechBCI/data'
 ckptDir = os.path.join(baseDir, 'derived', 'rnns', 'baselineRelease')
 
-                                                              
-                                                              
-                                                              
+# ============================================================
+# TEST 1: Run BOTH partitions side by side and compare results
+# ============================================================
 for testDir in ['test', 'competitionHoldOut']:
     print(f"\n{'='*70}")
     print(f"  PARTITION: {testDir}")
@@ -36,9 +40,9 @@ for testDir in ['test', 'competitionHoldOut']:
     tf.compat.v1.reset_default_graph()
     nsd = NeuralSequenceDecoder(args)
 
-                                                                  
-                                                     
-                                                                  
+    # ============================================================
+    # TEST 2: Check which session dirs actually exist
+    # ============================================================
     print(f"\n--- Session directory check for '{testDir}' ---")
     sessions = args['dataset']['sessions']
     for sessIdx in range(4, 19):
@@ -48,9 +52,9 @@ for testDir in ['test', 'competitionHoldOut']:
         nFiles = len(os.listdir(sessPath)) if exists else 0
         print(f"  [{sessIdx}] {sessName}/{testDir} : exists={exists}, nFiles={nFiles}")
 
-                                                                  
-                                                         
-                                                                  
+    # ============================================================
+    # TEST 3: Per-session inference with detailed metrics
+    # ============================================================
     print(f"\n--- Per-session inference breakdown ---")
     total_edit_dist = 0
     total_true_len = 0
@@ -84,19 +88,19 @@ for testDir in ['test', 'competitionHoldOut']:
             sess_decoded.append(decoded_dense)
             sess_true_seqs.append(trueSeq)
 
-                                                        
+            # Print first batch details for this session
             if batch_count == 1:
                 print(f"\n  Session [{datasetIdx}] {sessName} (layerIdx={layerIdx}):")
                 print(f"    Batch shape: inputFeatures={data['inputFeatures'].shape}")
                 print(f"    nTimeSteps (first 3): {data['nTimeSteps'].numpy()[:3]}")
                 print(f"    nSeqElements (first 3): {nSeq[:3]}")
 
-                                                     
+                # Show first sample's true vs decoded
                 for sampleIdx in range(min(2, len(nSeq))):
                     true_len = int(nSeq[sampleIdx])
-                    true_ids = trueSeq[sampleIdx, :true_len] - 1                        
+                    true_ids = trueSeq[sampleIdx, :true_len] - 1  # model uses 1-indexed
                     dec_ids = decoded_dense[sampleIdx]
-                    dec_ids = dec_ids[dec_ids >= 0]                  
+                    dec_ids = dec_ids[dec_ids >= 0]  # remove padding
                     sample_ed = ed[sampleIdx]
                     print(f"    Sample {sampleIdx}:")
                     print(f"      True  ({true_len} phonemes): {true_ids.tolist()}")

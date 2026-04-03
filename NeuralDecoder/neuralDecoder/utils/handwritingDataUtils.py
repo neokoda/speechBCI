@@ -22,9 +22,9 @@ def _convert_to_ascii(text):
 
 def formatSessionData(blocks, trialsToRemove, dataDir, channels=192, task='HandwritingTask',
                       includeSpikePower=False, globalStd=False, spikePowerMax=10000, zscoreData=True):
-                                                          
-                                                       
-                                                                                                                 
+    # trialsToRemove: {block_num: [trial_0, trial_1, ...]}
+    #                 Use session document block number
+    #                 Use session document trial number - 1 (In session trial number is 1-based, here is 0-based)
     inputFeatures = []
     rawInputFeatures = []
     transcriptions = []
@@ -52,14 +52,14 @@ def formatSessionData(blocks, trialsToRemove, dataDir, channels=192, task='Handw
         trlStart = np.squeeze(np.argwhere(trlStart))
         trlEnd = np.squeeze(np.argwhere(trlEnd))
 
-                                               
+        # Edge case when block only has 1 trial
         if trlStart.size == 1:
             trlStart = np.array([trlStart])
         if trlEnd.size == 1:
             trlEnd = np.array([trlEnd])
 
         if len(trlEnd)==0:
-                                                                                                    
+            #closed-loop button press mode uses state 1->3 for trl end (go state -> end-trial state)
             trlEnd = np.logical_and(taskDat['timeSeriesData'][0:-1,2]==1, taskDat['timeSeriesData'][1:,2]==3)
             trlEnd = np.squeeze(np.argwhere(trlEnd))
 
@@ -77,19 +77,19 @@ def formatSessionData(blocks, trialsToRemove, dataDir, channels=192, task='Handw
             startTimeStep = np.argmin(np.abs(redisDat['binnedNeural_xpcClock']-startTime))
             endTimeStep = np.argmin(np.abs(redisDat['binnedNeural_xpcClock']-endTime))
 
-                                                                       
-                                                                         
+            #validStartTimes = redisDat['binnedNeural_xpcClock'].copy()
+            #validStartTimes = validStartTimes[validStartTimes>startTime]
 
-                                                                     
-                                                                   
+            #validEndTimes = redisDat['binnedNeural_xpcClock'].copy()
+            #validEndTimes = validEndTimes[validEndTimes>startTime]
 
-                                                                  
-                                                                                                           
-                                                                                                       
+            #redisLen = redisDat['binnedNeural_xpcClock'].shape[1]
+            #startTimeStep = np.argmin(np.abs(validStartTimes-startTime)) + (redisLen-len(validStartTimes))
+            #endTimeStep = np.argmin(np.abs(validEndTimes-endTime)) + (redisLen-len(validEndTimes)) + 2
 
             newInputFeatures = redisDat['binnedNeural'][startTimeStep:endTimeStep,:].astype(np.float32)
             if includeSpikePower:
-                                                               
+                #limit to max 10000 to combat huge noise spikes
                 tmp = redisDat['binnedNeural_hlfp'][startTimeStep:endTimeStep,:].copy()
                 tmp[tmp>spikePowerMax]=spikePowerMax
                 newInputFeatures = np.concatenate([newInputFeatures, tmp], axis=1)
@@ -105,7 +105,7 @@ def formatSessionData(blocks, trialsToRemove, dataDir, channels=192, task='Handw
         if 'ngramDecoderFinalOutput' in redisDat:
             for i, x in enumerate(redisDat['ngramDecoderFinalOutput'][0]):
                 if len(x) == 0:
-                    pseudoLabels.append('')                       
+                    pseudoLabels.append('')  # empty decoded label
                 elif x == 0:
                     continue
                 else:
@@ -202,10 +202,10 @@ def formatSessionDataForRelease(blocks, trialsToRemove, dataDir, channels=192, t
 
            goCueTimes.append(startTime)
            if x == 0:
-                                                              
-                                                           
-                                            
-                               
+               # delay cue is only present starting at trial 1
+               # assume the trial 0 has delay cue time at 0
+               # but this is an overestimate
+               # TODO: Fix this
                delayCueTimes.append(0)
            delayCueTimes.append(endTime)
            trialTimes.append(endTime - startTime)
@@ -215,19 +215,19 @@ def formatSessionDataForRelease(blocks, trialsToRemove, dataDir, channels=192, t
            blockList.append(b)
 
    return {
-       'neuralActivityCube': np.array(rawInputFeatures, dtype=object),                                     
-       'sentencePrompt': np.array(transcriptions, dtype=object),             
-       'numTimeBinsPerSentence': np.array(frameLens),             
-       'blockList': np.array(blockList),             
-       'neuralActivityTimeSeries': np.array(neuralActivityTimeSeries, dtype=object),                                     
-       'xpcClockTimeSeries': np.array(xpcClockTimeSeries, dtype=object),                          
-       'excludedTrials': np.array(excludedTrials),             
-       'goCueTimes': np.array(goCueTimes),             
-       'delayCueTimes': np.array(delayCueTimes)             
+       'neuralActivityCube': np.array(rawInputFeatures, dtype=object),  # (nTimeSteps, nChannels) * nTrials
+       'sentencePrompt': np.array(transcriptions, dtype=object),  # (nTrials)
+       'numTimeBinsPerSentence': np.array(frameLens),  # (nTrials)
+       'blockList': np.array(blockList),  # (nTrials)
+       'neuralActivityTimeSeries': np.array(neuralActivityTimeSeries, dtype=object),  # (nTimeSteps, nChannels) * nBlocks
+       'xpcClockTimeSeries': np.array(xpcClockTimeSeries, dtype=object),  # (nTimeSteps) * nBlocks
+       'excludedTrials': np.array(excludedTrials),  # (nTrials)
+       'goCueTimes': np.array(goCueTimes),  # (nTrials)
+       'delayCueTimes': np.array(delayCueTimes)  # (nTrials)
    }
 
 def generateReleaseDataReadme(readmePath):
-    content =\
+    content = \
         """
         This folder contains the recorded neural data for the handwriting task performed by T5 in one session.
 
@@ -322,7 +322,7 @@ def convertToTFRecord(sessionData, outputDir, trainTrials, testTrials,
                     seqLen = len(thesePhones)
                     seqClassIDs[0:seqLen] = [phoneToId(p) + 1 for p in thesePhones]
                 else:
-                                        
+                    # Remove punctuation
                     thisTranscription = re.sub(r'[^a-zA-Z\- \']', '', thisTranscription)
                     thisTranscription = thisTranscription.replace('--', '').lower()
                     phonemes = []
@@ -333,15 +333,15 @@ def convertToTFRecord(sessionData, outputDir, trainTrials, testTrials,
                             if addInterWordSymbol and p==' ':
                                 phonemes.append('SIL')
 
-                            p = re.sub(r'[0-9]', '', p)                 
-                            if re.match(r'[A-Z]+', p):                      
+                            p = re.sub(r'[0-9]', '', p)  # Remove stress
+                            if re.match(r'[A-Z]+', p):  # Only keep phonemes
                                 phonemes.append(p)
                             if vowelOnly:
                                 phonemes = [p for p in phonemes if p in VOWEL_DEF]
                             if consonantOnly:
                                 phonemes = [p for p in phonemes if p in CONSONANT_DEF]
 
-                                                                                             
+                        #add one SIL symbol at the end so there's one at the end of each word
                         if addInterWordSymbol:
                             phonemes.append('SIL')
 
@@ -365,7 +365,7 @@ def convertToTFRecord(sessionData, outputDir, trainTrials, testTrials,
                     'ceMask': _floats_feature(np.ravel(ceMask).tolist()),
                     'transcription': _ints_feature(paddedTranscription)}
 
-                                                 
+                #print(paddedTranscription[0:10])
                 print(seqClassIDs[0:10])
                 example = tf.train.Example(features=tf.train.Features(feature=feature))
                 writer.write(example.SerializeToString())

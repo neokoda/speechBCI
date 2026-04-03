@@ -1,7 +1,0 @@
-Model,Train Sessions,Eval All-24 PER,Eval All-24 Time(s),Eval Willett-19 PER,Eval Willett-19 Time(s),Eval Willett 4-18 PER,Eval Willett 4-18 Time(s)
-GRU Baseline,19,N/A,N/A,0.1925,1.161,0.1718,0.8441
-Conformer Spatial,19,N/A,N/A,0.1839,3.116,0.1648,1.929
-Transformer 512d-4L-8H,19,N/A,N/A,0.2754,N/A,N/A,N/A
-GRU,24,0.1817,1.3374,0.1817,1.0763,0.1597,0.8244
-Conformer Spatial,24,0.1654,2.9352,0.164,2.2564,0.1428,1.9264
-Conformer Vanilla,24,0.17,2.7687,0.1688,2.1216,0.1477,1.8263

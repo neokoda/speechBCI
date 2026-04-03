@@ -1,4 +1,16 @@
-                      
+#!/usr/bin/env python3
+"""
+Round 1 Experiment Runner: Successive Halving for Transformer Architecture Search.
+
+Runs 16 Transformer configs for 1,000 batches each, logs results to CSV,
+and ranks them by validation PER.
+
+Usage (on RunPod):
+    python run_round1_experiments.py \
+        --data-dir /workspace/speechBCI/data/derived/tfRecords \
+        --output-dir /workspace/speechBCI/experiments/round1 \
+        --gpu 0
+"""
 
 import argparse
 import itertools
@@ -9,22 +21,22 @@ import csv
 import json
 from datetime import datetime
 
-                                                                             
+# Path to NeuralDecoder source directory (contains the neuralDecoder package)
 _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 NEURAL_DECODER_DIR = os.path.abspath(os.path.join(_SCRIPT_DIR, '..', 'NeuralDecoder'))
 
 
-                                                                              
-                               
-                                                                              
+# ============================================================================
+# Experiment Configuration Grid
+# ============================================================================
 GRID = {
     'd_model':    [256, 512],
     'num_layers': [4, 6],
     'nhead':      [4, 8],
-    'd_ff_mult':  [2, 4],                               
+    'd_ff_mult':  [2, 4],   # d_ff = d_ff_mult * d_model
 }
 
-                                   
+# Fixed hyperparameters for Round 1
 FIXED = {
     'nBatchesToTrain':   1000,
     'batchesPerVal':     100,
@@ -41,7 +53,7 @@ FIXED = {
 
 MAX_OOM_RETRIES = 3
 
-                                    
+# Sessions to use (same as baseline)
 SESSIONS = [
     't12.2022.04.28', 't12.2022.05.05', 't12.2022.05.17', 't12.2022.05.19',
     't12.2022.05.24', 't12.2022.05.26', 't12.2022.06.02', 't12.2022.06.07',
@@ -56,6 +68,7 @@ def make_config_name(d_model, num_layers, nhead, d_ff):
 
 
 def generate_configs():
+    """Generate all 16 experiment configs."""
     configs = []
     for d_model, num_layers, nhead, d_ff_mult in itertools.product(
         GRID['d_model'], GRID['num_layers'], GRID['nhead'], GRID['d_ff_mult']
@@ -73,10 +86,11 @@ def generate_configs():
 
 
 def build_command(config, data_dir, output_dir, gpu):
+    """Build the hydra command to run a single experiment."""
     exp_dir = os.path.join(output_dir, config['name'])
     os.makedirs(exp_dir, exist_ok=True)
 
-                                          
+    # Build data dir list for all sessions
     data_dirs_str = '[' + ','.join([data_dir] * len(SESSIONS)) + ']'
     sessions_str = '[' + ','.join(SESSIONS) + ']'
     layer_map = list(range(len(SESSIONS)))
@@ -103,7 +117,7 @@ def build_command(config, data_dir, output_dir, gpu):
         f'dataset.datasetProbabilityVal={prob_str}',
     ]
 
-                      
+    # Add fixed params
     for key, val in FIXED.items():
         cmd.append(f'{key}={val}')
 
@@ -111,13 +125,14 @@ def build_command(config, data_dir, output_dir, gpu):
 
 
 def parse_final_step(exp_dir):
+    """Parse the last training step reached from metrics.csv."""
     metrics_path = os.path.join(exp_dir, 'metrics.csv')
     if not os.path.exists(metrics_path):
         return None
     try:
         with open(metrics_path, 'r') as f:
             reader = csv.reader(f)
-            next(reader)               
+            next(reader)  # skip header
             last_row = None
             for row in reader:
                 last_row = row
@@ -129,6 +144,7 @@ def parse_final_step(exp_dir):
 
 
 def parse_val_per(exp_dir):
+    """Parse the best validation PER from metrics.csv."""
     metrics_path = os.path.join(exp_dir, 'metrics.csv')
     if not os.path.exists(metrics_path):
         return float('inf')
@@ -136,7 +152,7 @@ def parse_val_per(exp_dir):
         best = float('inf')
         with open(metrics_path, 'r') as f:
             reader = csv.reader(f)
-            next(reader)               
+            next(reader)  # skip header
             for row in reader:
                 if row:
                     per = float(row[1])
@@ -155,7 +171,7 @@ def run_experiments(args):
     print(f"  {len(configs)} configs × {FIXED['nBatchesToTrain']} batches each")
     print(f"{'='*70}\n")
 
-                 
+    # Results CSV
     results_csv = os.path.join(args.output_dir, 'round1_results.csv')
     os.makedirs(args.output_dir, exist_ok=True)
 
@@ -174,7 +190,7 @@ def run_experiments(args):
 
         exp_dir = os.path.join(args.output_dir, config['name'])
 
-                                   
+        # Skip if already completed
         if os.path.exists(os.path.join(exp_dir, 'outputSnapshot')) or os.path.exists(os.path.join(exp_dir, 'outputSnapshot.mat')):
             per = parse_val_per(exp_dir)
             if per < float('inf'):
@@ -189,25 +205,25 @@ def run_experiments(args):
         oom_retries = 0
 
         while True:
-                                                       
+            # Clear stale error log before each attempt
             stale_error_log = os.path.join(exp_dir, 'error.log')
             if os.path.exists(stale_error_log):
                 os.remove(stale_error_log)
 
             try:
-                                                                  
+                # Ensure neuralDecoder is importable by subprocess
                 env = os.environ.copy()
                 existing = env.get('PYTHONPATH', '')
                 env['PYTHONPATH'] = NEURAL_DECODER_DIR + (os.pathsep + existing if existing else '')
 
-                                                                  
+                # Stream output in real-time so user sees progress
                 proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                         text=True, bufsize=1, env=env)
                 log_lines = []
                 for line in proc.stdout:
                     line = line.rstrip()
                     log_lines.append(line)
-                                                      
+                    # Show key training progress lines
                     if 'Train batch' in line or 'Val batch' in line or 'Checkpoint' in line:
                         print(f"  {line}")
                 proc.wait(timeout=3600)
@@ -216,7 +232,7 @@ def run_experiments(args):
 
                 if proc.returncode != 0:
                     print(f"  FAILED (exit code {proc.returncode})")
-                                                     
+                    # Show last 5 lines for debugging
                     for l in log_lines[-5:]:
                         print(f"    {l}")
                     with open(os.path.join(exp_dir, 'error.log'), 'w') as f:
@@ -233,7 +249,7 @@ def run_experiments(args):
                                    'duration_min': duration_min, 'final_step': final_step})
                     break
 
-                                 
+                # Save stdout log
                 with open(os.path.join(exp_dir, 'training.log'), 'w') as f:
                     f.write('\n'.join(log_lines))
 
@@ -251,7 +267,7 @@ def run_experiments(args):
                                'final_step': final_step})
                 break
 
-                                             
+    # Sort by val PER and write final results
     results.sort(key=lambda x: x['val_per'])
     print(f"\n{'='*70}")
     print(f"  ROUND 1 RESULTS (ranked by val PER)")
@@ -274,7 +290,7 @@ def run_experiments(args):
                 r.get('final_step', '')
             ])
 
-                                 
+    # Save promotions for Round 2
     promoted = [r['name'] for r in results[:8] if r['val_per'] < float('inf')]
     promotions_file = os.path.join(args.output_dir, 'promoted_to_round2.json')
     with open(promotions_file, 'w') as f:

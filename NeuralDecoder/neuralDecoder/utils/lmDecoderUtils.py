@@ -8,6 +8,9 @@ import tensorflow as tf
 import lm_decoder
 import neuralDecoder.utils.rnnEval as rnnEval
 
+'''
+Neural Language Model Utils
+'''
 def build_gpt2(modelName='gpt2-xl', cacheDir=None):
     from transformers import GPT2TokenizerFast, TFGPT2LMHeadModel
     tokenizer = GPT2TokenizerFast.from_pretrained(modelName, cache_dir=cacheDir)
@@ -128,6 +131,9 @@ def cer_with_gpt2_decoder(model, tokenizer, nbestOutputs, acousticScale,
         'confidences': confidences
     }
 
+'''
+NGram Language Model Utils
+'''
 def build_lm_decoder(model_path,
                      max_active=7000,
                      min_active=200,
@@ -228,7 +234,7 @@ def cer_with_lm_decoder(decoder, inferenceOut, includeSpaceSymbol=True,
                         rescore=False,
                         blankPenalty=0.0,
                         logPriors=None):
-                                   
+    # Reshape logits to kaldi order
     logits = inferenceOut['logits']
     if outputType == 'handwriting':
         logits = rearrange_handwriting_logits(logits, includeSpaceSymbol)
@@ -237,7 +243,7 @@ def cer_with_lm_decoder(decoder, inferenceOut, includeSpaceSymbol=True,
         logits = rearrange_speech_logits(logits, has_sil=('speech_sil' == outputType))
         trueSentences = _extract_transcriptions(inferenceOut)
 
-                                
+    # Decode with language model
     decodedSentences = []
     decodeTime = []
     for l in trange(len(inferenceOut['logits'])):
@@ -251,7 +257,7 @@ def cer_with_lm_decoder(decoder, inferenceOut, includeSpaceSymbol=True,
                             blankPenalty=blankPenalty,
                             logPriors=logPriors)
 
-                      
+        # Post-process
         if outputType == 'handwriting':
             if includeSpaceSymbol:
                 decoded = decoded.replace(' ', '')

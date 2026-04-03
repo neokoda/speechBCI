@@ -1,4 +1,31 @@
-                      
+#!/usr/bin/env python3
+"""
+Conformer training: Spatial Attention (cross-channel self-attention).
+
+Replaces SE with a spatial attention block that uses multi-head self-attention
+across the 256 electrode channels. Unlike SE (which learns independent per-
+channel importance via an FC bottleneck), spatial attention learns PAIRWISE
+cross-channel relationships — each electrode selectively attends to specific
+other electrodes.
+
+The 256 electrodes sit on a physical microelectrode array. Spatial attention
+can discover:
+  - Nearby electrodes recording from the same neuron population
+  - Electrode clusters that co-activate for specific phonemes
+  - Correlated noise patterns to suppress
+
+Architecture: global avg pool over time → project + channel embeddings →
+multi-head self-attention (256×256) → per-channel sigmoid gate.
+
+Keeps all other best settings: LR 0.04, SpecAugment, dropout 0.1.
+No SE (spatial attention replaces it for clean comparison).
+
+Usage:
+    python run_conformer_spatial.py \
+        --data-dir /workspace/speechBCI/data/derived/tfRecords \
+        --output-dir /workspace/speechBCI/experiments/conformer_spatial \
+        --gpu 0
+"""
 
 import argparse
 import os

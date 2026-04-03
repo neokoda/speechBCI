@@ -1,4 +1,16 @@
-                      
+#!/usr/bin/env python3
+"""
+Conformer training: 6 layers (up from 4) + SpecAugment + short LR + no grad ckpt.
+
+Hypothesis: error analysis showed the gap to GRU is capacity-limited.
+Adding 2 more Conformer blocks should help close it.
+
+Usage:
+    python run_conformer_6L.py \
+        --data-dir /workspace/speechBCI/data/derived/tfRecords \
+        --output-dir /workspace/speechBCI/experiments/conformer_6L \
+        --gpu 0
+"""
 
 import argparse
 import os

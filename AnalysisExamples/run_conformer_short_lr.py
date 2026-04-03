@@ -1,4 +1,17 @@
-                      
+#!/usr/bin/env python3
+"""
+Conformer training: shorter LR cycle (100k) + gradient checkpointing OFF.
+
+Hypothesis: the previous run's LR barely decayed by convergence (~60k steps)
+because cosine was over 300k. A 100k cycle lets LR drop properly during
+fine-tuning. Grad checkpointing OFF gives ~15% speed boost with safe VRAM.
+
+Usage:
+    python run_conformer_short_lr.py \
+        --data-dir /workspace/speechBCI/data/derived/tfRecords \
+        --output-dir /workspace/speechBCI/experiments/conformer_short_lr \
+        --gpu 0
+"""
 
 import argparse
 import os
@@ -144,7 +157,7 @@ def run(args):
     exp_dir = os.path.join(args.output_dir, CONFIG['name'])
     os.makedirs(args.output_dir, exist_ok=True)
 
-                               
+    # Skip if already completed
     training_log = os.path.join(exp_dir, 'training.log')
     if os.path.exists(training_log):
         per, step = parse_best_per(exp_dir)
@@ -152,7 +165,7 @@ def run(args):
             print(f"Already completed (best PER: {per:.4f} at step {step}), skipping.")
             return
 
-                                    
+    # Check for resumable checkpoint
     ckpt_file = os.path.join(exp_dir, 'checkpoint')
     if os.path.exists(ckpt_file):
         print(f"Resuming from checkpoint...")
@@ -188,7 +201,7 @@ def run(args):
                 if any(kw in line for kw in ['Train batch', 'Val batch', 'Checkpoint',
                                              'Early stop', 'early stopping']):
                     print(f"  {line}", flush=True)
-            proc.wait(timeout=43200)                
+            proc.wait(timeout=43200)  # 12hr timeout
             end_time = datetime.now()
             duration_min = (end_time - start_time).total_seconds() / 60
 
@@ -209,7 +222,7 @@ def run(args):
                 print(f"  Training failed after {oom_retries} OOM retries.")
                 return
 
-                      
+            # Save log
             with open(os.path.join(exp_dir, 'training.log'), 'w') as f:
                 f.write('\n'.join(log_lines))
 
@@ -224,7 +237,7 @@ def run(args):
             print(f"  Compare: GRU baseline = {GRU_BASELINE_PER} PER")
             print(f"{'='*70}")
 
-                         
+            # Save result
             result = {
                 'config': CONFIG,
                 'fixed': {k: str(v) for k, v in FIXED.items()},

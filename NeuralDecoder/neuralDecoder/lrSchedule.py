@@ -5,6 +5,22 @@ import tensorflow as tf
 
 
 class WarmUp(tf.keras.optimizers.schedules.LearningRateSchedule):
+    """
+    Applies a warmup schedule on a given learning rate decay schedule.
+
+    Args:
+        initial_learning_rate (:obj:`float`):
+            The initial learning rate for the schedule after the warmup (so this will be the learning rate at the end
+            of the warmup).
+        decay_schedule_fn (:obj:`Callable`):
+            The schedule function to apply after the warmup for the rest of training.
+        warmup_steps (:obj:`int`):
+            The number of steps for the warmup part of training.
+        power (:obj:`float`, `optional`, defaults to 1):
+            The power to use for the polynomial warmup (defaults is a linear warmup).
+        name (:obj:`str`, `optional`):
+            Optional name prefix for the returned tensors during the schedule.
+    """
 
     def __init__(
         self,
@@ -23,8 +39,8 @@ class WarmUp(tf.keras.optimizers.schedules.LearningRateSchedule):
 
     def __call__(self, step):
         with tf.name_scope(self.name or "WarmUp") as name:
-                                                                                    
-                                                                             
+            # Implements polynomial warmup. i.e., if global_step < warmup_steps, the
+            # learning rate will be `global_step/num_warmup_steps * init_lr`.
             global_step_float = tf.cast(step, tf.float32)
             warmup_steps_float = tf.cast(self.warmup_steps, tf.float32)
             warmup_percent_done = global_step_float / warmup_steps_float
@@ -59,7 +75,33 @@ def create_optimizer(
     power: float = 1.0,
     include_in_weight_decay: Optional[List[str]] = None,
 ):
-                                                   
+    """
+    Creates an optimizer with a learning rate schedule using a warmup phase followed by a linear decay.
+
+    Args:
+        init_lr (:obj:`float`):
+            The desired learning rate at the end of the warmup phase.
+        num_train_steps (:obj:`int`):
+            The total number of training steps.
+        num_warmup_steps (:obj:`int`):
+            The number of warmup steps.
+        min_lr_ratio (:obj:`float`, `optional`, defaults to 0):
+            The final learning rate at the end of the linear decay will be :obj:`init_lr * min_lr_ratio`.
+        adam_beta1 (:obj:`float`, `optional`, defaults to 0.9):
+            The beta1 to use in Adam.
+        adam_beta2 (:obj:`float`, `optional`, defaults to 0.999):
+            The beta2 to use in Adam.
+        adam_epsilon (:obj:`float`, `optional`, defaults to 1e-8):
+            The epsilon to use in Adam.
+        weight_decay_rate (:obj:`float`, `optional`, defaults to 0):
+            The weight decay to use.
+        power (:obj:`float`, `optional`, defaults to 1.0):
+            The power to use for PolynomialDecay.
+        include_in_weight_decay (:obj:`List[str]`, `optional`):
+            List of the parameter names (or re patterns) to apply weight decay to. If none is passed, weight decay is
+            applied to all parameters except bias and layer norm parameters.
+    """
+    # Implements linear decay of the learning rate.
     lr_schedule = tf.keras.optimizers.schedules.PolynomialDecay(
         initial_learning_rate=init_lr,
         decay_steps=num_train_steps - num_warmup_steps,
@@ -86,6 +128,6 @@ def create_optimizer(
         optimizer = tf.keras.optimizers.Adam(
             learning_rate=lr_schedule, beta_1=adam_beta1, beta_2=adam_beta2, epsilon=adam_epsilon
         )
-                                                                               
-                                                         
+    # We return the optimizer and the LR scheduler in order to better track the
+    # evolution of the LR independently of the optimizer.
     return optimizer, lr_schedule

@@ -8,7 +8,7 @@ import numpy as np
 import scipy.io
 import scipy.special
 import tensorflow as tf
-                                     
+#import tensorflow_probability as tfp
 from omegaconf import OmegaConf
 from omegaconf.listconfig import ListConfig
 
@@ -19,8 +19,18 @@ from scipy.ndimage.filters import gaussian_filter1d
 
 @tf.function(experimental_relax_shapes=True)
 def gaussSmooth(inputs, kernelSD=2, padding='SAME'):
+    """
+    Applies a 1D gaussian smoothing operation with tensorflow to smooth the data along the time axis.
 
-                                  
+    Args:
+        inputs (tensor : B x T x N): A 3d tensor with batch size B, time steps T, and number of features N
+        kernelSD (float): standard deviation of the Gaussian smoothing kernel
+
+    Returns:
+        smoothedData (tensor : B x T x N): A smoothed 3d tensor with batch size B, time steps T, and number of features N
+    """
+
+    #get gaussian smoothing kernel
     inp = np.zeros([100], dtype=np.float32)
     inp[50] = 1
     gaussKernel = gaussian_filter1d(inp, kernelSD)
@@ -28,16 +38,21 @@ def gaussSmooth(inputs, kernelSD=2, padding='SAME'):
     gaussKernel = gaussKernel[validIdx]
     gaussKernel = np.squeeze(gaussKernel/np.sum(gaussKernel))
 
-                                  
+    # Apply depth_wise convolution
     B, T, C = inputs.shape.as_list()
-    filters = tf.tile(gaussKernel[None, :, None, None], [1, 1, C, 1])                
-    inputs = inputs[:, None, :, :]                
+    filters = tf.tile(gaussKernel[None, :, None, None], [1, 1, C, 1])  # [1, W, C, 1]
+    inputs = inputs[:, None, :, :]  # [B, 1, T, C]
     smoothedInputs = tf.nn.depthwise_conv2d(inputs, filters, strides=[1, 1, 1, 1], padding=padding)
     smoothedInputs = tf.squeeze(smoothedInputs, 1)
 
     return smoothedInputs
 
 class NeuralSequenceDecoder(object):
+    """
+    This class encapsulates all the functionality needed for training, loading and running the neural sequence decoder RNN.
+    To use it, initialize this class and then call .train() or .inference(). It can also be run from the command line (see bottom
+    of the script). The args dictionary passed during initialization is used to configure all aspects of its behavior.
+    """
 
     def __init__(self, args):
         self.args = args
@@ -45,19 +60,19 @@ class NeuralSequenceDecoder(object):
         if not os.path.isdir(self.args['outputDir']):
             os.mkdir(self.args['outputDir'])
 
-                                
+        #record these parameters
         if self.args['mode'] == 'train':
             with open(os.path.join(args['outputDir'], 'args.yaml'), 'w') as f:
                 OmegaConf.save(config=self.args, f=f)
 
-                                
+        #random variable seeding
         if self.args['seed'] == -1:
             self.args['seed'] = datetime.now().microsecond
         np.random.seed(self.args['seed'])
         tf.random.set_seed(self.args['seed'])
         random.seed(self.args['seed'])
 
-                                              
+        # Init model based on modelType config
         modelType = self.args['model'].get('modelType', 'gru')
         if modelType == 'transformer':
             self.model = models.TransformerEncoder(
@@ -125,7 +140,7 @@ class NeuralSequenceDecoder(object):
         self._prepareForTraining()
 
     def _buildInputNetworks(self, isTraining):
-                                                                 
+        #Build day transformation and normalization layers (FCNs)
         self.nInputLayers = np.max(self.args['dataset']['datasetToLayerMap'])+1
         self.inputLayers = []
         self.normLayers = []
@@ -171,7 +186,7 @@ class NeuralSequenceDecoder(object):
 
 
     def _buildInputLayers(self, isTraining):
-                                                           
+        # Build day transformation and normalization layers
         self.nInputLayers = np.max(self.args['dataset']['datasetToLayerMap'])+1
         self.inputLayers = []
         self.normLayers = []
@@ -182,7 +197,7 @@ class NeuralSequenceDecoder(object):
 
             nInputFeatures = self.args['dataset']['nInputFeatures']
 
-                                                      
+            # Adapt normalization layer with all data.
             normLayer = tf.keras.layers.Normalization(input_shape=[nInputFeatures])
             normLayer.build([None, nInputFeatures])
             if isTraining and self.args['normLayer']:
@@ -202,7 +217,7 @@ class NeuralSequenceDecoder(object):
             self.normLayers.append(normLayer)
 
     def _buildOptimizer(self):
-                                              
+        #define the gradient descent optimizer
         scheduleType = self.args.get('lrScheduleType', 'polynomial')
         decay_steps = self.args.get('learnRateDecaySteps', self.args['nBatchesToTrain'])
         warmup_steps = self.args['warmUpSteps']
@@ -239,7 +254,7 @@ class NeuralSequenceDecoder(object):
             self.optimizer = tf.keras.mixed_precision.LossScaleOptimizer(self.optimizer)
 
     def _prepareForTraining(self):
-                                    
+        #build the dataset pipelines
         self.tfAdaptDatasets = []
         self.tfTrainDatasets = []
         self.tfValDatasets = []
@@ -250,11 +265,11 @@ class NeuralSequenceDecoder(object):
         nInputFeatures = self.args['dataset']['nInputFeatures']
         if subsetChans > 0:
             if TXThreshold and spkPower:
-                                               
+                #nInputFeatures = 2*subsetChans
                 chanIndices = np.random.permutation(128)[:subsetChans]
                 chanIndices = np.concatenate((chanIndices,chanIndices+128))
             else:
-                                             
+                #nInputFeatures = subsetChans
                 if TXThreshold:
                     chanIndices = np.random.permutation(128)[:subsetChans]
                 else:
@@ -327,13 +342,13 @@ class NeuralSequenceDecoder(object):
             self.tfTrainDatasets.append(newTrainDataset)
             self.tfValDatasets.append(newValDataset)
 
-                                                                                                    
+        # Define input layers, including feature normalization which is adapted on the training data
         if 'inputNetwork' in self.args['model']:
             self._buildInputNetworks(isTraining=True)
         else:
             self._buildInputLayers(isTraining=True)
 
-                                                                                               
+        # Train dataset selector. Used for switch between different day's data during training.
         self.trainDatasetSelector = {}
         self.trainDatasetIterators = [iter(d) for d in self.tfTrainDatasets]
         for x in range(len(self.args['dataset']['sessions'])):
@@ -347,7 +362,7 @@ class NeuralSequenceDecoder(object):
 
         self._buildOptimizer()
 
-                                                                  
+        #define a list of all trainable variables for optimization
         self.trainableVariables = []
         if self.args['trainableBackend']:
             self.trainableVariables.extend(self.model.trainable_variables)
@@ -358,34 +373,34 @@ class NeuralSequenceDecoder(object):
                     self.inputLayers[x].trainable_variables)
 
 
-                              
-                                                                                          
-                               
-                            
+        #clear old checkpoints
+        #ckptFiles = [str(x) for x in pathlib.Path(self.args['outputDir']).glob("ckpt-*")]
+        #for file in ckptFiles:
+        #    os.remove(file)
 
-                                                                   
-                                                              
+        #if os.path.isfile(self.args['outputDir'] + '/checkpoint'):
+        #    os.remove(self.args['outputDir'] + '/checkpoint')
 
-                       
+        #saving/loading
         ckptVars = {}
         ckptVars['net'] = self.model
         for x in range(len(self.normLayers)):
             ckptVars['normLayer_'+str(x)] = self.normLayers[x]
             ckptVars['inputLayer_'+str(x)] = self.inputLayers[x]
 
-                                                  
+        # Resume if checkpoint exists in outputDir
         resume = os.path.exists(os.path.join(self.args['outputDir'], 'checkpoint'))
         if resume:
-                                                                                     
+            # Resume training, so we need to load optimizer and step from checkpoint.
             ckptVars['step'] = tf.Variable(0)
             ckptVars['bestValCer'] = tf.Variable(1.0)
-                                                                              
-                                                                                        
+            # In infer mode, skip restoring the optimizer to avoid legacy Adam
+            # compatibility issues with TF 2.11+ (checkpoint was saved with legacy API).
             if self.args['mode'] != 'infer':
                 ckptVars['optimizer'] = self.optimizer
             self.checkpoint = tf.train.Checkpoint(**ckptVars)
             ckptPath = tf.train.latest_checkpoint(self.args['outputDir'])
-                                                                               
+            # If in infer mode, we may want to load a particular checkpoint idx
             if self.args['mode'] == 'infer':
                 if self.args['loadCheckpointIdx'] is not None:
                     ckptPath = os.path.join(self.args['outputDir'], f'ckpt-{self.args["loadCheckpointIdx"]}')
@@ -408,13 +423,13 @@ class NeuralSequenceDecoder(object):
                         for vf, vt in zip(self.inputLayers[int(f)].variables, self.inputLayers[int(t)].variables):
                             vt.assign(vf)
 
-                                                                                                            
+                # After loading, we need to put optimizer and step back to checkpoint in order to save them.
                 ckptVars['step'] = tf.Variable(0)
                 ckptVars['bestValCer'] = tf.Variable(1.0)
                 ckptVars['optimizer'] = self.optimizer
                 self.checkpoint = tf.train.Checkpoint(**ckptVars)
             else:
-                                  
+                # Nothing to load.
                 ckptVars['step'] = tf.Variable(0)
                 ckptVars['bestValCer'] = tf.Variable(1.0)
                 ckptVars['optimizer'] = self.optimizer
@@ -423,12 +438,12 @@ class NeuralSequenceDecoder(object):
         self.ckptManager = tf.train.CheckpointManager(
             self.checkpoint, self.args['outputDir'], max_to_keep=1)
 
-                             
+        # Tensorboard summary
         if self.args['mode'] == 'train':
             self.summary_writer = tf.summary.create_file_writer(
                 self.args['outputDir'])
 
-                             
+            # CSV metrics log
             self.csvLogPath = os.path.join(self.args['outputDir'], 'metrics.csv')
             if not os.path.exists(self.csvLogPath):
                 with open(self.csvLogPath, 'w', newline='') as f:
@@ -436,14 +451,14 @@ class NeuralSequenceDecoder(object):
                     writer.writerow(['batch', 'val_per', 'train_loss', 'reg_loss',
                                      'grad_norm', 'wall_time_sec'])
 
-                                 
+            # Decoded samples log
             self.decodedLogPath = os.path.join(self.args['outputDir'], 'decoded_samples.txt')
 
     def _datasetLayerTransform(self, dat, normLayer, whiteNoiseSD, constantOffsetSD, randomWalkSD, staticGainSD, randomCut):
 
         features = dat['inputFeatures']
-                                                                                           
-                                                                                         
+        # Cast norm params to features.dtype to support mixed precision (float16) training,
+        # where Normalization layer stores mean/variance as float16 but input is float32.
         features = (features - tf.cast(normLayer.mean, features.dtype)) / tf.math.sqrt(
             tf.cast(normLayer.variance, features.dtype) + 1e-7)
 
@@ -479,7 +494,7 @@ class NeuralSequenceDecoder(object):
 
         if self.args['lossType'] == 'ctc':
             outDict = {'inputFeatures': features,
-                                                                      
+                       #'classLabelsOneHot': dat['classLabelsOneHot'],
                        'newClassSignal': dat['newClassSignal'],
                        'seqClassIDs': dat['seqClassIDs'],
                        'nTimeSteps': dat['nTimeSteps'],
@@ -503,7 +518,7 @@ class NeuralSequenceDecoder(object):
         perBatchData_train = np.zeros([self.args['nBatchesToTrain'] + 1, 6])
         perBatchData_val = np.zeros([self.args['nBatchesToTrain'] + 1, 6])
 
-                          
+        # Restore snapshot
         restoredStep = int(self.checkpoint.step)
         if restoredStep > 0:
             outputSnapshot = scipy.io.loadmat(self.args['outputDir']+'/outputSnapshot')
@@ -514,14 +529,14 @@ class NeuralSequenceDecoder(object):
         bestValCer = self.checkpoint.bestValCer
         print('bestValCer: ' + str(bestValCer))
 
-                              
+        # Early stopping state
         earlyStopPatience = self.args.get('earlyStopPatience', 0)
         earlyStopMinDelta = self.args.get('earlyStopMinDelta', 0.0001)
         earlyStopCounter = 0
         earlyStopBestVal = float(bestValCer) if float(bestValCer) < 1.0 else float('inf')
         earlyStopped = False
         for batchIdx in range(restoredStep, self.args['nBatchesToTrain'] + 1):
-                         
+            #--training--
             if self.args['dataset']['datasetProbability'] is None:
                 nSessions = len(self.args['dataset']['sessions'])
                 self.args['dataset']['datasetProbability'] = [1.0 / nSessions] * nSessions
@@ -546,7 +561,7 @@ class NeuralSequenceDecoder(object):
             except tf.errors.InvalidArgumentError as e:
                 print(e)
 
-                           
+            #--validation--
             if batchIdx % self.args['batchesPerVal'] == 0:
                 dtStart = datetime.now()
                 valOutputs = self.inference()
@@ -562,7 +577,7 @@ class NeuralSequenceDecoder(object):
                       f'CER: {valOutputs["seqErrorRate"]:.4f} ' +
                       f'time {totalSeconds:.2f}')
 
-                             
+                # CSV logging
                 try:
                     with open(self.csvLogPath, 'a', newline='') as f:
                         writer = csv.writer(f)
@@ -577,7 +592,7 @@ class NeuralSequenceDecoder(object):
                 except Exception as e:
                     print(f'CSV logging error: {e}')
 
-                                                                
+                # Log decoded samples (5 samples per validation)
                 if self.args['lossType'] == 'ctc':
                     try:
                         nSamples = min(5, len(valOutputs['decodedSeqs']))
@@ -589,7 +604,7 @@ class NeuralSequenceDecoder(object):
                                 trueLen = int(valOutputs['trueSeqLengths'][si])
                                 trueSeq = valOutputs['trueSeqs'][si, :trueLen].tolist()
                                 predSeq = valOutputs['decodedSeqs'][si]
-                                predSeq = [p for p in predSeq if p >= 0]                  
+                                predSeq = [p for p in predSeq if p >= 0]  # remove padding
                                 editDist = int(valOutputs['editDistances'][si]) if 'editDistances' in valOutputs else '?'
                                 f.write(f'  Sample {si}:\n')
                                 f.write(f'    TRUE: {trueSeq}\n')
@@ -604,7 +619,7 @@ class NeuralSequenceDecoder(object):
                     savedCkpt = self.ckptManager.save(checkpoint_number=batchIdx)
                     print(f'Checkpoint saved {savedCkpt}')
 
-                                      
+                # Early stopping check
                 if earlyStopPatience > 0:
                     if valOutputs['seqErrorRate'] < (earlyStopBestVal - earlyStopMinDelta):
                         earlyStopBestVal = valOutputs['seqErrorRate']
@@ -617,15 +632,15 @@ class NeuralSequenceDecoder(object):
                                   f'(best val PER: {earlyStopBestVal:.4f})')
                             earlyStopped = True
 
-                                                                                                            
+                #save a snapshot of key RNN outputs/variables so an outside program can plot them if desired
                 outputSnapshot = {}
                 outputSnapshot['logitsSnapshot'] = trainOut['logits'][0, :, :].numpy()
-                                                                                          
-                  
+                #outputSnapshot['rnnUnitsSnapshot'] = trainOut['rnnUnits'][0, :, :].numpy(
+                #)
                 outputSnapshot['inputFeaturesSnapshot'] = trainOut['inputFeatures'][0, :, :].numpy(
                 )
-                                                                                                
-                  
+                #outputSnapshot['classLabelsSnapshot'] = trainOut['classLabels'][0, :, :].numpy(
+                #)
                 outputSnapshot['perBatchData_train'] = perBatchData_train
                 outputSnapshot['perBatchData_val'] = perBatchData_val
                 outputSnapshot['seqIDs'] = trainOut['seqIDs'][0, :].numpy()
@@ -642,7 +657,7 @@ class NeuralSequenceDecoder(object):
         return float(bestValCer)
 
     def inference(self, returnData=False):
-                                                                               
+        #run through the specified dataset a single time and return the outputs
         infOut = {}
         infOut['logits'] = []
         infOut['logitLengths'] = []
@@ -685,7 +700,7 @@ class NeuralSequenceDecoder(object):
                 if returnData:
                     allData.append(data)
 
-                                      
+        # Logits have different length
         infOut['logits'] = [l for batch in infOut['logits'] for l in list(batch)]
         maxLogitLength = max([l.shape[0] for l in infOut['logits']])
         infOut['logits'] = [np.pad(l, [[0, maxLogitLength-l.shape[0]], [0, 0]]) for l in infOut['logits']]
@@ -736,13 +751,13 @@ class NeuralSequenceDecoder(object):
                               tf.reduce_mean(minibatchOutput['seqErrorRate']), step=batchIdx)
             tf.summary.scalar(f'{prefix}/computationTime',
                               computationTime, step=batchIdx)
-                             
-                                   
-                                                                                           
+            #if isTrainBatch:
+            #    tf.summary.scalar(
+            #        f'{prefix}/lr', self.optimizer._decayed_lr(tf.float32), step=batchIdx)
 
     @tf.function()
     def _trainStep(self, datasetIdx, layerIdx):
-                                       
+        #loss function & regularization
         data = tf.switch_case(datasetIdx, self.trainDatasetSelector)
 
         inputTransformSelector = {}
@@ -758,7 +773,7 @@ class NeuralSequenceDecoder(object):
             inputTransformedFeatures = tf.switch_case(
                 layerIdx, inputTransformSelector)
             predictions = self.model(inputTransformedFeatures, training=True)
-            regularization_loss = tf.math.add_n(self.model.losses) +\
+            regularization_loss = tf.math.add_n(self.model.losses) + \
                 tf.math.add_n(tf.switch_case(layerIdx, regLossSelector))
 
             batchSize = tf.shape(data['inputFeatures'])[0]
@@ -798,7 +813,7 @@ class NeuralSequenceDecoder(object):
             if self.args.get('mixedPrecision', False):
                 scaled_loss = self.optimizer.get_scaled_loss(total_loss)
 
-                                 
+        #compute gradients + clip
         if self.args.get('mixedPrecision', False):
             scaled_grads = tape.gradient(scaled_loss, self.trainableVariables)
             grads = self.optimizer.get_unscaled_gradients(scaled_grads)
@@ -807,7 +822,7 @@ class NeuralSequenceDecoder(object):
         grads, gradNorm = tf.clip_by_global_norm(
             grads, self.args['gradClipValue'])
 
-                                                                    
+        #only apply if gradients are finite and we are in train mode
         allIsFinite = []
         for g in grads:
             if g != None:
@@ -815,19 +830,19 @@ class NeuralSequenceDecoder(object):
         gradIsFinite = tf.reduce_all(tf.stack(allIsFinite))
 
         if self.args.get('mixedPrecision', False):
-                                                                     
-                                                                                    
+            # LossScaleOptimizer handles finite checks internally and
+            # adjusts the loss scale dynamically (halves on NaN, doubles on success)
             self.optimizer.apply_gradients(zip(grads, self.trainableVariables))
         elif gradIsFinite:
             self.optimizer.apply_gradients(zip(grads, self.trainableVariables))
 
-                                                                                               
-                                                                        
-                                                                                              
+        #compute sequence-element error rate (edit distance) if we are in validation & ctc mode
+        #return interval activations so we can visualize what's going on
+        #intermediate_output = self.model.getIntermediateLayerOutput(inputTransformedFeatures)
 
         output = {}
         output['logits'] = predictions
-                                                 
+        #output['rnnUnits'] = intermediate_output
         output['inputFeatures'] = data['inputFeatures']
         if self.args['lossType'] == 'ce':
             output['classLabels'] = data['classLabelsOneHot']
@@ -843,7 +858,7 @@ class NeuralSequenceDecoder(object):
         data = self._datasetLayerTransform(
             data, self.normLayers[layerIdx], 0, 0, 0, 0, 0)
 
-                        
+        #channel zeroing
         if 'channelMask' in self.args.keys():
             maskedFeatures = data['inputFeatures'] * tf.constant(np.array(self.args['channelMask'])[np.newaxis, np.newaxis, :], dtype=tf.float32)
             print('masking')
@@ -907,7 +922,7 @@ class NeuralSequenceDecoder(object):
             newsig_err = tf.reduce_mean(tf.math.abs((tf.cast(data['newClassSignal'],dtype=tf.float32)   - tf.cast(predictions[:,:,-1], dtype=tf.float32))))
             decodedStrings = [tf.sparse.SparseTensor(
                 indices=[[0, 0]], values=[tf.constant(1, dtype=tf.int64)], dense_shape=[2, 2])]
-            seqErrorRate = label_err              
+            seqErrorRate = label_err #+ newsig_err
             editDistance = 0.0
         output = {}
         output['logits'] = predictions
@@ -927,8 +942,8 @@ def timeWarpDataElement(dat, timeScalingRange):
     warpDat['nSeqElements'] = dat['nSeqElements']
     warpDat['transcription'] = dat['transcription']
 
-                                                  
-    globalTimeFactor = 1 +\
+    #nTimeSteps, inputFeatures need to be modified
+    globalTimeFactor = 1 + \
         (tf.random.uniform(shape=[], dtype=tf.float32)-0.5)*timeScalingRange
     warpDat['nTimeSteps'] = tf.cast(
         tf.cast(dat['nTimeSteps'], dtype=tf.float32)*globalTimeFactor, dtype=tf.int64)
@@ -944,8 +959,8 @@ def timeWarpDataElement(dat, timeScalingRange):
     batchIdx = tf.tile(tf.range(b)[:, None, None], [1, warppedT, 1])
     newIdx = tf.concat([batchIdx, newIdx[..., None]], axis=-1)
     warpDat['inputFeatures'] = tf.gather_nd(dat['inputFeatures'], newIdx)
-                                              
-                                                  
+    #warpDat['classLabelsOneHot'] = tf.gather(
+    #    dat['classLabelsOneHot'], newIdx, axis=0)
     warpDat['newClassSignal'] = tf.gather_nd(
         dat['newClassSignal'], newIdx)
     warpDat['ceMask'] = tf.gather_nd(dat['ceMask'], newIdx)

@@ -1,4 +1,16 @@
-                      
+#!/usr/bin/env python3
+"""
+Conformer + Spatial Attention training with all 24 sessions.
+
+Second-best Conformer config (PER 0.1648 on sessions 4-18 with 19 sessions).
+Now with all 24 sessions for 26% more data.
+
+Usage:
+    python run_conformer_spatial_24sess.py \
+        --data-dir /workspace/speechBCI/data/derived/tfRecords \
+        --output-dir /workspace/speechBCI/experiments/24sess \
+        --gpu 0
+"""
 
 import argparse
 import os
@@ -47,7 +59,7 @@ SESSIONS = [
 
 MAX_OOM_RETRIES = 10
 
-PREV_BEST_PER = 0.1648                                                      
+PREV_BEST_PER = 0.1648  # Spatial attn with 19 sessions (sessions 4-18 eval)
 
 
 def build_command(data_dir, output_dir, gpu):

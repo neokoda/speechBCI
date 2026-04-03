@@ -1,4 +1,25 @@
-                      
+#!/usr/bin/env python3
+"""
+Conformer training: stack kernel_size=14 (matching GRU).
+
+The GRU baseline uses stack kernel_size=14 (14*256=3584-dim stacked features),
+while our Conformer has been using kernel_size=32 (32*256=8192-dim). The 8192->512
+linear projection is 16:1 compression — potentially very lossy. The GRU only does
+7:1 compression and processes through recurrent units (more expressive than a
+single linear layer).
+
+The Conformer already has self-attention + conv modules for temporal modeling, so
+it shouldn't need the wide stacking window. Matching the GRU's kernel_size=14
+reduces information loss at the bottleneck.
+
+Keeps all other best settings: SE r=8, LR 0.04, SpecAugment, dropout 0.1.
+
+Usage:
+    python run_conformer_k14.py \
+        --data-dir /workspace/speechBCI/data/derived/tfRecords \
+        --output-dir /workspace/speechBCI/experiments/conformer_k14 \
+        --gpu 0
+"""
 
 import argparse
 import os
