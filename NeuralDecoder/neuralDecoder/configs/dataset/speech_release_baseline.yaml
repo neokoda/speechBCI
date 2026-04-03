@@ -53,6 +53,7 @@ staticGainSD: 0.0
 nClasses: 40
 maxSeqElements: 500
 
+# Dataset shuffle buffer size
 bufferSize: 1024
 
 copyInputLayer:
