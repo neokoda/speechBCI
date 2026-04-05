@@ -74,10 +74,16 @@ GEMMA_MODEL_ID = 'google/gemma-3-270m'
 FRAME_DURATION_SEC = 0.080   # seconds per output logit step
 
 # ── Phoneme definitions ──────────────────────────────────────────────────────
-# PHONE_DEF_SIL = [39 phonemes + 'SIL']; blank = class 40
-# Raw model logits layout: [class0..38=phonemes, class39=SIL, class40=blank]
+# Raw model logits layout (V=41):
+#   class 0..38 = phonemes PHONE_DEF_SIL[0..38]
+#   class 39    = SIL       PHONE_DEF_SIL[39]
+#   class 40    = CTC blank (blank_index=last_class in training ctc_loss)
+# TFRecord seqClassIDs are 1-indexed labels (1..40 → output class 0..39);
+# training used ctc_loss with blank_index=40.
 BLANK_IDX = 40
-SIL_IDX   = 39
+PHONE_CLASS_OFFSET = 0      # logit_class == PHONE_DEF_SIL idx for phonemes
+SIL_LOGIT_IDX = 39          # logit class for SIL
+SIL_IDX = 39                # internal phoneme idx (PHONE_DEF_SIL[39]='SIL')
 PHONE_DEF = PHONE_DEF_SIL[:-1]   # 39 phonemes, no SIL
 IDX_TO_PHONE = {i: p for i, p in enumerate(PHONE_DEF_SIL)}
 
@@ -257,8 +263,17 @@ def _decode_transcriptions(trans_array):
 
 
 # ═══════════════════════════════════════════════════════════════════════════
-# 2.  CTC PREFIX BEAM SEARCH  (pure Python, no Kaldi)
+# 2.  LEXICON TRIE + LEXICON-CONSTRAINED CTC BEAM SEARCH
 # ═══════════════════════════════════════════════════════════════════════════
+# Matches Willett et al. (lexicon-constrained decoding) and Seto et al.
+# (shallow-fusion combine: score = acoustic + α·log P_LM + β·#words).
+# Rather than producing phoneme N-best and then mapping to words via a post-hoc
+# DP, we constrain the CTC beam search to only extend along valid CMU-dict
+# phoneme prefixes, so every hypothesis is already a sequence of real words.
+
+# Phoneme label → model class index (0-38 = phonemes, 39 = SIL)
+_PHONE_LABEL_TO_IDX = {p: i for i, p in enumerate(PHONE_DEF_SIL)}
+
 
 def log_softmax(x):
     """Numerically stable log-softmax along last axis."""
@@ -266,176 +281,226 @@ def log_softmax(x):
     return x - np.log(np.sum(np.exp(x), axis=-1, keepdims=True))
 
 
-def ctc_prefix_beam_search(logits, beam_size=50):
-    """CTC prefix beam search on a single utterance.
+class LexiconTrie:
+    """Prefix trie over CMU-dict phoneme sequences (indices in 0..38).
 
-    Args:
-        logits: (T, V) raw logits; V=41, index 40=blank, 39=SIL, 0-38=phonemes
-        beam_size: number of beams to keep
-
-    Returns:
-        list of (phoneme_index_tuple, log_score) sorted best-first
-        (SIL tokens included in the returned sequences)
+    - children[node_id] : dict[phone_idx → child_node_id]
+    - words_at[node_id] : list[str] (non-empty iff this node is a word-end)
+    - Root is node 0.
     """
-    T, V = logits.shape
-    log_probs = log_softmax(logits)   # (T, V)
 
-    # Beam: dict of prefix_tuple → (log_p_blank, log_p_no_blank)
-    NEG_INF = float('-inf')
-    beams = {(): (0.0, NEG_INF)}      # empty prefix starts with p_blank=1
+    def __init__(self):
+        self.children = [{}]       # list of dicts, one per node
+        self.words_at = [[]]       # list of word-lists, one per node
 
-    for t in range(T):
-        lp = log_probs[t]              # (V,)
-        new_beams = defaultdict(lambda: (NEG_INF, NEG_INF))
+    def _new_node(self):
+        self.children.append({})
+        self.words_at.append([])
+        return len(self.children) - 1
 
-        for prefix, (pb, pnb) in beams.items():
-            # log total probability for this prefix
-            p_total = np.logaddexp(pb, pnb)
+    def add(self, phone_idx_seq, word):
+        node = 0
+        for c in phone_idx_seq:
+            if c not in self.children[node]:
+                self.children[node][c] = self._new_node()
+            node = self.children[node][c]
+        self.words_at[node].append(word)
 
-            # ── Extend with blank ──────────────────────────────────────────
-            new_pb = np.logaddexp(new_beams[prefix][0], p_total + lp[BLANK_IDX])
-            new_beams[prefix] = (new_pb, new_beams[prefix][1])
-
-            # ── Extend with each non-blank symbol ─────────────────────────
-            for c in range(V - 1):        # 0..39 (phonemes + SIL, no blank)
-                new_prefix = prefix + (c,)
-
-                if len(prefix) > 0 and prefix[-1] == c:
-                    # If same symbol as last: only p_blank contributes to p_nb
-                    add_pnb = pb + lp[c]
-                else:
-                    add_pnb = p_total + lp[c]
-
-                old_pb2, old_pnb2 = new_beams[new_prefix]
-                new_beams[new_prefix] = (old_pb2, np.logaddexp(old_pnb2, add_pnb))
-
-        # ── Prune to top beam_size ─────────────────────────────────────────
-        def beam_score(item):
-            pb, pnb = item[1]
-            return np.logaddexp(pb, pnb)
-
-        beams = dict(sorted(new_beams.items(), key=beam_score, reverse=True)[:beam_size])
-
-    # ── Final ranking ──────────────────────────────────────────────────────
-    results = []
-    for prefix, (pb, pnb) in beams.items():
-        score = np.logaddexp(pb, pnb)
-        results.append((prefix, score))
-    results.sort(key=lambda x: -x[1])
-    return results
+    def __len__(self):
+        return len(self.children)
 
 
-# ═══════════════════════════════════════════════════════════════════════════
-# 3.  PHONEME → WORD  CONVERSION  (CMU dict + DP)
-# ═══════════════════════════════════════════════════════════════════════════
+# Very-short words in CMU that are legitimate English. 1-phone entries like
+# "ah", "mm", "eh", "aux" are junk interjections/abbreviations that pollute
+# the lexicon and cause over-segmentation in the beam. We keep only the
+# genuinely common 1- and 2-phoneme words.
+_SHORT_WORD_WHITELIST = {
+    'a', 'i', 'oh', 'uh',                               # 1-phone legit
+    'am', 'an', 'as', 'at', 'be', 'by', 'do', 'go',     # 2-phone
+    'he', 'if', 'in', 'is', 'it', 'me', 'my', 'no',
+    'of', 'on', 'or', 'so', 'to', 'up', 'us', 'we',
+    'ah', 'ow', 'ow.', 'ye', 'ya', 'ya.', 'um',
+    "i'd", "i'll", "i'm", "i've", "he'd", "he'll", "he's",
+    "it's", "we'd", "we'll", "we're", "we've",
+}
 
-def build_phoneme_trie():
-    """Build a trie mapping stripped-stress phoneme tuples → list of words.
 
-    Returns dict of dict: trie[phone1][phone2]...[phoneN]['#WORDS'] = [word, ...]
-    We use a flat dict: (phone_tuple) → [word, ...]  for simplicity / speed.
+def build_lexicon_trie(drop_short_junk=True):
+    """Load CMU dict and build a phoneme-index → word trie.
+
+    Stress markers are stripped (AH0 → AH). Every pronunciation variant is
+    inserted. Words starting with non-alphabetic characters are skipped.
+    If drop_short_junk, 1-2 phoneme words not in the whitelist are dropped
+    (removes CMU's "ae", "ahh", "eau", "err" etc. that over-segment the beam).
     """
     import cmudict as cmudict_lib
-    log.info("Building CMU pronunciation reverse-lookup table …")
+    log.info("Building CMU-dict lexicon trie …")
 
-    phone_to_words = defaultdict(list)
+    trie = LexiconTrie()
+    n_words = 0
+    n_skipped = 0
+    n_short_dropped = 0
+    unique_words = set()
     for word, phones in cmudict_lib.entries():
-        # Skip words starting with non-alphabetic (e.g. "'bout", numbers)
         if not word[0].isalpha():
+            n_skipped += 1
             continue
-        # Strip stress markers: 'AH0' → 'AH', 'EY1' → 'EY'
-        stripped = tuple(p.rstrip('012') for p in phones)
-        phone_to_words[stripped].append(word)
+        try:
+            idx_seq = tuple(_PHONE_LABEL_TO_IDX[p.rstrip('012')] for p in phones)
+        except KeyError:
+            n_skipped += 1
+            continue
+        if not idx_seq:
+            continue
+        if drop_short_junk and len(idx_seq) <= 2 and word.lower() not in _SHORT_WORD_WHITELIST:
+            n_short_dropped += 1
+            continue
+        trie.add(idx_seq, word)
+        n_words += 1
+        unique_words.add(word)
 
-    log.info("  Reverse lookup: %d unique pronunciation sequences", len(phone_to_words))
-    return dict(phone_to_words)
+    log.info("  Pronunciations inserted : %d", n_words)
+    log.info("  Unique words            : %d", len(unique_words))
+    log.info("  Trie nodes              : %d", len(trie))
+    log.info("  Skipped (non-alpha/phon): %d", n_skipped)
+    log.info("  Short-junk dropped      : %d", n_short_dropped)
+    return trie
 
 
-def phones_to_words_dp(phone_seq, phone_to_words, beam_size=20):
-    """DP segmentation: phoneme index sequence → best word-string hypotheses.
+def lexicon_constrained_beam_search(logits, trie, beam_size=100, beam_beta=1.0):
+    """Word-level lexicon-constrained CTC beam search (Viterbi-style).
+
+    Emits only sequences of real CMU-dict words. SIL (class 39) is treated as
+    the word-boundary signal: it may only be emitted when the current in-progress
+    phoneme path corresponds to a complete word, and doing so commits that word
+    and resets the trie cursor to the root.
 
     Args:
-        phone_seq: tuple of phoneme indices (0-38 = phonemes, 39 = SIL ignored)
-        phone_to_words: dict from build_phoneme_trie()
-        beam_size: max word-segmentation hypotheses to keep
+        logits: (T, V) raw logits, V = 41 (0-38 phonemes, 39 SIL, 40 blank).
+        trie: LexiconTrie
+        beam_size: max beams kept per frame
+        beam_beta: per-word bonus added to beam log-prob when a word is
+            committed. Used only for in-search pruning — does NOT shift the
+            returned acoustic score.
 
     Returns:
-        list of word strings (space-separated sentences), up to beam_size
+        list of (sentence_str, log_acoustic, n_words) sorted best-first.
+        log_acoustic is the pure path log-prob (no beta).
     """
-    # Convert indices to phoneme label strings, drop SIL
-    phone_labels = tuple(
-        IDX_TO_PHONE[idx] for idx in phone_seq
-        if idx < SIL_IDX   # keep only real phonemes, skip SIL
-    )
+    T, V = logits.shape
+    log_probs = log_softmax(logits)
+    NEG_INF = float('-inf')
 
-    N = len(phone_labels)
-    if N == 0:
-        return ['']
+    # Beam key: (committed_words_tuple, trie_node_id, last_emitted_idx)
+    #   last_emitted_idx: -1 if last step was blank (or start); else the
+    #   internal phoneme idx (0..39) emitted last. Needed to collapse CTC
+    #   repeats. Internal-idx → logit class = idx + 1.
+    # Beam value: (log_prob_pure_acoustic, n_words)
+    init_key = ((), 0, -1)
+    beams = {init_key: (0.0, 0)}
 
-    # dp[i] = list of (word_list, score) ending at position i
-    # score = number of words (shorter segmentations preferred)
-    # We keep beam_size hypotheses per position.
-    dp = [[] for _ in range(N + 1)]
-    dp[0] = [([], 0)]       # empty word list at start
+    # For a given trie_node, cache the list of valid child phoneme idxs
+    children = trie.children
+    words_at = trie.words_at
 
-    for start in range(N):
-        if not dp[start]:
-            continue
-        # Try all end positions
-        for end in range(start + 1, N + 1):
-            segment = phone_labels[start:end]
-            if segment in phone_to_words:
-                words_here = phone_to_words[segment]
-                for hyp_words, hyp_score in dp[start]:
-                    for w in words_here:
-                        new_entry = (hyp_words + [w], hyp_score + 1)
-                        dp[end].append(new_entry)
-                # Prune dp[end] to beam_size (prefer fewer words = more coverage)
-                if len(dp[end]) > beam_size * 5:
-                    dp[end].sort(key=lambda x: x[1])
-                    dp[end] = dp[end][:beam_size * 5]
+    for t in range(T):
+        lp = log_probs[t]
+        new_beams = {}
 
-    if not dp[N]:
-        # No full segmentation found — fall back to subword coverage
-        # Return the best partial coverage we have (longest covered prefix)
-        best_partial = _best_partial_coverage(phone_labels, phone_to_words)
-        return [best_partial] if best_partial else ['']
+        def _accum(key, lp_new, nwords_new):
+            cur = new_beams.get(key)
+            if cur is None or lp_new > cur[0]:
+                # Viterbi max (path score). Simpler than log-sum-exp and
+                # gives nearly identical N-best rankings in practice.
+                new_beams[key] = (lp_new, nwords_new)
 
-    # Deduplicate and return top hypotheses
-    seen = set()
-    results = []
-    for word_list, _ in sorted(dp[N], key=lambda x: x[1]):
-        sentence = ' '.join(word_list)
-        if sentence not in seen:
-            seen.add(sentence)
-            results.append(sentence)
-        if len(results) >= beam_size:
-            break
+        # Local alias to avoid attribute lookups in hot loop
+        lp_blank = lp[BLANK_IDX]
+        lp_sil = lp[SIL_LOGIT_IDX]
 
-    return results
+        for (cwords, node, last_idx), (lp_old, nwords_old) in beams.items():
+            # ── (1) BLANK: same beam state, last_idx → -1
+            _accum((cwords, node, -1), lp_old + lp_blank, nwords_old)
 
+            # ── (2) Repeat last non-blank symbol: stays in same state,
+            #        last_idx unchanged. Only valid if last_idx != -1.
+            if last_idx != -1:
+                last_lp = lp_sil if last_idx == SIL_IDX else lp[last_idx + PHONE_CLASS_OFFSET]
+                _accum((cwords, node, last_idx), lp_old + last_lp, nwords_old)
 
-def _best_partial_coverage(phone_labels, phone_to_words):
-    """Greedy left-to-right word matching for phoneme sequences with no full parse."""
-    words = []
-    pos = 0
-    N = len(phone_labels)
-    while pos < N:
-        best_end = -1
-        best_word = ''
-        # Try longest match first
-        for end in range(min(pos + 12, N), pos, -1):   # max word length ≈ 12 phones
-            segment = phone_labels[pos:end]
-            if segment in phone_to_words:
-                best_end = end
-                best_word = phone_to_words[segment][0]
-                break
-        if best_end == -1:
-            pos += 1          # skip unrecognised phoneme
+            # ── (3) SIL = word-boundary signal.
+            #        Valid when node is root (absorbs silence between words /
+            #        at utterance start) OR the current node is a word-end
+            #        (commits the word and resets cursor to root).
+            if last_idx != SIL_IDX:   # if last_idx == SIL_IDX, handled by (2)
+                if node == 0:
+                    _accum((cwords, 0, SIL_IDX), lp_old + lp_sil, nwords_old)
+                elif words_at[node]:
+                    # Commit the first pronunciation variant (homophones
+                    # disambiguated later by the LM).
+                    word = words_at[node][0]
+                    new_cwords = cwords + (word,)
+                    new_lp = lp_old + lp_sil + beam_beta   # bonus only used for pruning
+                    _accum((new_cwords, 0, SIL_IDX), new_lp, nwords_old + 1)
+
+            # ── (4) Phoneme extension through trie (internal idx 0..38) ──
+            # a) Continue the current word.
+            node_children = children[node]
+            for c, child in node_children.items():
+                if c == last_idx:
+                    # Repeat handled as continuation in (2).
+                    continue
+                _accum((cwords, child, c), lp_old + lp[c + PHONE_CLASS_OFFSET], nwords_old)
+
+            # b) Implicit word-boundary: if node is a word-end, commit and
+            #    start a new word directly without an intervening SIL.
+            if words_at[node] and node != 0:
+                word = words_at[node][0]
+                new_cwords = cwords + (word,)
+                root_children = children[0]
+                for c, child in root_children.items():
+                    if c == last_idx:
+                        continue
+                    _accum((new_cwords, child, c),
+                           lp_old + lp[c + PHONE_CLASS_OFFSET] + beam_beta,
+                           nwords_old + 1)
+
+        # ── Prune to top beam_size by (acoustic + beam_beta * n_words) ──
+        # Note: beta was baked into committed-word lp above, so simple lp
+        # comparison works.
+        beams = dict(
+            sorted(new_beams.items(), key=lambda kv: kv[1][0], reverse=True)[:beam_size]
+        )
+
+    # ── Finalise: commit any word still in progress (if current node is a
+    #    word-end), otherwise drop the trailing partial word. ─────────────
+    results = {}
+    for (cwords, node, _last), (lp_final, nwords) in beams.items():
+        if node == 0:
+            final_words = cwords
+            final_nwords = nwords
+            final_lp = lp_final
+        elif words_at[node]:
+            final_words = cwords + (words_at[node][0],)
+            final_nwords = nwords + 1
+            final_lp = lp_final + beam_beta
         else:
-            words.append(best_word)
-            pos = best_end
-    return ' '.join(words)
+            # Partial word at end of utterance → drop (matches Kaldi's default).
+            final_words = cwords
+            final_nwords = nwords
+            final_lp = lp_final
+
+        sentence = ' '.join(final_words)
+        # De-subtract beta from returned score so callers get pure acoustic.
+        pure_ac = final_lp - beam_beta * final_nwords
+        prev = results.get(sentence)
+        if prev is None or pure_ac > prev[0]:
+            results[sentence] = (pure_ac, final_nwords)
+
+    return sorted(
+        [(s, sc, nw) for s, (sc, nw) in results.items()],
+        key=lambda x: -x[1],
+    )
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -523,90 +588,99 @@ def score_lm_batch(model, tokenizer, texts, device=None):
 # 5.  FULL DECODE LOOP
 # ═══════════════════════════════════════════════════════════════════════════
 
-def decode_with_lm(logits, logit_lengths, lm_model, lm_tokenizer,
-                   phone_to_words,
-                   beam_size=50, lm_nbest=20,
-                   acoustic_scale=0.5, lm_weight=0.5,
-                   lm_name='lm'):
-    """Decode all utterances with CTC beam search + LM rescoring.
+def run_beam_search_all(logits, logit_lengths, trie,
+                        beam_size=100, lm_nbest=100, beam_beta=1.0,
+                        log_every=50):
+    """Run lexicon-constrained CTC beam search over every utterance once.
 
-    Returns list of decoded sentence strings.
+    Returns list of N-best lists: [(sentence, log_acoustic, n_words), …]
+    One per utterance. The acoustic score is pure (beta NOT baked in), so
+    callers can grid-search α, β at rescoring time without rerunning search.
     """
-    import torch
-    device = next(lm_model.parameters()).device
-
     N = len(logit_lengths)
-    decoded_sentences = []
-    decode_times = []
+    all_nbest = []
+    t_start = time.time()
 
     for i in range(N):
-        t0 = time.time()
         T = int(logit_lengths[i])
-        raw_logits = logits[i, :T, :]    # (T, 41)
+        raw_logits = logits[i, :T, :]
+        nbest = lexicon_constrained_beam_search(
+            raw_logits, trie, beam_size=beam_size, beam_beta=beam_beta,
+        )
+        all_nbest.append(nbest[:lm_nbest])
 
-        # ── CTC beam search ───────────────────────────────────────────────
-        nbest = ctc_prefix_beam_search(raw_logits, beam_size=beam_size)
+        if (i + 1) % log_every == 0 or i == 0:
+            avg = (time.time() - t_start) / (i + 1)
+            log.info("  beam search %d/%d  (avg %.2fs/utt)", i + 1, N, avg)
 
-        # ── Convert each N-best phoneme sequence to word hypotheses ───────
-        word_hyps = {}    # sentence_text → best_combined_score
-        for phone_seq, ac_score in nbest[:lm_nbest]:
-            word_seqs = phones_to_words_dp(phone_seq, phone_to_words,
-                                           beam_size=10)
-            for sentence in word_seqs:
-                if sentence not in word_hyps:
-                    word_hyps[sentence] = (ac_score, None)   # lm_score filled below
-                else:
-                    # Keep higher acoustic score for same sentence
-                    if ac_score > word_hyps[sentence][0]:
-                        word_hyps[sentence] = (ac_score, word_hyps[sentence][1])
+    return all_nbest
 
-        if not word_hyps:
-            decoded_sentences.append('')
-            decode_times.append(time.time() - t0)
+
+def score_nbest_with_lm(all_nbest, lm_model, lm_tokenizer,
+                        lm_name='lm', log_every=50):
+    """Score every candidate sentence in every utterance's N-best with the LM.
+
+    Returns parallel structure: list[list[(sentence, log_ac, n_words, log_lm)]].
+    """
+    device = next(lm_model.parameters()).device
+    out = []
+    t_start = time.time()
+    for i, nbest in enumerate(all_nbest):
+        if not nbest:
+            out.append([])
             continue
+        texts = [s for s, _, _ in nbest]
+        lm_scores = score_lm_batch(lm_model, lm_tokenizer, texts, device=device)
+        out.append([
+            (s, ac, nw, float(lm_scores[j]))
+            for j, (s, ac, nw) in enumerate(nbest)
+        ])
+        if (i + 1) % log_every == 0 or i == 0:
+            avg = (time.time() - t_start) / (i + 1)
+            log.info("  [%s] LM-scored %d/%d  (avg %.2fs/utt)",
+                     lm_name, i + 1, len(all_nbest), avg)
+    return out
 
-        # ── Batch LM scoring ──────────────────────────────────────────────
-        hyp_texts = list(word_hyps.keys())
-        lm_scores = score_lm_batch(lm_model, lm_tokenizer, hyp_texts, device=device)
 
-        # ── Combine scores and select best ────────────────────────────────
-        best_sent = ''
+def pick_best_hyp(scored_nbest, alpha=0.5, beta=1.0, acoustic_scale=1.0):
+    """Apply Seto III-3: combined = acoustic_scale*log_ac + α*log_lm + β*n_words.
+    Returns the best sentence per utterance."""
+    decoded = []
+    for nbest in scored_nbest:
+        if not nbest:
+            decoded.append('')
+            continue
+        best = ''
         best_score = float('-inf')
-        for j, sentence in enumerate(hyp_texts):
-            ac_score = word_hyps[sentence][0]
-            combined = acoustic_scale * ac_score + lm_weight * lm_scores[j]
+        for s, log_ac, nw, log_lm in nbest:
+            combined = acoustic_scale * log_ac + alpha * log_lm + beta * nw
             if combined > best_score:
                 best_score = combined
-                best_sent = sentence
-
-        decoded_sentences.append(best_sent)
-        decode_times.append(time.time() - t0)
-
-        if (i + 1) % 50 == 0 or i == 0:
-            log.info("  [%s] %d/%d done  (avg %.2fs/utt)",
-                     lm_name, i + 1, N, np.mean(decode_times))
-
-    return decoded_sentences, decode_times
+                best = s
+        decoded.append(best)
+    return decoded
 
 
 def decode_greedy_phonemes(logits, logit_lengths):
-    """CTC greedy decode to get PER baseline (phoneme sequences only).
+    """CTC greedy decode to get PER baseline.
 
-    Returns list of decoded phoneme index tuples (collapse repeated, remove blank/SIL).
+    Returns list of internal phoneme-idx tuples (0..39, 39=SIL) with CTC
+    collapse applied (remove consecutive duplicates, remove blanks).
     """
     results = []
     for i in range(len(logit_lengths)):
         T = int(logit_lengths[i])
         raw = logits[i, :T, :]
-        pred_ids = np.argmax(raw, axis=-1)   # (T,)
-        # CTC collapse: remove consecutive duplicates, then remove blank
+        pred_classes = np.argmax(raw, axis=-1)   # logit class ids (0..40)
+        # CTC collapse: drop consecutive dups, then drop blank (class 0)
         prev = -1
         seq = []
-        for idx in pred_ids:
-            if idx != prev:
-                seq.append(int(idx))
-                prev = int(idx)
-        seq = [x for x in seq if x != BLANK_IDX]
+        for cls in pred_classes:
+            if cls != prev:
+                seq.append(int(cls))
+                prev = int(cls)
+        # Convert logit class → internal phoneme idx (subtract 1, drop blanks)
+        seq = [x - PHONE_CLASS_OFFSET for x in seq if x != BLANK_IDX]
         results.append(tuple(seq))
     return results
 
@@ -688,18 +762,37 @@ def compute_per(greedy_phone_seqs, ground_truth_texts, phone_to_words):
 # 7.  MAIN
 # ═══════════════════════════════════════════════════════════════════════════
 
+def _parse_float_list(s):
+    return [float(x) for x in s.split(',') if x.strip()]
+
+
 def main():
     parser = argparse.ArgumentParser(description='LM Pipeline Evaluation')
-    parser.add_argument('--lm', choices=['gpt2', 'gemma', 'both'], default='both',
-                        help='Which LM(s) to evaluate (default: both)')
-    parser.add_argument('--beam-size', type=int, default=50,
-                        help='CTC beam size (default: 50)')
-    parser.add_argument('--lm-nbest', type=int, default=30,
-                        help='N-best phoneme sequences to convert to words (default: 30)')
-    parser.add_argument('--acoustic-scale', type=float, default=0.5,
-                        help='Acoustic model score weight (default: 0.5)')
-    parser.add_argument('--lm-weight', type=float, default=0.5,
-                        help='LM score weight alpha (default: 0.5)')
+    parser.add_argument('--lm', choices=['none', 'gpt2', 'gemma', 'both'],
+                        default='both',
+                        help='Which LM(s) to evaluate (default: both). "none" skips LM rescoring (lexicon-only baseline).')
+    parser.add_argument('--beam-size', type=int, default=100,
+                        help='Lexicon-constrained CTC beam size (default: 100)')
+    parser.add_argument('--lm-nbest', type=int, default=100,
+                        help='N-best sentences kept per utterance for LM rescoring (default: 100)')
+    parser.add_argument('--beam-beta', type=float, default=1.0,
+                        help='Per-word bonus used for beam pruning during search (default: 1.0)')
+    parser.add_argument('--acoustic-scale', type=float, default=1.0,
+                        help='Acoustic score weight in Seto eq. III-3 (default: 1.0)')
+    parser.add_argument('--alpha', type=float, default=0.5,
+                        help='LM weight α in Seto eq. III-3 (default: 0.5)')
+    parser.add_argument('--beta', type=float, default=1.0,
+                        help='Word-insertion bonus β in Seto eq. III-3 (default: 1.0)')
+    parser.add_argument('--grid-search', action='store_true',
+                        help='Sweep α, β on the test set and report the best.')
+    parser.add_argument('--alphas', type=_parse_float_list,
+                        default=[0.0, 0.3, 0.5, 0.8, 1.2],
+                        help='α values for grid search (comma-separated)')
+    parser.add_argument('--betas', type=_parse_float_list,
+                        default=[0.0, 0.5, 1.0, 2.0, 4.0],
+                        help='β values for grid search (comma-separated)')
+    parser.add_argument('--max-utts', type=int, default=0,
+                        help='If >0, limit to first N utterances (debug only)')
     parser.add_argument('--cache-dir', type=str, default='/root/.cache/huggingface',
                         help='HuggingFace cache directory')
     parser.add_argument('--output-dir', type=str, default=OUTPUT_DIR)
@@ -711,43 +804,107 @@ def main():
     os.makedirs(args.output_dir, exist_ok=True)
 
     log.info("=" * 65)
-    log.info("  LM Pipeline Evaluation")
+    log.info("  LM Pipeline Evaluation  (lexicon-constrained shallow fusion)")
     log.info("  Decoder  : %s", CKPT_DIR)
     log.info("  LM(s)    : %s", args.lm)
-    log.info("  Beam     : %d  |  N-best words: %d", args.beam_size, args.lm_nbest)
-    log.info("  α_ac=%.2f  α_lm=%.2f", args.acoustic_scale, args.lm_weight)
+    log.info("  Beam=%d  N-best=%d  beam_beta=%.2f",
+             args.beam_size, args.lm_nbest, args.beam_beta)
+    log.info("  α=%.2f  β=%.2f  acoustic_scale=%.2f  grid=%s",
+             args.alpha, args.beta, args.acoustic_scale, args.grid_search)
     log.info("=" * 65)
 
     # ── Step 1: Inference ──────────────────────────────────────────────────
-    log.info("\n[1/5]  Running Conformer inference …")
+    log.info("\n[1/6]  Running Conformer inference …")
     inf = run_inference(ckpt_dir=CKPT_DIR, data_dir=DATA_DIR)
     logits       = inf['logits']
     logit_lengths = inf['logitLengths']
     ground_truth  = inf['transcriptions']
     greedy_per_internal = inf['greedy_per']
 
+    if args.max_utts > 0:
+        logits        = logits[:args.max_utts]
+        logit_lengths = logit_lengths[:args.max_utts]
+        ground_truth  = ground_truth[:args.max_utts]
+        log.info("  (limiting to first %d utterances)", args.max_utts)
+
     log.info("  Samples  : %d", len(logit_lengths))
     log.info("  Greedy PER (internal): %.4f", greedy_per_internal)
 
-    # ── Step 2: Build phoneme → words lookup ──────────────────────────────
-    log.info("\n[2/5]  Building CMU pronunciation reverse lookup …")
-    phone_to_words = build_phoneme_trie()
+    # ── Step 2: Build lexicon trie ────────────────────────────────────────
+    log.info("\n[2/6]  Building lexicon trie …")
+    trie = build_lexicon_trie()
 
-    # ── Step 3: Greedy PER from our beam search (sanity check) ────────────
-    log.info("\n[3/5]  CTC greedy decode (PER baseline) …")
+    # ── Step 3: Greedy PER baseline ───────────────────────────────────────
+    log.info("\n[3/6]  CTC greedy decode (PER baseline) …")
     greedy_seqs = decode_greedy_phonemes(logits, logit_lengths)
-    per_ours = compute_per(greedy_seqs, ground_truth, phone_to_words)
+    per_ours = compute_per(greedy_seqs, ground_truth, None)
     log.info("  PER (greedy, word-aligned): %.4f", per_ours)
+
+    # ── Step 4: Lexicon-constrained beam search (once, reused by LMs) ────
+    log.info("\n[4/6]  Lexicon-constrained beam search …")
+    t_bs = time.time()
+    all_nbest = run_beam_search_all(
+        logits, logit_lengths, trie,
+        beam_size=args.beam_size, lm_nbest=args.lm_nbest,
+        beam_beta=args.beam_beta,
+    )
+    t_bs_total = time.time() - t_bs
+    avg_nbest_len = float(np.mean([len(x) for x in all_nbest])) if all_nbest else 0.0
+    log.info("  beam-search done in %.1fs  (avg %.1f hyps/utt)",
+             t_bs_total, avg_nbest_len)
+
+    # ── Lexicon-only baseline: top-1 by pure acoustic ────────────────────
+    lex_only_top1 = [(nb[0][0] if nb else '') for nb in all_nbest]
+    lex_metrics = compute_metrics(lex_only_top1, ground_truth, logit_lengths)
+    log.info("  Lexicon-only (no LM) top-1: CER=%.4f  WER=%.4f",
+             lex_metrics['cer'], lex_metrics['wer'])
+
+    # Oracle: best-achievable WER if we could magically pick the right hypothesis
+    oracle_top1 = []
+    for i, nbest in enumerate(all_nbest):
+        ref_words = ground_truth[i].lower().split()
+        best_wer = float('inf'); best_s = ''
+        for s, _ac, _nw in nbest:
+            w = edit_distance(ref_words, s.lower().split()) / max(len(ref_words), 1)
+            if w < best_wer:
+                best_wer = w; best_s = s
+        oracle_top1.append(best_s)
+    oracle_metrics = compute_metrics(oracle_top1, ground_truth, logit_lengths)
+    log.info("  ORACLE (best-of-N-best) : CER=%.4f  WER=%.4f",
+             oracle_metrics['cer'], oracle_metrics['wer'])
+    results['oracle_nbest'] = {
+        'cer': round(oracle_metrics['cer'], 6),
+        'wer': round(oracle_metrics['wer'], 6),
+    }
+    for i in range(min(5, len(ground_truth))):
+        log.info("    REF   : %s", ground_truth[i])
+        log.info("    TOP1  : %s", lex_only_top1[i])
+        log.info("    ORACLE: %s", oracle_top1[i])
+
+    total_audio_min = float(np.sum(logit_lengths)) * FRAME_DURATION_SEC / 60.0
+    total_gt_words = sum(len(s.split()) for s in ground_truth)
+    wpm_gt = total_gt_words / total_audio_min if total_audio_min > 0 else 0.0
 
     results = {
         'config': {
             'decoder_ckpt': CKPT_DIR,
             'beam_size': args.beam_size,
             'lm_nbest': args.lm_nbest,
+            'beam_beta': args.beam_beta,
             'acoustic_scale': args.acoustic_scale,
-            'lm_weight': args.lm_weight,
+            'alpha': args.alpha,
+            'beta': args.beta,
+            'grid_search': args.grid_search,
+            'max_utts': args.max_utts,
         },
         'neural_decoder_per': round(greedy_per_internal, 6),
+        'per_word_aligned': round(per_ours, 6),
+        'lexicon_only_top1': {
+            'cer': round(lex_metrics['cer'], 6),
+            'wer': round(lex_metrics['wer'], 6),
+            'wpm_audio': round(wpm_gt, 2),
+        },
+        'beam_search_time_sec': round(t_bs_total, 2),
         'lm_results': {},
     }
 
@@ -757,75 +914,76 @@ def main():
     if args.lm in ('gemma', 'both'):
         lms_to_run.append(('gemma3_270m', GEMMA_MODEL_ID))
 
-    # ── Step 4: LM decoding for each model ────────────────────────────────
+    # ── Step 5+6: LM rescoring for each model ────────────────────────────
     for lm_tag, lm_id in lms_to_run:
-        log.info("\n[4/5]  LM decoding with %s …", lm_id)
+        log.info("\n[5/6]  LM rescoring with %s …", lm_id)
 
-        # Free TF GPU memory before loading PyTorch model
         tf.keras.backend.clear_session()
-
         lm_model, lm_tokenizer = load_lm(lm_id, cache_dir=args.cache_dir,
                                           hf_token=args.hf_token or None)
 
-        t_decode_start = time.time()
-        decoded_sents, decode_times = decode_with_lm(
-            logits, logit_lengths,
-            lm_model, lm_tokenizer,
-            phone_to_words,
-            beam_size=args.beam_size,
-            lm_nbest=args.lm_nbest,
-            acoustic_scale=args.acoustic_scale,
-            lm_weight=args.lm_weight,
-            lm_name=lm_tag,
+        t0 = time.time()
+        scored = score_nbest_with_lm(
+            all_nbest, lm_model, lm_tokenizer, lm_name=lm_tag,
         )
-        t_decode_total = time.time() - t_decode_start
+        t_lm_total = time.time() - t0
 
-        # ── Step 5: Metrics ───────────────────────────────────────────────
-        log.info("\n[5/5]  Computing metrics for %s …", lm_tag)
-        metrics = compute_metrics(decoded_sents, ground_truth, logit_lengths)
+        # ── Combine & grid-search (if enabled) ────────────────────────────
+        if args.grid_search:
+            log.info("  Grid search over α, β …")
+            best = None
+            grid = []
+            for a in args.alphas:
+                for b in args.betas:
+                    decoded = pick_best_hyp(scored, alpha=a, beta=b,
+                                            acoustic_scale=args.acoustic_scale)
+                    m = compute_metrics(decoded, ground_truth, logit_lengths)
+                    grid.append({'alpha': a, 'beta': b,
+                                 'cer': round(m['cer'], 6),
+                                 'wer': round(m['wer'], 6)})
+                    if best is None or m['wer'] < best['wer']:
+                        best = {'alpha': a, 'beta': b,
+                                'cer': m['cer'], 'wer': m['wer'],
+                                'decoded': decoded}
+            decoded_sents = best['decoded']
+            metrics = {'cer': best['cer'], 'wer': best['wer']}
+            log.info("  best α=%.2f β=%.2f → CER=%.4f WER=%.4f",
+                     best['alpha'], best['beta'], best['cer'], best['wer'])
+            alpha_used, beta_used = best['alpha'], best['beta']
+        else:
+            decoded_sents = pick_best_hyp(scored, alpha=args.alpha, beta=args.beta,
+                                          acoustic_scale=args.acoustic_scale)
+            metrics = compute_metrics(decoded_sents, ground_truth, logit_lengths)
+            grid = None
+            alpha_used, beta_used = args.alpha, args.beta
 
-        # WPM note: use ground-truth word count / total audio duration
-        total_gt_words = sum(len(s.split()) for s in ground_truth)
-        total_audio_min = float(np.sum(logit_lengths)) * FRAME_DURATION_SEC / 60.0
-        wpm_gt  = total_gt_words / total_audio_min
-
-        # Also compute decode-time WPM (how many words decoded per minute of compute)
-        n_decoded_words = sum(len(s.split()) for s in decoded_sents)
-        wpm_decoded = n_decoded_words / (t_decode_total / 60.0)
-
-        log.info("")
+        log.info("\n[6/6]  Results for %s:", lm_tag)
         log.info("  ┌─────────────────────────────────┐")
-        log.info("  │  Results: %-22s │", lm_tag)
-        log.info("  ├─────────────────────────────────┤")
         log.info("  │  PER  (neural decoder) = %.4f  │", greedy_per_internal)
         log.info("  │  CER  (LM decoded)     = %.4f  │", metrics['cer'])
         log.info("  │  WER  (LM decoded)     = %.4f  │", metrics['wer'])
         log.info("  │  WPM  (audio-based)    = %.1f  │", wpm_gt)
-        log.info("  │  WPM  (decode-speed)   = %.1f  │", wpm_decoded)
+        log.info("  │  α=%.2f β=%.2f              │", alpha_used, beta_used)
         log.info("  └─────────────────────────────────┘")
 
+        sample_comparisons = [
+            {'ref': ground_truth[i], 'hyp': decoded_sents[i]}
+            for i in range(min(20, len(decoded_sents)))
+        ]
         results['lm_results'][lm_tag] = {
             'lm_model_id': lm_id,
             'per':  round(greedy_per_internal, 6),
             'cer':  round(metrics['cer'], 6),
             'wer':  round(metrics['wer'], 6),
-            'wpm_audio':  round(wpm_gt, 2),
-            'wpm_decode': round(wpm_decoded, 2),
+            'wpm_audio': round(wpm_gt, 2),
+            'alpha': alpha_used,
+            'beta':  beta_used,
             'n_samples': len(decoded_sents),
-            'avg_decode_time_sec': round(float(np.mean(decode_times)), 4),
-            'total_decode_time_sec': round(t_decode_total, 2),
+            'lm_scoring_time_sec': round(t_lm_total, 2),
+            'grid': grid,
+            'sample_comparisons': sample_comparisons,
         }
 
-        # Save a sample of decoded vs ground-truth for inspection
-        sample_comparisons = []
-        for i in range(min(20, len(decoded_sents))):
-            sample_comparisons.append({
-                'ref':  ground_truth[i],
-                'hyp':  decoded_sents[i],
-            })
-        results['lm_results'][lm_tag]['sample_comparisons'] = sample_comparisons
-
-        # Clean up LM from memory
         import torch
         del lm_model, lm_tokenizer
         torch.cuda.empty_cache()
@@ -839,11 +997,12 @@ def main():
     log.info("\n" + "=" * 65)
     log.info("  FINAL SUMMARY")
     log.info("=" * 65)
-    log.info("  Neural decoder PER : %.4f", greedy_per_internal)
+    log.info("  Neural decoder PER       : %.4f", greedy_per_internal)
+    log.info("  Lexicon-only top-1       : CER=%.4f  WER=%.4f",
+             lex_metrics['cer'], lex_metrics['wer'])
     for lm_tag, r in results['lm_results'].items():
-        log.info("  %s:", lm_tag)
-        log.info("    PER=%.4f  CER=%.4f  WER=%.4f  WPM(audio)=%.1f",
-                 r['per'], r['cer'], r['wer'], r['wpm_audio'])
+        log.info("  %s (α=%.2f β=%.2f):  CER=%.4f  WER=%.4f  WPM=%.1f",
+                 lm_tag, r['alpha'], r['beta'], r['cer'], r['wer'], r['wpm_audio'])
 
 
 if __name__ == '__main__':

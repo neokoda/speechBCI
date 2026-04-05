@@ -1,6 +1,6 @@
 # Speech BCI: Transformer Experiment Progress
 
-**Last Updated:** 2026-04-05 (Session 7 — Cleanup + Seto Discrepancy Analysis)
+**Last Updated:** 2026-04-05 (Session 8 — Lexicon-Constrained Beam Search IN PROGRESS)
 
 Primary handoff for resuming thesis work. Covers goals, completed work, current state, and next steps.
 
@@ -155,6 +155,139 @@ Our WER (~0.96) is far worse than Seto's (~0.17). The root cause is a fundamenta
 **Why Seto/Willett don't have this problem:** Their lexicon FST constrains the CTC beam so that every partial hypothesis is a valid word prefix. A phoneme error just selects a wrong-but-real word rather than producing a non-word fragment. The error is recoverable by the LM.
 
 **The SRILM infrastructure is already in the repo** at `LanguageModelDecoder/` — Willett built it for trigram LM decoding. It was not used in our LM pipeline but is the correct foundation for a proper implementation.
+
+---
+
+## 8b. Session 8 — Lexicon-Constrained Beam Search (IN PROGRESS)
+
+**Objective:** Rewrite the LM pipeline to be faithful to Seto + Willett. Root cause of WER=0.96 is post-hoc CMU-dict DP (phoneme errors break exact-match lookup and emit syllable fragments). Fix: make the beam search itself lexicon-constrained so every partial hypothesis is a valid word prefix.
+
+**Plan file:** `/root/.claude/plans/snazzy-wishing-garden.md` (approved).
+Design: pure-Python CMU-dict prefix trie + word-level CTC beam search, then N-best rescoring with GPT-2 124M / Gemma 3 270M, combined per Seto eq. III-3: `score = acoustic + α·log P_LM + β·word_insertion_bonus`.
+
+### What was implemented
+Modified `AnalysisExamples/eval_lm_pipeline.py`:
+- **`LexiconTrie`** class: CMU dict → prefix trie keyed on stress-stripped phoneme tuples. Multi-pronunciation support. Full ~125k vocab.
+- **Short-word junk filter** (`_SHORT_WORD_WHITELIST`): drops 1005 CMU 1–2-phoneme interjections (mm, oh, tew, reh, etc.); keeps real short words (a, i, be, by, do, go, etc. + contractions).
+- **`lexicon_constrained_beam_search`** (replaces `ctc_prefix_beam_search` + `phones_to_words_dp`):
+  - Beam key: `(committed_words, trie_node_id, last_emitted_idx)`
+  - Value: `(log_prob_acoustic, n_words)`
+  - Four transitions per frame: blank / repeat last nonblank / SIL-commits-word / phoneme-extends-trie (with implicit word boundary at word-end nodes).
+  - Viterbi max-path (not the log-sum-exp pb/pnb split — acceptable simplification, verified on synthetic logits).
+- **`score_nbest_with_lm`** + **`pick_best_hyp`** for Seto III-3 combine.
+- New CLI: `--alpha`, `--beta`, `--beam-beta`, `--grid-search`, `--alphas`, `--betas`, `--max-utts`, `--lm none`.
+- Oracle best-of-N-best WER debug output.
+
+**Constants (confirmed correct):** `BLANK_IDX=40, SIL_IDX=39, PHONE_CLASS_OFFSET=0`. TFRecord `seqClassIDs` are 1-indexed (1–40), then `-1` is applied to get internal 0–39 matching `PHONE_DEF_SIL`. `neuralSequenceDecoder.py:892` confirms `blank_index=-1` in ctc_loss_v2 (last class = blank). Verified empirically: class 40 is the most frequent argmax on real logits (blank dominates, as expected in CTC).
+
+### Rabbit holes (for the record)
+1. **Wrong off-by-one hypothesis.** Seeing seqClassIDs 1–40 in TFRecords, I initially guessed `BLANK_IDX=0`. WER got *worse* (1.05 → 2.26). Reverted after checking argmax class frequency. Fix: original `BLANK_IDX=40` is correct.
+2. **cuDNN version mismatch.** venv311 had libcudnn.so.9, TF 2.15 needs libcudnn.so.8. GPU silently fell back to CPU (25-min hang). Fix: `pip install 'nvidia-cudnn-cu12==8.9.7.29' --force-reinstall --no-deps`.
+3. **Over-segmentation WER>1.0.** Beam emitted short junk like "mm"/"tew". Fix: short-word whitelist filter (above).
+
+### Current results (preliminary, full 880-utt test)
+
+| Config | CER | WER | Notes |
+|---|---|---|---|
+| Old: N-best rescoring + CMU-DP (GPT-2) | 0.489 | **0.958** | Session 7 baseline |
+| **Lexicon-only, no LM, beam=200, β=0** | **0.300** | **0.587** | **This session, 322s on GPU** |
+| Oracle (best-of-N-best, avg 87.5 hyps/utt) | 0.260 | 0.481 | Ceiling with current beam |
+| Seto et al. target | ~0.145 | ~0.170 | LLaMA 2 + lexicon FST |
+
+**Lexicon constraint alone dropped WER 0.96 → 0.59 (–39% relative).** Matches the plan's prediction (~0.40–0.60 without LM).
+
+### Known bug (blocker for next run)
+`eval_lm_pipeline.py:875` — `UnboundLocalError: cannot access local variable 'results'` when oracle block writes to `results` before `results = {...}` is initialized. Move oracle assignment *after* the main `results = {...}` dict is built, or initialize `results = {}` earlier. Pure reporting bug — the decoder completed successfully before it crashed.
+
+### Clues / diagnosis so far
+- **PER ≠ uniform across utterances.** First 50 test utts have PER=0.276 (hard subset) vs full-set internal PER=0.1654. Hard lexicon constraint struggles most where PER is high: correct phoneme path falls out of the beam entirely.
+- **Oracle WER=0.481 with avg 87.5 hyps/utt** means even with a perfect LM, current beam caps us at ~0.48. To reach Seto's 0.17 we likely need either (a) a larger beam (500–1000) to keep the correct path alive longer, or (b) log-sum-exp pb/pnb prefix beam (standard CTC) instead of Viterbi max-path, which merges alignment variants and improves recall of correct paths.
+- **LM headroom:** gap between top-1 (0.587) and oracle (0.481) is 0.106 WER. A good LM rescorer should close most of that; remaining gap to Seto (0.17) must come from enlarging the beam / tightening the acoustic model.
+
+### Next steps (in order)
+1. **Fix the `results` UnboundLocalError** at line 875 (one-line fix).
+2. **Re-run full test + GPT-2 + Gemma rescoring + α/β grid search.** Command:
+   ```bash
+   python AnalysisExamples/eval_lm_pipeline.py --lm both --beam-size 200 \
+       --grid-search --alphas 0.3 0.5 0.8 1.2 --betas 0.0 0.5 1.0 2.0 \
+       --hf-token $HF_TOKEN
+   ```
+   Expected: WER ~0.30–0.40 after rescoring.
+3. **If WER still >0.35 after LM:** bump beam to 500, consider switching to log-sum-exp pb/pnb prefix beam (bigger change, matches standard CTC prefix beam search).
+4. **Stretch:** integrate KenLM 3-gram *inside* the beam (Willett's approach). Faithfulness to Willett improves further; beam prunes to LM-likely continuations earlier.
+
+---
+
+## 8c. Diagnosis — Is the Bottleneck the Decoder or the LM Pipeline?
+
+**It's the LM/beam, not the phoneme decoder.** Arithmetic:
+
+| System | PER | WER |
+|---|---|---|
+| Our Conformer | 0.165 | 0.587 (lexicon-only) / 0.481 (oracle) |
+| Willett GRU (offline, his paper) | 0.169 | **0.118** |
+| Seto (pretrained GRU + LLaMA 2) | ≈0.17 | **≈0.170** |
+
+Same PER, ~3–5× worse WER. The phoneme decoder is doing its job. A cheap sanity check: plug the Willett GRU checkpoint into our pipeline — if we get WER ≈ 0.55–0.60, the decoder is absolved; if Willett's GRU gives WER 0.12 through our pipeline, then something is wrong with the Conformer logits.
+
+### What's different — ours vs Willett's offline decoder
+
+| Aspect | Ours | Willett |
+|---|---|---|
+| Decoder infra | pure-Python lexicon trie | Kaldi HCLG WFST (H+C+L+G composed) |
+| LM inside beam | none | SRILM **3-gram, 125k vocab**, shallow-fused per step |
+| Beam width | 200 hyps, avg 87 survive | Kaldi `beam=17` → lattices in the thousands |
+| Prefix beam math | Viterbi max-path | **log-sum-exp over (p_blank, p_nonblank)** |
+| Acoustic scale | unscaled frame log-probs summed | tuned `acoustic-scale` (0.1–1.0) |
+| Word-insertion penalty | β, untuned | tuned on validation |
+
+### Ours vs modern "best practice"
+
+| Aspect | Ours | Best practice |
+|---|---|---|
+| Library | hand-rolled | `pyctcdecode` or `flashlight-text` (both handle KenLM + lexicon out of the box) |
+| In-beam LM | none | KenLM 4- or 5-gram, per-step |
+| Prefix merging | Viterbi | log-sum-exp (p_b, p_nb) |
+| Beam width | 200 | 500–1500 |
+| Rescoring LM | GPT-2 124M / Gemma 270M | LLaMA 3 8B 4-bit or domain-finetuned |
+
+### Recommended surgery (in order of expected WER impact)
+
+1. **Log-sum-exp prefix beam** replacing Viterbi max-path (largest correctness fix — Viterbi undercounts long words).
+2. **Beam 500** and measure oracle WER. If oracle drops, keep going; if flat, the in-beam LM is the missing ingredient.
+3. **KenLM 3-gram inside beam** (Willett-faithful; `pyctcdecode` reads `.arpa` directly).
+4. **Only then** sweep α/β for large-LM rescoring.
+5. Swap GPT-2 for **LLaMA 3 8B 4-bit** to close the Seto-style gap.
+
+Steps 1–3 should take us from WER 0.59 → ~0.25. LLaMA-scale rescoring is the last 0.05–0.08.
+
+---
+
+## 8d. Is Seto's Thesis Trustworthy?
+
+Honest assessment of Seto et al.'s methodology.
+
+### Against fabrication (probable)
+- Their WER (0.17) is **worse than Willett's** (0.118). Fabricators invent improvements, not regressions.
+- Willett's **Kaldi HCLG + SRILM pipeline is literally in this repo** (`LanguageModelDecoder/`). Seto almost certainly used it as the backend — no need to re-implement anything to reach 0.15–0.20 WER.
+- Wrong hyperparameter descriptions (e.g. LLaMA 7B config) are sloppiness, not dishonesty — standard for Indonesian BSc theses.
+- WER 0.17 on this dataset is reachable with pretrained GRU (PER≈0.17) + Willett's Kaldi beam + LLaMA 2 7B as a rescorer.
+
+### Toward "their 'shallow fusion' is really N-best rescoring"
+- "Shallow fusion" vs "N-best rescoring" is routinely conflated by students — both apply eq. III-3, just at different granularities.
+- **LLaMA 2 7B is extremely awkward to shallow-fuse inside a beam.** Per-step token scoring with a 7B model on 500+ beam entries is ≥100× slower than the acoustic decoder and usually not worth it. *Everyone* who uses a big LLM with CTC does it as rescoring in practice.
+- Wrong LLaMA config details correlate with "wrote 'shallow fusion' because the references used it" rather than "implemented real per-step log-prob fusion with a 7B model."
+
+### Most probable story
+Seto ran Willett's existing Kaldi HCLG beam (with built-in SRILM 3-gram) to produce an N-best word list, re-ranked the N-best with LLaMA 2 7B log-probabilities, combined via eq. III-3, and called the whole thing "shallow fusion" in the thesis. That architecture yields WER ≈ 0.17 on this dataset, matches the existing repo infrastructure, and matches a bachelor-level engineering budget.
+
+### Implication for us
+**We don't need to match their word "shallow fusion" literally.** We need (a) Willett's Kaldi HCLG beam or our Python equivalent with a KenLM n-gram inside the beam, plus (b) LLaMA-or-similar N-best rescoring on top. That's what they probably did, regardless of terminology.
+
+### How to verify (cheap)
+1. Inspect `LanguageModelDecoder/` — if it has per-step LLaMA hooks, it's real shallow fusion; if only a rescoring entrypoint, it's rescoring.
+2. Check if Seto has a GitHub companion repo.
+3. Replicate: stand up Willett's Kaldi beam + LLaMA 2 rescoring — if we get WER ≈ 0.17, the number is real regardless of terminology.
 
 ---
 

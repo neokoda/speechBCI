@@ -1,198 +1,22 @@
 {
   "config": {
     "decoder_ckpt": "/workspace/speechBCI/experiments/24sess/conformer_spatial_24sess",
-    "beam_size": 50,
-    "lm_nbest": 30,
-    "acoustic_scale": 0.5,
-    "lm_weight": 0.5
+    "beam_size": 100,
+    "lm_nbest": 100,
+    "beam_beta": 1.0,
+    "acoustic_scale": 1.0,
+    "alpha": 0.5,
+    "beta": 1.0,
+    "grid_search": false,
+    "max_utts": 5
   },
   "neural_decoder_per": 0.165449,
-  "lm_results": {
-    "gpt2": {
-      "lm_model_id": "gpt2",
-      "per": 0.165449,
-      "cer": 0.488614,
-      "wer": 0.957985,
-      "wpm_audio": 69.15,
-      "wpm_decode": 1465.31,
-      "n_samples": 880,
-      "avg_decode_time_sec": 0.3205,
-      "total_decode_time_sec": 282.08,
-      "sample_comparisons": [
-        {
-          "ref": "theocracy reconsidered",
-          "hyp": "crack cus rec can't to"
-        },
-        {
-          "ref": "rich purchased several signed lithographs",
-          "hyp": "rape paar sh ev uhl line's clell luff"
-        },
-        {
-          "ref": "so rules we made in unabashed collusion",
-          "hyp": "the roos worm aided lin knin sh ca uhl leu an"
-        },
-        {
-          "ref": "lori's costume needed black gloves to be completely elegant",
-          "hyp": "croix re cusk tomb mm needed baked love's tool beacom p uhl al le oi"
-        },
-        {
-          "ref": "the tooth fairy forgot to come when roger's tooth fell out",
-          "hyp": "that ooh oath errors rugh och mm tuk i'm mm rund rodgers youth fay out"
-        },
-        {
-          "ref": "that stinging vapor was caused by chloride vaporization",
-          "hyp": "that's eng a in ip are yore waas cose but kyer uhde dip puhl a sh shun nie"
-        },
-        {
-          "ref": "before thursday's exam review every formula",
-          "hyp": "before earth's outta le e scud aim reas yore every e faw arm lea iie"
-        },
-        {
-          "ref": "wildfire near sunshine forces park closures",
-          "hyp": "aisle fire nearer sul luhn muhs mer paar"
-        },
-        {
-          "ref": "the word means it won't boil away easily nothing else",
-          "hyp": "the ward made it one bull le way io lea ina thing"
-        },
-        {
-          "ref": "would a blue feather in a man's hat make him happy all day",
-          "hyp": "wood a bleu feather are in numb ant height makes him map a allee all dae"
-        },
-        {
-          "ref": "he talked about unauthentic storylines too",
-          "hyp": "heat oct a about tonn thanh to foor aine ewe"
-        },
-        {
-          "ref": "most young rise early every morning",
-          "hyp": "bice young e why's sir leaf every morning"
-        },
-        {
-          "ref": "with this no loyal citizen can quarrel",
-          "hyp": "with list ein oehler uhl kid an caen korea"
-        },
-        {
-          "ref": "primitive tribes have an upbeat attitude",
-          "hyp": "mud tom's e halve ahn up but aue dutt d"
-        },
-        {
-          "ref": "and it was not a judge but a justice of the peace who made the decision",
-          "hyp": "and des waas a j but tut isch a zeh of the pace gnu bade the an nie"
-        },
-        {
-          "ref": "we seemed to be witnessing the population explosion right in our own backyards",
-          "hyp": "oui seemed tool b ich an an ing the prob a uhl lait a shun picks po ooh a reit tin knauer arone neeb ack cod"
-        },
-        {
-          "ref": "sometimes desperate measures can also turn into solid moves for the future",
-          "hyp": "kump ein espe ritt measure's caen rall sew heard in la utt moved faure the future"
-        },
-        {
-          "ref": "those answers will be straightforward if you think them through carefully first",
-          "hyp": "the e ate a we'll b tree ai viar ziv eave e yore think them thew eke aue mm uhl allee eave if fer force"
-        },
-        {
-          "ref": "she gets dressed faster and spends less energy making clothing decisions",
-          "hyp": "the guts edge fay's ers and penned les en nurr are are e mm baking cal e dis an"
-        },
-        {
-          "ref": "academic aptitude guarantees your diploma",
-          "hyp": "aix come money apt utt didn't e ai is yours dip mm mm a a a"
-        }
-      ]
-    },
-    "gemma3_270m": {
-      "lm_model_id": "google/gemma-3-270m",
-      "per": 0.165449,
-      "cer": 0.614127,
-      "wer": 1.190797,
-      "wpm_audio": 69.15,
-      "wpm_decode": 1151.31,
-      "n_samples": 880,
-      "avg_decode_time_sec": 0.4727,
-      "total_decode_time_sec": 415.98,
-      "sample_comparisons": [
-        {
-          "ref": "theocracy reconsidered",
-          "hyp": "crack cus rec can't it'd"
-        },
-        {
-          "ref": "rich purchased several signed lithographs",
-          "hyp": "raiche paar sh it ev uhl line's clell luff"
-        },
-        {
-          "ref": "so rules we made in unabashed collusion",
-          "hyp": "the rule's worm aided lin knin of sh ca uhl leu unz e"
-        },
-        {
-          "ref": "lori's costume needed black gloves to be completely elegant",
-          "hyp": "croix rugh eke us tomb mm zurn eda baked love's tool baek ah mm p uhl al le oi t"
-        },
-        {
-          "ref": "the tooth fairy forgot to come when roger's tooth fell out",
-          "hyp": "that ooh oath errors rugh och mm tuk i'm mof rund e wa jurs youth fay out"
-        },
-        {
-          "ref": "that stinging vapor was caused by chloride vaporization",
-          "hyp": "that's eng a in epp earp hors waas cose a akai are uhde dip uthe a sh shun nie"
-        },
-        {
-          "ref": "before thursday's exam review every formula",
-          "hyp": "before are thuot uhl a e scud aim reas yore every e faw arm lulie iie"
-        },
-        {
-          "ref": "wildfire near sunshine forces park closures",
-          "hyp": "aisle fire knorr ursa luhn muhs mer paar"
-        },
-        {
-          "ref": "the word means it won't boil away easily nothing else",
-          "hyp": "the ward made it one bull le way aisle allee ina thing"
-        },
-        {
-          "ref": "would a blue feather in a man's hat make him happy all day",
-          "hyp": "wood a bleau feather are in numb ahn height makes him map a allee zoh dae"
-        },
-        {
-          "ref": "he talked about unauthentic storylines too",
-          "hyp": "heat oct a about tonn thanh to foor aine knee ewe"
-        },
-        {
-          "ref": "most young rise early every morning",
-          "hyp": "bice young e why's sir leif ever iie morning's"
-        },
-        {
-          "ref": "with this no loyal citizen can quarrel",
-          "hyp": "with list ein oehler uhl kiddie an caen creal uhl"
-        },
-        {
-          "ref": "primitive tribes have an upbeat attitude",
-          "hyp": "mud urge tom's e halve ahn up utt aue dutt tude d"
-        },
-        {
-          "ref": "and it was not a judge but a justice of the peace who made the decision",
-          "hyp": "and des waas a j but tut isch unz eh of the pace gnu bade the ich ooh an nie"
-        },
-        {
-          "ref": "we seemed to be witnessing the population explosion right in our own backyards",
-          "hyp": "oui seemed tool b ich an an ing the prob a uhl lait a shun picks po ooh a reit tin knauer arone neeb ack uhde"
-        },
-        {
-          "ref": "sometimes desperate measures can also turn into solid moves for the future",
-          "hyp": "kump ein espe ritt measure's caen rall also au heard in la utt moved faure the few are"
-        },
-        {
-          "ref": "those answers will be straightforward if you think them through carefully first",
-          "hyp": "the e ate a we'll b tree ai viar ziv eave e yore think them thew eke aue mm uhl allee eave if fer faure"
-        },
-        {
-          "ref": "she gets dressed faster and spends less energy making clothing decisions",
-          "hyp": "the guts edge fay's ers and penned les en nurr are are e mm baking cal e dis an unz e"
-        },
-        {
-          "ref": "academic aptitude guarantees your diploma",
-          "hyp": "aix come money apt utt didn't e ai is yours dip mm mm a a a"
-        }
-      ]
-    }
-  }
+  "per_word_aligned": 0.418301,
+  "lexicon_only_top1": {
+    "cer": 0.611872,
+    "wer": 1.529412,
+    "wpm_audio": 46.36
+  },
+  "beam_search_time_sec": 1.74,
+  "lm_results": {}
 }
