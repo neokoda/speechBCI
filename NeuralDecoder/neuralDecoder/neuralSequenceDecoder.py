@@ -149,7 +149,11 @@ class NeuralSequenceDecoder(object):
             datasetIdx = datasetIdx[0, 0]
             nInputFeatures = self.args['dataset']['nInputFeatures']
 
-            normLayer = tf.keras.layers.Normalization(input_shape=[nInputFeatures])
+            # Use float16 dtype when mixed precision is active so the checkpoint
+            # variables (saved as float16 in TF 2.15) restore without dtype mismatch.
+            norm_dtype = 'float16' if self.args.get('mixedPrecision', False) else 'float32'
+            normLayer = tf.keras.layers.Normalization(input_shape=[nInputFeatures],
+                                                      dtype=norm_dtype)
             normLayer.build([None, nInputFeatures])
 
             if isTraining and self.args['normLayer']:
@@ -198,7 +202,9 @@ class NeuralSequenceDecoder(object):
             nInputFeatures = self.args['dataset']['nInputFeatures']
 
             # Adapt normalization layer with all data.
-            normLayer = tf.keras.layers.Normalization(input_shape=[nInputFeatures])
+            norm_dtype = 'float16' if self.args.get('mixedPrecision', False) else 'float32'
+            normLayer = tf.keras.layers.Normalization(input_shape=[nInputFeatures],
+                                                      dtype=norm_dtype)
             normLayer.build([None, nInputFeatures])
             if isTraining and self.args['normLayer']:
                 normLayer.adapt(self.tfAdaptDatasets[datasetIdx].take(-1))

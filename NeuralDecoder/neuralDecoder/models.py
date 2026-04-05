@@ -257,7 +257,7 @@ class SpatialAttention(tf.keras.layers.Layer):
 
     def build(self, input_shape):
         self.channel_embed = self.add_weight(
-            'channel_embed',
+            name='channel_embed',
             shape=(1, self.n_channels, self.d_attn),
             initializer=tf.keras.initializers.TruncatedNormal(stddev=0.02),
             trainable=True)
