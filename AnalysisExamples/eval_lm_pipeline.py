@@ -28,13 +28,11 @@ from collections import defaultdict
 import numpy as np
 
 # ── GPU / TF setup ─────────────────────────────────────────────────────────
-os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-
-import site
-# Add NVIDIA pip-installed CUDA libs to LD_LIBRARY_PATH so TF finds the GPU.
-# Works whether running from the venv311 (TF 2.15) or system Python (TF 2.21+).
-_NV_BASE = os.path.join(site.getsitepackages()[0], 'nvidia')
+# LD_LIBRARY_PATH must be set BEFORE the dynamic linker loads TF's .so files.
+# Setting os.environ inside Python is too late for already-loaded libs, so we
+# re-exec the process with the correct env if the NVIDIA libs are not yet on the path.
+import site as _site
+_NV_BASE = os.path.join(_site.getsitepackages()[0], 'nvidia')
 if os.path.isdir(_NV_BASE):
     _NV_SUBDIRS = ['cudnn', 'cublas', 'cuda_nvrtc', 'cuda_runtime',
                    'cufft', 'cusolver', 'cusparse', 'nvjitlink']
@@ -43,8 +41,14 @@ if os.path.isdir(_NV_BASE):
         for d in _NV_SUBDIRS
         if os.path.isdir(os.path.join(_NV_BASE, d, 'lib'))
     )
-    if _NV_LIBS:
-        os.environ['LD_LIBRARY_PATH'] = _NV_LIBS + ':' + os.environ.get('LD_LIBRARY_PATH', '')
+    _cur_ld = os.environ.get('LD_LIBRARY_PATH', '')
+    if _NV_LIBS and _NV_LIBS.split(':')[0] not in _cur_ld:
+        _env = os.environ.copy()
+        _env['LD_LIBRARY_PATH'] = _NV_LIBS + ':' + _cur_ld
+        os.execve(sys.executable, [sys.executable] + sys.argv, _env)
+
+os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 import tensorflow as tf
 
@@ -872,14 +876,6 @@ def main():
     oracle_metrics = compute_metrics(oracle_top1, ground_truth, logit_lengths)
     log.info("  ORACLE (best-of-N-best) : CER=%.4f  WER=%.4f",
              oracle_metrics['cer'], oracle_metrics['wer'])
-    results['oracle_nbest'] = {
-        'cer': round(oracle_metrics['cer'], 6),
-        'wer': round(oracle_metrics['wer'], 6),
-    }
-    for i in range(min(5, len(ground_truth))):
-        log.info("    REF   : %s", ground_truth[i])
-        log.info("    TOP1  : %s", lex_only_top1[i])
-        log.info("    ORACLE: %s", oracle_top1[i])
 
     total_audio_min = float(np.sum(logit_lengths)) * FRAME_DURATION_SEC / 60.0
     total_gt_words = sum(len(s.split()) for s in ground_truth)
@@ -907,6 +903,14 @@ def main():
         'beam_search_time_sec': round(t_bs_total, 2),
         'lm_results': {},
     }
+    results['oracle_nbest'] = {
+        'cer': round(oracle_metrics['cer'], 6),
+        'wer': round(oracle_metrics['wer'], 6),
+    }
+    for i in range(min(5, len(ground_truth))):
+        log.info("    REF   : %s", ground_truth[i])
+        log.info("    TOP1  : %s", lex_only_top1[i])
+        log.info("    ORACLE: %s", oracle_top1[i])
 
     lms_to_run = []
     if args.lm in ('gpt2', 'both'):

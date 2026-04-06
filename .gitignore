@@ -51,3 +51,12 @@ data
 
 # Claude Code local config
 .claude/
+
+languageModel
+
+# Experiment outputs (data, not code)
+experiments/wfst_lm/
+experiments/wfst_lm_gru/
+
+# pybind11 backup (old v2.9, replaced by v3.0.3)
+LanguageModelDecoder/runtime/server/x86/pybind11/include/pybind11_v2.9_backup/

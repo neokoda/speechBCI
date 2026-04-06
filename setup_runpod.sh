@@ -43,7 +43,6 @@ $PIP install -q --upgrade pip setuptools wheel
 
 # 3. Install TensorFlow 2.15 + CUDA libs
 echo "[3/6] Installing TensorFlow 2.15..."
-# tensorflow[and-cuda] bundles CUDA libs; then pin cuDNN to 8.9 (TF 2.15 requires cuDNN 8)
 $PIP install -q --no-cache-dir \
     "tensorflow[and-cuda]==2.15.*" \
     "numpy<2" \
@@ -53,8 +52,6 @@ $PIP install -q --no-cache-dir \
     matplotlib \
     tensorboard \
     scipy
-# Downgrade cuDNN from 9 → 8.9 (TF 2.15 requires libcudnn.so.8, not .so.9)
-$PIP install -q --no-cache-dir "nvidia-cudnn-cu12==8.9.*"
 
 # 4. Install PyTorch + HuggingFace (for LM pipeline)
 echo "[4/6] Installing PyTorch + HuggingFace transformers..."
@@ -65,6 +62,11 @@ $PIP install -q --no-cache-dir \
     accelerate \
     sentencepiece \
     cmudict
+
+# Downgrade cuDNN from 9 → 8.9 AFTER PyTorch (torch pulls in cuDNN 9, overwriting 8.9).
+# TF 2.15 requires libcudnn.so.8; PyTorch uses its own bundled cuDNN so --no-deps is safe.
+echo "  Pinning cuDNN to 8.9 for TF 2.15 (after PyTorch install)..."
+$PIP install -q --no-cache-dir --force-reinstall --no-deps "nvidia-cudnn-cu12==8.9.7.29"
 
 # 5. Install NeuralDecoder package
 echo "[5/6] Installing NeuralDecoder package..."
