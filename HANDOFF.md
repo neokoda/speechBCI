@@ -1,6 +1,6 @@
 # Speech BCI: Thesis Progress Handoff
 
-**Last Updated:** 2026-04-07 (Session 11 — Multi-model 5-gram evaluation)
+**Last Updated:** 2026-04-07 (Session 12 — Backup system setup)
 
 ---
 
@@ -173,3 +173,91 @@ bash -c 'ulimit -s unlimited; python AnalysisExamples/eval_wfst_lm.py \
 ## 9. Hardware
 
 RTX 4090 (24 GB VRAM). Recommend 256 GB disk, 64 GB RAM (128+ for lattice rescoring).
+
+---
+
+## 10. Backup & Restore (Google Drive via rclone)
+
+**Drive destination:** `gdrive:speechBCI_backup/`
+```
+speechBCI_backup/
+├── experiments/     — all model checkpoints + eval results
+├── data/derived/    — TFRecords + baseline RNN checkpoint
+├── speech_5gram/    — G.fst + words.txt only (see note below)
+└── docs/            — PDFs + HANDOFF.md
+```
+
+**Note on speech_5gram/:** Only `G.fst` (5 GB) and `words.txt` are backed up.
+`G_no_prune.fst` (75 GB) and `TLG.fst` (41 GB) are excluded — they are only needed
+for lattice rescoring (Step 2), which requires 128+ GB RAM anyway. Rebuild them on
+a high-RAM instance from the Dryad corpus when needed.
+
+---
+
+### One-time rclone setup (once per new instance)
+
+```bash
+/usr/bin/rclone config
+# n → new remote
+# name: gdrive
+# type: drive
+# client_id / client_secret: (leave blank)
+# scope: 1 (full access)
+# service_account_file: (leave blank)
+# Edit advanced config? n
+# Use web browser / auto config? n  ← headless server
+#   → rclone prints a URL; run on a machine with rclone installed:
+#       rclone authorize "drive" "<token shown>"
+#   → paste the resulting JSON token back at config_token>
+# Configure as Shared Drive? n → confirm y
+```
+
+---
+
+### Upload (end of session)
+
+```bash
+# Full backup (~19 GB, skips unchanged files via checksum)
+bash backup_to_drive.sh
+
+# Skip speech_5gram/ (faster, when LM files haven't changed)
+bash backup_to_drive.sh --skip-lm
+
+# Dry run — preview what would be uploaded without transferring
+bash backup_to_drive.sh --dry-run
+```
+
+Monitor progress:
+```bash
+tail -f /tmp/backup_live.log
+```
+
+**Key behaviour:**
+- `--checksum` skips files already on Drive with matching MD5 — safe to re-run, will not re-upload unchanged files
+- `--drive-chunk-size 128M` + `--tpslimit 5` prevent Google Drive API rate limiting
+- Speed oscillates during large file uploads (Drive finalization latency) — ignore ETA swings, trust the file count
+
+---
+
+### Restore (new instance, after git clone + setup_runpod.sh)
+
+```bash
+# Restore everything
+rclone copy gdrive:speechBCI_backup /workspace/speechBCI \
+    --transfers 8 --progress
+
+# Restore only experiments/ (fastest, just need checkpoints)
+rclone copy gdrive:speechBCI_backup/experiments /workspace/speechBCI/experiments \
+    --transfers 8 --progress
+
+# Restore only data/derived/ (TFRecords)
+rclone copy gdrive:speechBCI_backup/data/derived /workspace/speechBCI/data/derived \
+    --transfers 8 --progress
+
+# Restore only speech_5gram/
+rclone copy gdrive:speechBCI_backup/speech_5gram /workspace/speechBCI/speech_5gram \
+    --transfers 8 --progress
+```
+
+**Note:** `rclone copy` from Drive → local will also skip files that already exist
+with matching checksums, so partial restores are safe to re-run.
