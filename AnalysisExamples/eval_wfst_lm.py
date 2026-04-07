@@ -27,23 +27,40 @@ import logging
 import numpy as np
 
 # ── GPU / TF setup ──────────────────────────────────────────────────────────
-# Re-exec with LD_LIBRARY_PATH pointing at pip-installed NVIDIA libs so TF
-# finds libcudnn.so.8 before the dynamic linker is initialized.
+# Re-exec with LD_LIBRARY_PATH pointing at:
+#   1. pip-installed NVIDIA libs (TF needs libcudnn.so.8)
+#   2. OpenFST build libs (lm_decoder needs libfst.so.8)
+# Must be set before the dynamic linker initializes.
 import site as _site
 _NV_BASE = os.path.join(_site.getsitepackages()[0], 'nvidia')
+_FST_LIB = os.path.join(os.path.dirname(__file__), '..',
+    'LanguageModelDecoder/runtime/server/x86/fc_base/openfst-build/src/lib/.libs')
+_FST_LIB = os.path.normpath(_FST_LIB)
+_LM_SO_DIR = os.path.join(os.path.dirname(__file__), '..',
+    'LanguageModelDecoder/runtime/server/x86/build/lib.linux-x86_64-cpython-311')
+_LM_SO_DIR = os.path.normpath(_LM_SO_DIR)
+
+_extra_libs = [_FST_LIB] if os.path.isdir(_FST_LIB) else []
 if os.path.isdir(_NV_BASE):
     _NV_SUBDIRS = ['cudnn', 'cublas', 'cuda_nvrtc', 'cuda_runtime',
                    'cufft', 'cusolver', 'cusparse', 'nvjitlink']
-    _NV_LIBS = ':'.join(
+    _extra_libs += [
         os.path.join(_NV_BASE, d, 'lib')
         for d in _NV_SUBDIRS
         if os.path.isdir(os.path.join(_NV_BASE, d, 'lib'))
-    )
-    _cur_ld = os.environ.get('LD_LIBRARY_PATH', '')
-    if _NV_LIBS and _NV_LIBS.split(':')[0] not in _cur_ld:
-        _env = os.environ.copy()
-        _env['LD_LIBRARY_PATH'] = _NV_LIBS + ':' + _cur_ld
-        os.execve(sys.executable, [sys.executable] + sys.argv, _env)
+    ]
+
+_cur_ld = os.environ.get('LD_LIBRARY_PATH', '')
+_cur_py = os.environ.get('PYTHONPATH', '')
+_need_reexec = (
+    any(p not in _cur_ld for p in _extra_libs) or
+    (_LM_SO_DIR not in _cur_py and os.path.isdir(_LM_SO_DIR))
+)
+if _need_reexec:
+    _env = os.environ.copy()
+    _env['LD_LIBRARY_PATH'] = ':'.join(_extra_libs) + (':' + _cur_ld if _cur_ld else '')
+    _env['PYTHONPATH'] = _LM_SO_DIR + (':' + _cur_py if _cur_py else '')
+    os.execve(sys.executable, [sys.executable] + sys.argv, _env)
 
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
@@ -105,22 +122,26 @@ def compute_wer_cer(hypotheses, references, logit_lengths=None):
 # WFST decoding
 # ═══════════════════════════════════════════════════════════════════════════
 
-def build_wfst_decoder(lm_dir, acoustic_scale=0.5, nbest=100, beam=18):
+def build_wfst_decoder(lm_dir, acoustic_scale=0.5, nbest=100, beam=18, load_rescore=False):
     log.info("Loading WFST decoder from %s …", lm_dir)
+    if load_rescore:
+        log.info("  Lattice rescore FSTs (G.fst + G_no_prune.fst) will be loaded — needs ~80 GB RAM for 5-gram")
     decoder = lmDecoderUtils.build_lm_decoder(
         lm_dir,
         acoustic_scale=acoustic_scale,
         nbest=nbest,
         beam=beam,
+        load_rescore=load_rescore,
     )
     log.info("  WFST decoder ready.")
     return decoder
 
 
-def wfst_decode_all(decoder, logits, logit_lengths, blank_penalty=np.log(7)):
+def wfst_decode_all(decoder, logits, logit_lengths, blank_penalty=np.log(7), rescore=False):
     """Run WFST CTC beam search on all utterances.
 
     Returns list of N-best lists, each entry = (sentence, ac_score, lm_score).
+    rescore=True enables WFST lattice rescoring (requires G_no_prune.fst, e.g. 5-gram).
     """
     # Rearrange logits: [blank, SIL, AA..ZH] as expected by tokens.txt
     logits_r = lmDecoderUtils.rearrange_speech_logits(logits, has_sil=True)
@@ -133,7 +154,7 @@ def wfst_decode_all(decoder, logits, logit_lengths, blank_penalty=np.log(7)):
             logits_r[i, :logit_lengths[i]],
             returnNBest=True,
             blankPenalty=blank_penalty,
-            rescore=False,
+            rescore=rescore,
         )
         all_nbest.append(nbest)
         if (i + 1) % 100 == 0:
@@ -178,6 +199,8 @@ def main():
                         help='α values for grid search (comma-separated)')
     parser.add_argument('--acoustic-scales', type=_float_list, default=[0.3, 0.5, 0.8],
                         help='acoustic_scale values for grid search (comma-separated)')
+    parser.add_argument('--wfst-rescore', action='store_true',
+                        help='Enable WFST lattice rescoring (needs G_no_prune.fst, e.g. 5-gram)')
     parser.add_argument('--max-utts', type=int, default=0,
                         help='Limit to first N utterances (0 = all)')
     parser.add_argument('--ckpt-dir', type=str, default=CKPT_DIR,
@@ -211,11 +234,15 @@ def main():
         acoustic_scale=args.acoustic_scale,
         nbest=args.nbest,
         beam=args.beam,
+        load_rescore=args.wfst_rescore,
     )
 
     log.info("[3/4] WFST CTC decoding …")
+    if args.wfst_rescore:
+        log.info("  WFST lattice rescoring ENABLED (5-gram mode)")
     all_nbest = wfst_decode_all(decoder, logits, logit_lengths,
-                                blank_penalty=args.blank_penalty)
+                                blank_penalty=args.blank_penalty,
+                                rescore=args.wfst_rescore)
 
     # Top-1 from WFST alone
     top1_wfst = [nb[0][0].strip() if nb else '' for nb in all_nbest]

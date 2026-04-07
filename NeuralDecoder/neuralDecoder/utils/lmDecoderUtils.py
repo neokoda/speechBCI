@@ -142,7 +142,13 @@ def build_lm_decoder(model_path,
                      acoustic_scale=1.5,
                      ctc_blank_skip_threshold=1.0,
                      length_penalty=0.0,
-                     nbest=1):
+                     nbest=1,
+                     load_rescore=True):
+    """Build WFST decoder.
+
+    load_rescore=False skips loading G.fst and G_no_prune.fst (~80 GB for 5-gram),
+    saving RAM when lattice rescoring is not needed.
+    """
     decode_opts = lm_decoder.DecodeOptions(
         max_active,
         min_active,
@@ -158,7 +164,7 @@ def build_lm_decoder(model_path,
     words_path = os.path.join(model_path, 'words.txt')
     G_path = os.path.join(model_path, 'G.fst')
     rescore_G_path = os.path.join(model_path, 'G_no_prune.fst')
-    if not os.path.exists(rescore_G_path):
+    if not load_rescore or not os.path.exists(rescore_G_path):
         rescore_G_path = ""
         G_path = ""
     if not os.path.exists(TLG_path):

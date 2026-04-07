@@ -1,6 +1,6 @@
 # Speech BCI: Transformer Experiment Progress
 
-**Last Updated:** 2026-04-06 (Session 9 — WFST LM Pipeline)
+**Last Updated:** 2026-04-07 (Session 10 — 5-gram WFST Evaluation)
 
 Primary handoff for resuming thesis work. Covers goals, completed work, current state, and next steps.
 
@@ -55,9 +55,10 @@ source /workspace/venv311/bin/activate
 | `NeuralDecoder/neuralDecoder/main.py` | Fixed 20GB GPU memory pool; mixed precision |
 | `setup_runpod.sh` | Full env setup (Python 3.11 + TF 2.15 + PyTorch); cuDNN pin after PyTorch |
 | `AnalysisExamples/eval_lm_pipeline.py` | Lexicon-constrained CTC beam search + N-best rescoring pipeline |
-| `AnalysisExamples/eval_wfst_lm.py` | **NEW** — WFST pipeline: Conformer/GRU inference → lm_decoder beam search → N-best |
-| `AnalysisExamples/rescore_nbest.py` | **NEW** — Subprocess rescorer: reads N-best JSON, scores with GPT-2/Gemma, outputs results |
+| `AnalysisExamples/eval_wfst_lm.py` | WFST pipeline. Added `--wfst-rescore` flag; auto-sets LD_LIBRARY_PATH+PYTHONPATH for lm_decoder/OpenFST at startup |
+| `AnalysisExamples/rescore_nbest.py` | Subprocess rescorer: reads N-best JSON, scores with GPT-2/Gemma, outputs results |
 | `LanguageModelDecoder/runtime/server/x86/pybind11/include/pybind11/` | Upgraded pybind11 2.9 → 3.0.3 for Python 3.11 compatibility |
+| `NeuralDecoder/neuralDecoder/utils/lmDecoderUtils.py` | Added `load_rescore` param to `build_lm_decoder` — skips G.fst+G_no_prune.fst when not rescoring (saves ~80 GB RAM for 5-gram) |
 
 ---
 
@@ -103,7 +104,7 @@ Switched to Willett's own `lm_decoder` C++ WFST binding. Faithful to his publish
 
 ---
 
-## 7. WFST Pipeline Results (CURRENT — Session 9)
+## 7. WFST Pipeline Results (CURRENT — Session 10)
 
 **Scripts:** `eval_wfst_lm.py` → `rescore_nbest.py`
 
@@ -114,6 +115,7 @@ Switched to Willett's own `lm_decoder` C++ WFST binding. Faithful to his publish
 | WFST 3-gram only | 0.2219 | 0.1351 | 0.1177 |
 | + GPT-2 124M (α=0.5) | 0.2197 | 0.1337 | — |
 | + Gemma 3 270M (α=0.5) | 0.2870 | 0.1765 | — |
+| **WFST 5-gram only** | **0.2155** | **0.1466** | **0.1262** |
 
 ### GRU (PER=0.1818)
 
@@ -121,7 +123,15 @@ Switched to Willett's own `lm_decoder` C++ WFST binding. Faithful to his publish
 |---|---|---|---|
 | WFST 3-gram only | 0.2204 | 0.1591 | **0.1033** |
 
-### Key findings
+### Key findings (Session 10)
+
+- **5-gram improves WER** (0.2219 → 0.2155, −2.9% relative). Stronger LM pushes correct answer to rank 1 more often.
+- **5-gram oracle is worse** (0.1177 → 0.1262). The 5-gram prunes more aggressively, fewer correct hypotheses survive into the 100-best beam.
+- **CER slightly worse** (0.1351 → 0.1466) — same aggressive pruning effect at character level.
+- **Lattice rescoring (G_no_prune.fst) not yet run** — loading TLG.fst (42 GB) + G.fst (5.1 GB) + G_no_prune.fst (75 GB) = ~122 GB RAM exceeds instance capacity. Needs 128+ GB RAM instance.
+- **5-gram dir:** `speech_5gram/lang_test/` (TLG.fst=42 GB, G.fst=5.1 GB, G_no_prune.fst=75 GB, words.txt)
+
+### Previous key findings (Session 9)
 
 - **GPT-2 gives negligible improvement** (0.2219 → 0.2197). Helped 139 utts, hurt 138 utts. Too weak to rerank reliably.
 - **Gemma 3 270M hurts** (0.2219 → 0.2870). Overrides correct acoustic output.
@@ -137,19 +147,26 @@ Switched to Willett's own `lm_decoder` C++ WFST binding. Faithful to his publish
 - **TF checkpoint compat:** 24-sess checkpoint requires `_fix_all_checkpoint_compat` in `eval_lm_pipeline.py` (fixes Keras weight renaming between TF versions). Assigns 49–72 variables manually.
 - **lm_decoder/torch ABI conflict:** `lm_decoder.so` links libtorch 1.13.1; importing torch 2.5.1 in same process causes `undefined symbol` crash. Fixed: `eval_wfst_lm.py` runs WFST decode, saves N-best to JSON, then calls `rescore_nbest.py` as a subprocess (no lm_decoder loaded there).
 - **LD_LIBRARY_PATH timing:** Must be set before dynamic linker initializes. Both scripts use `os.execve` re-exec at startup.
-- **Disk space:** Currently 71/128 GB used. Willett's 5-gram LM is 38 GB tar (~76 GB needed during extraction). **Upgrade to 256 GB before downloading.**
+- **Disk space:** Currently ~149/200 GB used. 3-gram `languageModel/` was deleted (re-download from Dryad if needed). 5-gram `speech_5gram/lang_test/` = 122 GB on disk.
+- **lm_decoder library path:** `eval_wfst_lm.py` now auto-sets LD_LIBRARY_PATH (OpenFST `.libs/`) and PYTHONPATH (lm_decoder build dir) via re-exec at startup. libfst.so.8 symlink created at `LanguageModelDecoder/runtime/server/x86/fc_base/openfst-build/src/lib/.libs/libfst.so.8`.
+- **5-gram lattice rescoring OOM:** Loading all 3 FSTs (TLG 42 GB + G 5.1 GB + G_no_prune 75 GB) = ~122 GB RAM. Killed by OOM. Use `--wfst-rescore` only on 128+ GB RAM instance. `load_rescore` param added to `build_lm_decoder` to skip G.fst/G_no_prune.fst when not needed.
+- **scipy version:** Must be `scipy<1.13` (1.12.0 used). scipy 1.13+ restructured `scipy.io.matlab` internals, breaking `neuralSequenceDecoder.py`.
+- **numpy version:** Must be `numpy<2.0` (1.26.4 used). TF 2.15 is incompatible with numpy 2.x.
 
 ---
 
 ## 9. Next Steps (Priority Order)
 
-### Step 1 — Upgrade disk + download 5-gram LM (HIGHEST IMPACT)
-- Expand disk to 256 GB on vast.ai/RunPod
-- Download Willett's `languageModel_5gram.tar.gz` (38 GB)
-- Extract to `/workspace/speechBCI/languageModel_5gram/`
-- Run: `python AnalysisExamples/eval_wfst_lm.py --lm-dir languageModel_5gram --lm none`
-- Expected: WER drops from 0.222 → ~0.15–0.18 (attacks 46.9% coverage failure directly)
-- Note: 5-gram dir must contain `G_no_prune.fst` for lattice rescoring; set `rescore=True` in `wfst_decode_all()`
+### Step 1 — 5-gram lattice rescoring (HIGHEST IMPACT, BLOCKED on RAM)
+- **DONE:** 5-gram LM extracted to `speech_5gram/lang_test/` — WER=0.2155 (vs 3-gram 0.2219)
+- **BLOCKED:** Lattice rescoring needs TLG (42 GB) + G (5.1 GB) + G_no_prune (75 GB) = ~122 GB RAM
+- **To unlock:** Upgrade to 128+ GB RAM instance, then run:
+  ```bash
+  python AnalysisExamples/eval_wfst_lm.py \
+      --lm-dir speech_5gram/lang_test --lm none --wfst-rescore \
+      --output-dir experiments/wfst_lm_5gram_rescore
+  ```
+- Expected: WER ~0.15–0.18 (lattice rescoring with full unpruned 5-gram)
 
 ### Step 2 — Tune acoustic_scale per model
 - Run grid search: `--grid-search --acoustic-scales 0.2,0.3,0.4,0.5,0.7`
@@ -173,15 +190,25 @@ Switched to Willett's own `lm_decoder` C++ WFST binding. Faithful to his publish
 # New pod: full environment setup
 bash setup_runpod.sh && source /workspace/venv311/bin/activate
 
-# WFST pipeline — Conformer, no rescoring
-python AnalysisExamples/eval_wfst_lm.py --lm none
+# WFST pipeline — 3-gram, no rescoring (3-gram LM deleted; re-download from Dryad if needed)
+# python AnalysisExamples/eval_wfst_lm.py --lm none
 
-# WFST pipeline — Conformer + GPT-2 grid search
-python AnalysisExamples/eval_wfst_lm.py --lm gpt2 --grid-search
-
-# WFST pipeline — with 5-gram LM (after download)
+# WFST pipeline — 5-gram, no rescoring (WER=0.2155, current best)
 python AnalysisExamples/eval_wfst_lm.py \
-    --lm-dir /workspace/speechBCI/languageModel_5gram \
+    --lm-dir /workspace/speechBCI/speech_5gram/lang_test \
+    --output-dir /workspace/speechBCI/experiments/wfst_lm_5gram \
+    --lm none
+
+# WFST pipeline — 5-gram + lattice rescoring (needs 128+ GB RAM instance)
+python AnalysisExamples/eval_wfst_lm.py \
+    --lm-dir /workspace/speechBCI/speech_5gram/lang_test \
+    --output-dir /workspace/speechBCI/experiments/wfst_lm_5gram_rescore \
+    --lm none --wfst-rescore
+
+# WFST pipeline — 5-gram + GPT-2 neural rescoring
+python AnalysisExamples/eval_wfst_lm.py \
+    --lm-dir /workspace/speechBCI/speech_5gram/lang_test \
+    --output-dir /workspace/speechBCI/experiments/wfst_lm_5gram \
     --lm gpt2 --grid-search
 
 # WFST pipeline — GRU baseline
@@ -219,7 +246,8 @@ tensorboard --logdir=/workspace/speechBCI/experiments --host=0.0.0.0 --port=6006
 
 | System | WER | CER | Method |
 |---|---|---|---|
-| **WFST 3-gram (Conformer)** | **0.2219** | **0.1351** | **Current best** |
+| **WFST 5-gram (Conformer)** | **0.2155** | **0.1466** | **Current best** |
+| WFST 3-gram (Conformer) | 0.2219 | 0.1351 | Previous best |
 | WFST 3-gram + GPT-2 | 0.2197 | 0.1337 | Negligible gain |
 | WFST 3-gram + Gemma 3 270M | 0.2870 | 0.1765 | Worse |
 | WFST 3-gram (GRU) | 0.2204 | 0.1591 | Ties Conformer at WER |
