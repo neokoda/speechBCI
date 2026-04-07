@@ -167,7 +167,39 @@ def wfst_decode_all(decoder, logits, logit_lengths, blank_penalty=np.log(7), res
     return all_nbest
 
 
-# (LM rescoring is handled by rescore_nbest.py subprocess — see main())
+# (Neural LM rescoring is handled by rescore_nbest.py subprocess — see main())
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# Acoustic scale grid search (no neural LM)
+# ═══════════════════════════════════════════════════════════════════════════
+
+def acoustic_scale_grid_search(all_nbest, ground_truth, logit_lengths, acoustic_scales):
+    """Post-hoc acoustic scale grid search over WFST N-best.
+
+    Reranks each N-best list by: new_asc * ac_score + lm_score
+    The WFST n-gram LM score is held fixed; only the acoustic weight varies.
+    This is an approximation (beam pruning used the original acoustic_scale),
+    but gives a strong signal for the optimal range without rebuilding the decoder.
+    """
+    results = []
+    for asc in acoustic_scales:
+        decoded = []
+        for nb in all_nbest:
+            if not nb:
+                decoded.append('')
+                continue
+            best_s, best_sc = '', float('-inf')
+            for (s, ac, lm) in nb:
+                sc = asc * ac + lm
+                if sc > best_sc:
+                    best_sc, best_s = sc, s
+            decoded.append(best_s)
+        m = compute_wer_cer(decoded, ground_truth, logit_lengths)
+        results.append({'acoustic_scale': asc, **{k: round(v, 6) for k, v in m.items()}})
+        log.info("  asc=%.2f → WER=%.4f  CER=%.4f  WPM=%.1f",
+                 asc, m['wer'], m['cer'], m['wpm'])
+    return results
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -263,6 +295,17 @@ def main():
     m_oracle = compute_wer_cer(oracle, ground_truth, logit_lengths)
     log.info("  ORACLE (best-of-N): WER=%.4f  CER=%.4f", m_oracle['wer'], m_oracle['cer'])
 
+    # ── Acoustic scale grid search (--grid-search --lm none) ────────────────
+    asc_grid_results = None
+    if args.grid_search and args.lm == 'none':
+        log.info("[3b/4] Acoustic scale grid search over N-best …")
+        grid = acoustic_scale_grid_search(
+            all_nbest, ground_truth, logit_lengths, args.acoustic_scales)
+        best_asc = min(grid, key=lambda x: x['wer'])
+        log.info("  Best asc=%.2f → WER=%.4f  CER=%.4f",
+                 best_asc['acoustic_scale'], best_asc['wer'], best_asc['cer'])
+        asc_grid_results = {'grid': grid, 'best': best_asc}
+
     # ── Step 4: Neural LM rescoring (subprocess to avoid lm_decoder/torch ABI conflict) ──
     # lm_decoder.so links against libtorch 1.13.1; torch 2.5.1 is installed.
     # They cannot coexist in one process. We save N-best to JSON, then call
@@ -273,6 +316,7 @@ def main():
         'wfst_only': {k: round(v, 6) for k, v in m_wfst.items()},
         'oracle': {k: round(v, 6) for k, v in m_oracle.items()},
         'lm_results': {},
+        'acoustic_scale_grid': asc_grid_results,
     }
 
     lms_to_run = []
@@ -281,18 +325,20 @@ def main():
     if args.lm in ('gemma', 'both'):
         lms_to_run.append(('gemma3_270m', GEMMA_MODEL_ID))
 
+    # Always serialize N-best for analysis / subprocess rescoring
+    nbest_serial = [
+        [(s, float(ac), float(lm)) for (s, ac, lm) in nb]
+        for nb in all_nbest
+    ]
+    nbest_path = os.path.join(args.output_dir, '_nbest_tmp.json')
+    with open(nbest_path, 'w') as f:
+        json.dump({'nbest': nbest_serial,
+                   'ground_truth': ground_truth,
+                   'logit_lengths': logit_lengths.tolist()}, f)
+    log.info("N-best saved to %s", nbest_path)
+
     if lms_to_run:
         import subprocess
-        # Serialize N-best and ground-truth for the subprocess
-        nbest_path = os.path.join(args.output_dir, '_nbest_tmp.json')
-        nbest_serial = [
-            [(s, float(ac), float(lm)) for (s, ac, lm) in nb]
-            for nb in all_nbest
-        ]
-        with open(nbest_path, 'w') as f:
-            json.dump({'nbest': nbest_serial,
-                       'ground_truth': ground_truth,
-                       'logit_lengths': logit_lengths.tolist()}, f)
         log.info("[4/4] Neural LM rescoring via subprocess …")
 
         rescore_script = os.path.join(os.path.dirname(os.path.abspath(__file__)),
@@ -340,6 +386,12 @@ def main():
     print(f"  Greedy PER          : {inf['greedy_per']:.4f}")
     print(f"  WFST-only top-1 WER : {m_wfst['wer']:.4f}  CER: {m_wfst['cer']:.4f}")
     print(f"  Oracle WER          : {m_oracle['wer']:.4f}  CER: {m_oracle['cer']:.4f}")
+    if asc_grid_results:
+        print(f"\n  Acoustic scale grid search:")
+        print(f"  {'asc':>6}  {'WER':>8}  {'CER':>8}")
+        for row in asc_grid_results['grid']:
+            marker = " <-- best" if row['acoustic_scale'] == asc_grid_results['best']['acoustic_scale'] else ""
+            print(f"  {row['acoustic_scale']:>6.2f}  {row['wer']:>8.4f}  {row['cer']:>8.4f}{marker}")
     for lm_tag, lm_res in results['lm_results'].items():
         if 'best' in lm_res:
             b = lm_res['best']

@@ -1,0 +1,130 @@
+{
+  "grid": [
+    {
+      "acoustic_scale": 0.2,
+      "alpha": 0.3,
+      "wer": 0.258094,
+      "cer": 0.162702
+    },
+    {
+      "acoustic_scale": 0.2,
+      "alpha": 0.5,
+      "wer": 0.250637,
+      "cer": 0.159506
+    },
+    {
+      "acoustic_scale": 0.2,
+      "alpha": 0.8,
+      "wer": 0.241724,
+      "cer": 0.15671
+    },
+    {
+      "acoustic_scale": 0.2,
+      "alpha": 1.2,
+      "wer": 0.240451,
+      "cer": 0.157
+    },
+    {
+      "acoustic_scale": 0.3,
+      "alpha": 0.3,
+      "wer": 0.268643,
+      "cer": 0.166879
+    },
+    {
+      "acoustic_scale": 0.3,
+      "alpha": 0.5,
+      "wer": 0.255911,
+      "cer": 0.161867
+    },
+    {
+      "acoustic_scale": 0.3,
+      "alpha": 0.8,
+      "wer": 0.249363,
+      "cer": 0.159034
+    },
+    {
+      "acoustic_scale": 0.3,
+      "alpha": 1.2,
+      "wer": 0.241724,
+      "cer": 0.15671
+    },
+    {
+      "acoustic_scale": 0.4,
+      "alpha": 0.3,
+      "wer": 0.273372,
+      "cer": 0.168476
+    },
+    {
+      "acoustic_scale": 0.4,
+      "alpha": 0.5,
+      "wer": 0.261913,
+      "cer": 0.1639
+    },
+    {
+      "acoustic_scale": 0.4,
+      "alpha": 0.8,
+      "wer": 0.254456,
+      "cer": 0.161322
+    },
+    {
+      "acoustic_scale": 0.4,
+      "alpha": 1.2,
+      "wer": 0.245544,
+      "cer": 0.157218
+    },
+    {
+      "acoustic_scale": 0.5,
+      "alpha": 0.3,
+      "wer": 0.27701,
+      "cer": 0.169239
+    },
+    {
+      "acoustic_scale": 0.5,
+      "alpha": 0.5,
+      "wer": 0.268643,
+      "cer": 0.166879
+    },
+    {
+      "acoustic_scale": 0.5,
+      "alpha": 0.8,
+      "wer": 0.257366,
+      "cer": 0.162194
+    },
+    {
+      "acoustic_scale": 0.5,
+      "alpha": 1.2,
+      "wer": 0.251,
+      "cer": 0.159906
+    },
+    {
+      "acoustic_scale": 0.7,
+      "alpha": 0.3,
+      "wer": 0.281375,
+      "cer": 0.17091
+    },
+    {
+      "acoustic_scale": 0.7,
+      "alpha": 0.5,
+      "wer": 0.273918,
+      "cer": 0.168694
+    },
+    {
+      "acoustic_scale": 0.7,
+      "alpha": 0.8,
+      "wer": 0.263732,
+      "cer": 0.164917
+    },
+    {
+      "acoustic_scale": 0.7,
+      "alpha": 1.2,
+      "wer": 0.255366,
+      "cer": 0.161431
+    }
+  ],
+  "best": {
+    "acoustic_scale": 0.2,
+    "alpha": 1.2,
+    "wer": 0.240451,
+    "cer": 0.157
+  }
+}

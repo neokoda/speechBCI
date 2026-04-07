@@ -173,11 +173,16 @@ class SpeechDataset():
                     return dat
             dataset = dataset.map(parseDatasetFunctionSimple, num_parallel_calls=tf.data.AUTOTUNE)
 
+        # Limit private threadpool to avoid pthread exhaustion with 24 sessions.
+        _opts = tf.data.Options()
+        _opts.threading.private_threadpool_size = 2
+        dataset = dataset.with_options(_opts)
+
         if isTraining:
             # Use all elements to adapt normalization layer
             datasetForAdapt = dataset.map(lambda x: x['inputFeatures'] + 0.001,
                 num_parallel_calls=tf.data.AUTOTUNE)
-            
+
             # Take a subset of the data if specified
             if self.subsetSize > 0:
                 dataset = dataset.take(self.subsetSize)
@@ -188,8 +193,6 @@ class SpeechDataset():
                 dataset = dataset.repeat()
             dataset = dataset.padded_batch(batchSize)
             dataset = dataset.prefetch(tf.data.AUTOTUNE)
-            
-            
 
             return dataset, datasetForAdapt
         else:
