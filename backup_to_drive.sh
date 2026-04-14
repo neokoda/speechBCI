@@ -13,7 +13,8 @@
 # Usage:
 #   bash backup_to_drive.sh               # full backup
 #   bash backup_to_drive.sh --dry-run     # preview without uploading
-#   bash backup_to_drive.sh --skip-lm    # skip the 122 GB speech_5gram/
+#   bash backup_to_drive.sh --skip-lm     # skip the 122 GB speech_5gram/
+#   bash backup_to_drive.sh --restore     # download from Drive back to local
 # =============================================================================
 
 set -euo pipefail
@@ -26,22 +27,31 @@ REPO="/workspace/speechBCI"
 LOG="/tmp/backup_$(date +%Y%m%d_%H%M%S).log"
 DRY_RUN=false
 SKIP_LM=false
+RESTORE=false
 
 # ── Parse flags ───────────────────────────────────────────────────────────────
 for arg in "$@"; do
     case "$arg" in
         --dry-run) DRY_RUN=true ;;
         --skip-lm) SKIP_LM=true ;;
+        --restore) RESTORE=true ;;
         *) echo "Unknown argument: $arg" >&2; exit 1 ;;
     esac
 done
 
 # ── Preflight checks ──────────────────────────────────────────────────────────
 echo "============================================================"
-echo "  SpeechBCI → Google Drive Backup"
+if $RESTORE; then
+    echo "  Google Drive → SpeechBCI Restore"
+else
+    echo "  SpeechBCI → Google Drive Backup"
+fi
 echo "  $(date '+%Y-%m-%d %H:%M:%S')"
 echo "  Log: $LOG"
-if $DRY_RUN; then echo "  [DRY RUN — nothing will be uploaded]"; fi
+if $DRY_RUN; then
+    if $RESTORE; then echo "  [DRY RUN — nothing will be downloaded]"
+    else echo "  [DRY RUN — nothing will be uploaded]"; fi
+fi
 if $SKIP_LM; then echo "  [--skip-lm: speech_5gram/ will be skipped]"; fi
 echo "============================================================"
 echo ""
@@ -124,10 +134,19 @@ fi
 # ── Helper ────────────────────────────────────────────────────────────────────
 run_backup() {
     local label="$1"
-    local src="$2"
-    local dest="$3"
+    local local_path="$2"
+    local remote_path="$3"
     shift 3
     local extra=("$@")
+
+    local src dest
+    if $RESTORE; then
+        src="$remote_path"
+        dest="$local_path"
+    else
+        src="$local_path"
+        dest="$remote_path"
+    fi
 
     echo "------------------------------------------------------------"
     echo "  $label"
@@ -135,10 +154,17 @@ run_backup() {
     echo "  dest: $dest"
     echo "------------------------------------------------------------"
 
-    if [[ ! -e "$src" ]]; then
+    # For backup: warn if local source is missing.
+    # For restore: rclone will simply copy nothing if the remote path is empty.
+    if ! $RESTORE && [[ ! -e "$local_path" ]]; then
         echo "  WARNING: source path not found — skipping"
         echo ""
         return 0
+    fi
+
+    # For restore: ensure local destination directory exists
+    if $RESTORE; then
+        mkdir -p "$local_path"
     fi
 
     local t0
@@ -191,7 +217,12 @@ fi
 # 4. Root-level research docs — ~5 MB
 echo "------------------------------------------------------------"
 echo "  docs/ (PDFs + HANDOFF.md)"
-echo "  dest: $REMOTE/docs"
+if $RESTORE; then
+    echo "  src : $REMOTE/docs"
+    echo "  dest: $REPO/ (root)"
+else
+    echo "  dest: $REMOTE/docs"
+fi
 echo "------------------------------------------------------------"
 
 ROOT_DOCS=(
@@ -203,18 +234,29 @@ ROOT_DOCS=(
 
 t0=$(date +%s)
 docs_ok=true
-for doc in "${ROOT_DOCS[@]}"; do
-    src="$REPO/$doc"
-    if [[ ! -f "$src" ]]; then
-        echo "  WARNING: not found — skipping: $doc"
-        continue
-    fi
-    echo "  Uploading: $doc"
-    if ! "$RCLONE" copy "${RCLONE_FLAGS[@]}" "$src" "$REMOTE/docs/"; then
-        echo "  ERROR uploading $doc" >&2
-        docs_ok=false
-    fi
-done
+if $RESTORE; then
+    # Download each file from docs/ back to repo root
+    for doc in "${ROOT_DOCS[@]}"; do
+        echo "  Downloading: $doc"
+        if ! "$RCLONE" copy "${RCLONE_FLAGS[@]}" "$REMOTE/docs/$doc" "$REPO/"; then
+            echo "  ERROR downloading $doc" >&2
+            docs_ok=false
+        fi
+    done
+else
+    for doc in "${ROOT_DOCS[@]}"; do
+        src="$REPO/$doc"
+        if [[ ! -f "$src" ]]; then
+            echo "  WARNING: not found — skipping: $doc"
+            continue
+        fi
+        echo "  Uploading: $doc"
+        if ! "$RCLONE" copy "${RCLONE_FLAGS[@]}" "$src" "$REMOTE/docs/"; then
+            echo "  ERROR uploading $doc" >&2
+            docs_ok=false
+        fi
+    done
+fi
 if $docs_ok; then
     echo "  Done in $(( $(date +%s) - t0 ))s"
 else
@@ -224,9 +266,16 @@ echo ""
 
 # ── Summary ───────────────────────────────────────────────────────────────────
 echo "============================================================"
-echo "  Backup complete: $(date '+%Y-%m-%d %H:%M:%S')"
-echo ""
-echo "  Destination : $REMOTE/"
+if $RESTORE; then
+    echo "  Restore complete: $(date '+%Y-%m-%d %H:%M:%S')"
+    echo ""
+    echo "  Source      : $REMOTE/"
+    echo "  Destination : $REPO/"
+else
+    echo "  Backup complete: $(date '+%Y-%m-%d %H:%M:%S')"
+    echo ""
+    echo "  Destination : $REMOTE/"
+fi
 echo "  Layout:"
 echo "    speechBCI_backup/"
 echo "    ├── experiments/     (checkpoints + eval results)"
@@ -239,6 +288,10 @@ echo ""
 echo "  Full log    : $LOG"
 if $DRY_RUN; then
     echo ""
-    echo "  [DRY RUN — nothing was actually uploaded]"
+    if $RESTORE; then
+        echo "  [DRY RUN — nothing was actually downloaded]"
+    else
+        echo "  [DRY RUN — nothing was actually uploaded]"
+    fi
 fi
 echo "============================================================"

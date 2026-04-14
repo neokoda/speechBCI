@@ -103,9 +103,11 @@ def compute_wer_cer(hypotheses, references, logit_lengths=None):
     for hyp, ref in zip(hypotheses, references):
         ref_words = ref.lower().split()
         hyp_words = hyp.lower().split()
-        total_word_err += edit_distance(ref_words, hyp_words)
+        # int() cast: edit_distance returns numpy.uint8; under numpy>=2.0 NEP 50
+        # promotion rules, += would wrap at 256. Safe under numpy<2.0 too.
+        total_word_err += int(edit_distance(ref_words, hyp_words))
         total_words    += max(len(ref_words), 1)
-        total_char_err += edit_distance(list(ref.lower()), list(hyp.lower()))
+        total_char_err += int(edit_distance(list(ref.lower()), list(hyp.lower())))
         total_chars    += max(len(ref), 1)
     wer = total_word_err / total_words if total_words else 0.0
     cer = total_char_err / total_chars if total_chars else 0.0
@@ -137,7 +139,7 @@ def build_wfst_decoder(lm_dir, acoustic_scale=0.5, nbest=100, beam=18, load_resc
     return decoder
 
 
-def wfst_decode_all(decoder, logits, logit_lengths, blank_penalty=np.log(7), rescore=False):
+def wfst_decode_all(decoder, logits, logit_lengths, blank_penalty=np.log(7), rescore=False, temperature=1.0):
     """Run WFST CTC beam search on all utterances.
 
     Returns list of N-best lists, each entry = (sentence, ac_score, lm_score).
@@ -145,6 +147,9 @@ def wfst_decode_all(decoder, logits, logit_lengths, blank_penalty=np.log(7), res
     """
     # Rearrange logits: [blank, SIL, AA..ZH] as expected by tokens.txt
     logits_r = lmDecoderUtils.rearrange_speech_logits(logits, has_sil=True)
+    if temperature != 1.0:
+        log.info("  Applying softmax temperature T=%.2f to logits", temperature)
+        logits_r = logits_r / float(temperature)
 
     all_nbest = []
     t0 = time.time()
@@ -221,14 +226,24 @@ def main():
                         help='N-best size from WFST decoder (default: 100)')
     parser.add_argument('--acoustic-scale', type=float, default=0.5,
                         help='Acoustic scale for WFST decoder (default: 0.5)')
+    parser.add_argument('--temperature', type=float, default=1.0,
+                        help='Softmax temperature on CTC logits (T>1 softens, richer lattices)')
     parser.add_argument('--blank-penalty', type=float, default=np.log(7),
                         help='Blank log-penalty for WFST decoder (default: log(7))')
     parser.add_argument('--alpha', type=float, default=0.5,
                         help='Neural LM weight α for rescoring (default: 0.5)')
+    parser.add_argument('--beta', type=float, default=1.0,
+                        help='WFST n-gram LM weight β for BSSF rescoring (default: 1.0)')
+    parser.add_argument('--gamma', type=float, default=0.0,
+                        help='Length bonus γ per word for BSSF rescoring (default: 0.0)')
     parser.add_argument('--grid-search', action='store_true',
-                        help='Grid search over acoustic_scale and alpha')
+                        help='Grid search over acoustic_scale, alpha, beta, gamma')
     parser.add_argument('--alphas', type=_float_list, default=[0.3, 0.5, 0.8, 1.2],
                         help='α values for grid search (comma-separated)')
+    parser.add_argument('--betas',  type=_float_list, default=[1.0],
+                        help='β values for grid search (comma-separated)')
+    parser.add_argument('--gammas', type=_float_list, default=[0.0],
+                        help='γ values for grid search (comma-separated)')
     parser.add_argument('--acoustic-scales', type=_float_list, default=[0.3, 0.5, 0.8],
                         help='acoustic_scale values for grid search (comma-separated)')
     parser.add_argument('--wfst-rescore', action='store_true',
@@ -274,7 +289,8 @@ def main():
         log.info("  WFST lattice rescoring ENABLED (5-gram mode)")
     all_nbest = wfst_decode_all(decoder, logits, logit_lengths,
                                 blank_penalty=args.blank_penalty,
-                                rescore=args.wfst_rescore)
+                                rescore=args.wfst_rescore,
+                                temperature=args.temperature)
 
     # Top-1 from WFST alone
     top1_wfst = [nb[0][0].strip() if nb else '' for nb in all_nbest]
@@ -353,9 +369,13 @@ def main():
             if args.grid_search:
                 cmd += ['--grid-search',
                         '--alphas', ','.join(str(a) for a in args.alphas),
+                        '--betas',  ','.join(str(a) for a in args.betas),
+                        '--gammas', ','.join(str(a) for a in args.gammas),
                         '--acoustic-scales', ','.join(str(a) for a in args.acoustic_scales)]
             else:
                 cmd += ['--alpha', str(args.alpha),
+                        '--beta',  str(args.beta),
+                        '--gamma', str(args.gamma),
                         '--acoustic-scale', str(args.acoustic_scale)]
             if args.hf_token:
                 cmd += ['--hf-token', args.hf_token]

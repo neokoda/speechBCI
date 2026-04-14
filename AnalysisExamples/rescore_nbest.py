@@ -71,26 +71,25 @@ def load_lm(model_id, cache_dir=None, hf_token=None):
     return model, tokenizer
 
 
-def rescore_with_lm(model, tokenizer, hypotheses, length_penalty=0.0):
-    """Return log-prob scores for each hypothesis string."""
-    model_is_tf = type(model).__name__.startswith('TF')
-    if model_is_tf:
+def rescore_with_lm(model, tokenizer, hypotheses, length_penalty=0.0, chunk_size=32):
+    """Return log-prob scores for each hypothesis string. Chunked to fit LLaMA-2-7B in 24GB at nbest=500."""
+    if type(model).__name__.startswith('TF'):
         raise RuntimeError("rescore_nbest.py expects a PyTorch model")
-
     device = next(model.parameters()).device
-    inputs = tokenizer(hypotheses, return_tensors='pt', padding=True)
-    inputs = {k: v.to(device) for k, v in inputs.items()}
-    with torch.no_grad():
-        outputs = model(**inputs)
-        log_probs = torch.nn.functional.log_softmax(outputs.logits.float(), -1).cpu().numpy()
-
     scores = []
-    attn = inputs['attention_mask'].cpu().numpy()
-    ids  = inputs['input_ids'].cpu().numpy()
-    for i in range(len(hypotheses)):
-        n_tok = int(attn[i].sum())
-        score = sum(log_probs[i, j-1, ids[i, j]] for j in range(1, n_tok))
-        scores.append(float(score - n_tok * length_penalty))
+    for start in range(0, len(hypotheses), chunk_size):
+        chunk = hypotheses[start:start+chunk_size]
+        inputs = tokenizer(chunk, return_tensors='pt', padding=True)
+        inputs = {k: v.to(device) for k, v in inputs.items()}
+        with torch.no_grad():
+            logits = model(**inputs).logits
+            log_probs = torch.nn.functional.log_softmax(logits.float(), -1).cpu().numpy()
+        attn = inputs['attention_mask'].cpu().numpy()
+        ids  = inputs['input_ids'].cpu().numpy()
+        for i in range(len(chunk)):
+            n_tok = int(attn[i].sum())
+            score = sum(log_probs[i, j-1, ids[i, j]] for j in range(1, n_tok))
+            scores.append(float(score - n_tok * length_penalty))
     return scores
 
 
@@ -100,9 +99,11 @@ def compute_wer_cer(hypotheses, references, logit_lengths=None):
     for hyp, ref in zip(hypotheses, references):
         ref_words = ref.lower().split()
         hyp_words = hyp.lower().split()
-        total_word_err += edit_distance(ref_words, hyp_words)
+        # int() cast: edit_distance returns numpy.uint8; under numpy>=2.0 NEP 50
+        # promotion rules, += would wrap at 256. Safe under numpy<2.0 too.
+        total_word_err += int(edit_distance(ref_words, hyp_words))
         total_words    += max(len(ref_words), 1)
-        total_char_err += edit_distance(list(ref.lower()), list(hyp.lower()))
+        total_char_err += int(edit_distance(list(ref.lower()), list(hyp.lower())))
         total_chars    += max(len(ref), 1)
     wer = total_word_err / total_words if total_words else 0.0
     cer = total_char_err / total_chars if total_chars else 0.0
@@ -124,10 +125,14 @@ def main():
     parser.add_argument('--lm-id', required=True)
     parser.add_argument('--lm-tag', required=True)
     parser.add_argument('--output-dir', required=True)
-    parser.add_argument('--alpha', type=float, default=0.5)
+    parser.add_argument('--alpha', type=float, default=0.5, help='neural LM weight')
+    parser.add_argument('--beta',  type=float, default=1.0, help='WFST n-gram LM weight (BSSF)')
+    parser.add_argument('--gamma', type=float, default=0.0, help='per-word length bonus (BSSF)')
     parser.add_argument('--acoustic-scale', type=float, default=0.5)
     parser.add_argument('--grid-search', action='store_true')
     parser.add_argument('--alphas', type=_float_list, default=[0.3, 0.5, 0.8, 1.2])
+    parser.add_argument('--betas',  type=_float_list, default=[1.0])
+    parser.add_argument('--gammas', type=_float_list, default=[0.0])
     parser.add_argument('--acoustic-scales', type=_float_list, default=[0.3, 0.5, 0.8])
     parser.add_argument('--hf-token', type=str, default=None)
     parser.add_argument('--cache-dir', type=str, default='/root/.cache/huggingface')
@@ -165,7 +170,8 @@ def main():
             log.info("  %d / %d  (%.1f s)", i + 1, len(all_nbest), time.time() - t0)
     log.info("Rescoring done in %.1f s", time.time() - t0)
 
-    def pick_best(asc, alpha):
+    def pick_best(asc, alpha, beta, gamma):
+        """BSSF log-linear fusion: asc*ac + beta*lm_wfst + alpha*lm_neural + gamma*len."""
         decoded = []
         for nb in enriched:
             if not nb:
@@ -173,7 +179,8 @@ def main():
                 continue
             best_s, best_sc = '', float('-inf')
             for (s, ac, lm_wfst, lm_neural) in nb:
-                sc = asc * ac + alpha * lm_neural
+                n = len(s.split())
+                sc = asc * ac + beta * lm_wfst + alpha * lm_neural + gamma * n
                 if sc > best_sc:
                     best_sc, best_s = sc, s
             decoded.append(best_s)
@@ -184,20 +191,23 @@ def main():
         best = None
         grid = []
         for asc in args.acoustic_scales:
-            for a in args.alphas:
-                decoded = pick_best(asc, a)
-                m = compute_wer_cer(decoded, ground_truth, logit_lengths)
-                grid.append({'acoustic_scale': asc, 'alpha': a,
-                             'wer': round(m['wer'], 6), 'cer': round(m['cer'], 6)})
-                log.info("  asc=%.2f  α=%.2f → WER=%.4f  CER=%.4f",
-                         asc, a, m['wer'], m['cer'])
-                if best is None or m['wer'] < best['wer']:
-                    best = grid[-1]
-        log.info("Best: asc=%.2f  α=%.2f → WER=%.4f  CER=%.4f",
-                 best['acoustic_scale'], best['alpha'], best['wer'], best['cer'])
+            for b in args.betas:
+                for a in args.alphas:
+                    for g in args.gammas:
+                        decoded = pick_best(asc, a, b, g)
+                        m = compute_wer_cer(decoded, ground_truth, logit_lengths)
+                        grid.append({'acoustic_scale': asc, 'alpha': a, 'beta': b, 'gamma': g,
+                                     'wer': round(m['wer'], 6), 'cer': round(m['cer'], 6)})
+                        log.info("  asc=%.2f β=%.2f α=%.2f γ=%.2f → WER=%.4f CER=%.4f",
+                                 asc, b, a, g, m['wer'], m['cer'])
+                        if best is None or m['wer'] < best['wer']:
+                            best = grid[-1]
+        log.info("Best: asc=%.2f β=%.2f α=%.2f γ=%.2f → WER=%.4f CER=%.4f",
+                 best['acoustic_scale'], best['beta'], best['alpha'], best['gamma'],
+                 best['wer'], best['cer'])
         out = {'grid': grid, 'best': best}
     else:
-        decoded = pick_best(args.acoustic_scale, args.alpha)
+        decoded = pick_best(args.acoustic_scale, args.alpha, args.beta, args.gamma)
         m = compute_wer_cer(decoded, ground_truth, logit_lengths)
         log.info("%s: WER=%.4f  CER=%.4f  WPM=%.1f",
                  args.lm_tag, m['wer'], m['cer'], m['wpm'])
