@@ -62,3 +62,7 @@ experiments/wfst_lm_gru/
 LanguageModelDecoder/runtime/server/x86/pybind11/include/pybind11_v2.9_backup/
 
 speech_5gramexperiments/bssf_runs_logs/
+
+*.log
+*.fst
+*.txt
