@@ -61,7 +61,10 @@ $PIP install -q --no-cache-dir \
     transformers \
     accelerate \
     sentencepiece \
-    cmudict
+    cmudict \
+    "peft==0.13.2" \
+    "bitsandbytes==0.46.1" \
+    "datasets==3.1.0"
 
 # Downgrade cuDNN from 9 → 8.9 AFTER PyTorch (torch pulls in cuDNN 9, overwriting 8.9).
 # TF 2.15 requires libcudnn.so.8; PyTorch uses its own bundled cuDNN so --no-deps is safe.

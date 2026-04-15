@@ -108,6 +108,8 @@ def main():
     ap.add_argument('--acoustic-scale', type=float, default=0.5)
     ap.add_argument('--hf-token', type=str, default=None)
     ap.add_argument('--cache-dir', type=str, default='/root/.cache/huggingface')
+    ap.add_argument('--lora-dir', type=str, default=None,
+                    help='optional PEFT LoRA adapter dir to attach to the base LM')
     ap.add_argument('--purpose', type=str, default='BSSF rescoring experiment')
     args = ap.parse_args()
 
@@ -134,8 +136,13 @@ def main():
                 '--gamma', str(args.gamma), '--acoustic-scale', str(args.acoustic_scale)]
     if args.hf_token:
         cmd += ['--hf-token', args.hf_token]
+    if args.lora_dir:
+        cmd += ['--lora-dir', args.lora_dir]
 
-    print('Running:', ' '.join(cmd), flush=True)
+    # Redact the HF token from anything we print or save to README (prevents leaks into git).
+    safe_cmd = [('$HF_TOKEN' if (i > 0 and cmd[i-1] == '--hf-token') else v)
+                for i, v in enumerate(cmd)]
+    print('Running:', ' '.join(safe_cmd), flush=True)
     t0 = time.time()
     rc = subprocess.call(cmd)
     dt = time.time() - t0
@@ -162,7 +169,7 @@ def main():
         'gammas': args.gammas if args.grid_search else [args.gamma],
         'git_sha': git_sha(),
     }
-    write_readme(args.output_dir, args.purpose, ' '.join(cmd), cfg, results)
+    write_readme(args.output_dir, args.purpose, ' '.join(safe_cmd), cfg, results)
     print(f'README written to {args.output_dir}/README.md')
 
 

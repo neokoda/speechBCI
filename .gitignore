@@ -66,3 +66,16 @@ speech_5gramexperiments/bssf_runs_logs/
 *.log
 *.fst
 *.txt
+
+# Large model checkpoints (store on Drive / HF Hub; GitHub rejects >100 MB files)
+experiments/19sess/
+experiments/24sess/
+
+# LoRA training state — keep the final adapter only, drop intermediates + resume state
+experiments/llama2_owt2_lora/checkpoint-*/
+# Even on the final checkpoint, skip resume-only state:
+experiments/llama2_owt2_lora/**/optimizer.pt
+experiments/llama2_owt2_lora/**/scheduler.pt
+experiments/llama2_owt2_lora/**/rng_state.pth
+experiments/llama2_owt2_lora/**/training_args.bin
+experiments/llama2_owt2_lora/**/tokenizer.json

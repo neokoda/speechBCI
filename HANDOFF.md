@@ -1,6 +1,6 @@
 # Speech BCI: Thesis Progress Handoff
 
-**Last Updated:** 2026-04-14 (Session 12 — Softening + lattice widening sweep)
+**Last Updated:** 2026-04-15 (Session 13 — QLoRA FT of LLaMA-2 7B on OWT2, in progress)
 
 ---
 
@@ -30,7 +30,9 @@ cd LanguageModelDecoder/runtime/server/x86 && pip install .   # builds lm_decode
 
 **Key compatibility:**
 - TF 2.15 + Python 3.11, cuDNN 8.9.7.29 (pinned after PyTorch)
-- `lm_decoder` (C++) links libtorch 1.13.1 — cannot coexist with torch 2.5.1. Fixed via subprocess separation.
+- `lm_decoder` (C++) links libtorch 1.13.1 — cannot coexist with torch ≥ 2.x. Fixed via subprocess separation.
+- **Torch upgraded to 2.6.0+cu124** (Session 13) — transformers now blocks `torch.load` resume of Trainer checkpoints with torch < 2.6. If reinstalling, grab torch from the cu124 index (cu121 only has ≤ 2.5.1). Re-pin `nvidia-cudnn-cu12==8.9.7.29 --no-deps` afterward.
+- `peft==0.13.2`, `bitsandbytes==0.46.1`, `datasets==3.1.0` pinned in `setup_runpod.sh`.
 - `sympy` must be 1.13.1
 - **Thread exhaustion fix:** Always run eval with `ulimit -s unlimited` prefix. Also patched `speechDataset.py` to set `private_threadpool_size=2`.
 
@@ -45,7 +47,10 @@ cd LanguageModelDecoder/runtime/server/x86 && pip install .   # builds lm_decode
 | `NeuralDecoder/neuralDecoder/datasets/speechDataset.py` | `private_threadpool_size=2` |
 | `AnalysisExamples/eval_wfst_lm.py` | WFST pipeline; `--temperature`, `--beam`, `--nbest`, `--grid-search`; auto LD_LIBRARY_PATH; saves `_nbest_tmp.json` for cheap re-rescoring |
 | `AnalysisExamples/rescore_nbest.py` | Proper BSSF fusion `asc·ac + β·lm_wfst + α·lm_neural + γ·len`; 4D grid; chunked LLaMA inference for nbest≥500 |
-| `AnalysisExamples/run_bssf.py` | Driver that runs `rescore_nbest.py` as subprocess to dodge the lm_decoder↔torch ABI conflict |
+| `AnalysisExamples/run_bssf.py` | Driver that runs `rescore_nbest.py` as subprocess to dodge the lm_decoder↔torch ABI conflict; `--lora-dir` pass-through |
+| `AnalysisExamples/rescore_nbest.py` | `--lora-dir` attaches a PEFT LoRA adapter (`merge_and_unload`) on top of the base LM |
+| `AnalysisExamples/finetune_llama_owt2.py` | **NEW.** QLoRA trainer (4-bit NF4 + LoRA r=16 on q/k/v/o_proj). Auto-resumes from latest `checkpoint-*` in `--output-dir`. Early stopping + `load_best_model_at_end` on `eval_loss`. |
+| `scripts/prepare_owt2.py` | **NEW.** Streams `Skylion007/openwebtext`, packs LLaMA tokens into fixed-length seqs, saves Arrow shards. Used to build `data/owt2_seq128/` (625k train / 3.9k val seqs of 128 tokens ≈ 80M train tokens). |
 
 ---
 
@@ -131,7 +136,36 @@ We have closed roughly 40% of the remaining gap to Seto's fine-tuned LLaMA resul
 
 ---
 
-## 7. Current Challenges
+## 7. Session 13 — QLoRA fine-tune of LLaMA-2 7B on OWT2 (in progress)
+
+**Goal:** close the remaining gap from 0.1895 toward Seto's 0.169 by fine-tuning LLaMA-2 on OWT2, following Seto's recipe as closely as LoRA allows.
+
+**Setup**
+- Corpus: `Skylion007/openwebtext` (community OWT rebuild, used as OWT2 by default). ~80M train tokens packed into seq_len=128 sequences.
+- Config: QLoRA 4-bit NF4, LoRA r=16 α=32 on `q/k/v/o_proj` only, bf16, grad ckpt, batch 32, lr 2e-4 cosine, warmup 1000, target 10k steps. Trainable params ≈ 0.25% of 7B.
+- Early stopping on `eval_loss` (patience=3, `load_best_model_at_end`), `save_total_limit=3`.
+
+**Status at pause (step 7000/10000):** user paused to record metrics; resume planned for next session. First attempted resume hit the torch-2.5 `torch.load` block → upgraded to torch 2.6.0+cu124 and resumed cleanly.
+
+**Mid-train BSSF readings on Conformer T=1.5 + beam=24 + nb=200 n-best:**
+
+| Checkpoint | Best grid cell (asc, β, α, γ) | WER | CER |
+|---|---|---|---|
+| Stock LLaMA-2 (Session 12) | (0.50, 1.00, 1.20, 0.00) | **0.1895** | 0.1362 |
+| FT ckpt-5000 | (0.70, 1.00, 1.20, 0.00) | 0.1928 | 0.1405 |
+| FT ckpt-6500 | (0.50, 0.50, 0.80, 0.00) | 0.1923 | 0.1371 |
+| FT ckpt-7000 | (0.50, 0.50, 0.80, 0.00) | **0.1910** | 0.1365 |
+
+**Observations**
+- Eval loss on OWT2 val still dropping monotonically through 7000 steps (≈2.298 → 2.293) — no plateau, patience never triggered.
+- WER closing the gap to stock monotonically (0.1928 → 0.1923 → 0.1910). Still below stock at ckpt-7000 but trend is favorable.
+- BSSF grid best shifts to lower (asc, β, α) as the adapter trains — fine-tuned LM carries more weight with less help from the 5-gram. Worth keeping γ∈{0} for now; could revisit if length bias creeps in.
+
+**Verdict so far:** plausible we reach parity with stock by 10k and marginally beat it. Matching Seto's 0.169 almost certainly requires more than LoRA r=16 on attention projections — likely also MLP targets and/or higher rank, or the deferred 5-gram OWT2 rebuild.
+
+---
+
+## 8. Current Challenges
 
 - **Coverage failure is still the floor.** ~46% of baseline errors were due to the correct answer being absent from the n-best entirely. Softening + widening pushes this down (oracle dropped from 0.1262 → 0.0989 for Conformer), but rescoring can only help inside the in-beam set.
 - **Lattice rescoring blocked** — full unpruned 5-gram `G_no_prune.fst` (75 GB) + `TLG.fst` (42 GB) exceeds 64 GB RAM. Needs 128+ GB instance.
@@ -139,10 +173,31 @@ We have closed roughly 40% of the remaining gap to Seto's fine-tuned LLaMA resul
 
 ---
 
-## 8. Next Steps (Priority Order)
+## 9. Next Steps (Priority Order)
 
-### Step 1 — 5-gram lattice rescoring (BLOCKED on RAM)
-Needs 128+ GB. Expected WER ~0.15–0.18.
+### Step 1 — Resume QLoRA fine-tune to 10k and re-evaluate
+```bash
+source /workspace/venv311/bin/activate
+nohup python AnalysisExamples/finetune_llama_owt2.py \
+  --data-dir data/owt2_seq128 --output-dir experiments/llama2_owt2_lora \
+  --batch-size 32 --grad-accum 1 --lr 2e-4 \
+  --warmup-steps 1000 --max-steps 10000 \
+  --eval-steps 500 --save-steps 500 \
+  --hf-token $HF_TOKEN > /tmp/ft_llama.log 2>&1 &
+```
+Auto-resumes from latest `checkpoint-*`. ETA ~1h40m from step 7000 to 10k. Then:
+```bash
+python AnalysisExamples/run_bssf.py \
+  --nbest-file experiments/wfst_5gram_conformer_temp1p5_beam24_nb200/_nbest_tmp.json \
+  --lm llama2_7b --lora-dir experiments/llama2_owt2_lora \
+  --output-dir experiments/bssf_ft_llama2_final --grid-search --hf-token $HF_TOKEN
+```
+
+### Step 2 — If ckpt-10000 still < stock, try stronger LoRA
+Expand `target_modules` to include `gate_proj, up_proj, down_proj` and/or raise r to 32–64. Edit in `AnalysisExamples/finetune_llama_owt2.py` around the `LoraConfig(...)` block. Retrain from scratch (not a resume — base adapter shape changes).
+
+### Step 3 — 5-gram lattice rescoring (still BLOCKED on RAM)
+Needs 128+ GB. Expected WER ~0.15–0.18. Becomes top priority if LoRA cannot beat stock.
 ```bash
 ulimit -s unlimited; python AnalysisExamples/eval_wfst_lm.py \
     --lm-dir speech_5gram/lang_test \
@@ -150,16 +205,10 @@ ulimit -s unlimited; python AnalysisExamples/eval_wfst_lm.py \
     --lm none --wfst-rescore
 ```
 
-### Step 2 — Error analysis on T=1.5+beam=24 n-best
-Decompose residual errors: OOV vs in-vocab-out-of-beam vs homophone. Feed into decisions about beam width, lexicon expansion, or rescorer choice.
-Samples file: `experiments/wfst_lm_5gram_asc/decoding_samples.csv` (old baseline; regenerate on the new best n-best).
+### Step 4 — Error analysis on T=1.5+beam=24 n-best
+Decompose residual errors: OOV vs in-vocab-out-of-beam vs homophone. Regenerate samples on the new best n-best.
 
-### Step 3 — Fine-tune the rescorer on OWT2
-- **5-gram on OWT2 first** (KenLM, CPU, hours). Might close a big chunk by itself.
-- **GPT-2 LoRA on OWT2.**
-- **LLaMA-2 7B QLoRA on OWT2** (matches Seto's 0.169 target).
-
-### Step 4 — 19-session models with 5-gram
+### Step 5 — 19-session models with 5-gram
 Not yet run. Commands:
 ```bash
 ulimit -s unlimited; python AnalysisExamples/eval_wfst_lm.py \
@@ -171,7 +220,7 @@ ulimit -s unlimited; python AnalysisExamples/eval_wfst_lm.py \
 
 ---
 
-## 9. Known Issues
+## 10. Known Issues
 
 - **Thread exhaustion:** `ulimit -s unlimited` required before any 24-sess eval. Patched `speechDataset.py` too.
 - **lm_decoder/torch ABI conflict:** libtorch 1.13.1 vs torch 2.5.1. Fixed via subprocess (`rescore_nbest.py` as subprocess of `run_bssf.py` / `eval_wfst_lm.py`).
@@ -185,6 +234,6 @@ ulimit -s unlimited; python AnalysisExamples/eval_wfst_lm.py \
 
 ---
 
-## 10. Hardware
+## 11. Hardware
 
 RTX 4090 (24 GB VRAM). Recommend 256 GB disk, 64 GB RAM (128+ for lattice rescoring).

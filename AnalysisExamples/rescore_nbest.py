@@ -50,7 +50,7 @@ log = logging.getLogger(__name__)
 FRAME_DURATION_SEC = 0.080
 
 
-def load_lm(model_id, cache_dir=None, hf_token=None):
+def load_lm(model_id, cache_dir=None, hf_token=None, lora_dir=None):
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     log.info("  Loading %s on %s …", model_id, device)
     kwargs = {'cache_dir': cache_dir, 'low_cpu_mem_usage': True}
@@ -66,6 +66,11 @@ def load_lm(model_id, cache_dir=None, hf_token=None):
         tok_kwargs['token'] = hf_token
     tokenizer = AutoTokenizer.from_pretrained(model_id, **tok_kwargs)
     model = AutoModelForCausalLM.from_pretrained(model_id, **kwargs).to(device).eval()
+    if lora_dir:
+        from peft import PeftModel
+        log.info("  Attaching LoRA adapter from %s", lora_dir)
+        model = PeftModel.from_pretrained(model, lora_dir).to(device).eval()
+        model = model.merge_and_unload()
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
     return model, tokenizer
@@ -136,6 +141,8 @@ def main():
     parser.add_argument('--acoustic-scales', type=_float_list, default=[0.3, 0.5, 0.8])
     parser.add_argument('--hf-token', type=str, default=None)
     parser.add_argument('--cache-dir', type=str, default='/root/.cache/huggingface')
+    parser.add_argument('--lora-dir', type=str, default=None,
+                        help='optional PEFT LoRA adapter to attach after base LM load')
     args = parser.parse_args()
 
     with open(args.nbest_file) as f:
@@ -145,7 +152,8 @@ def main():
     logit_lengths = np.array(data['logit_lengths'])
 
     model, tokenizer = load_lm(args.lm_id, cache_dir=args.cache_dir,
-                                hf_token=args.hf_token or None)
+                                hf_token=args.hf_token or None,
+                                lora_dir=args.lora_dir or None)
 
     # Score all hypotheses
     log.info("Rescoring %d utterances …", len(all_nbest))
