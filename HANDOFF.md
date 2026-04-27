@@ -1,6 +1,6 @@
 # Speech BCI: Thesis Progress Handoff
 
-**Last Updated:** 2026-04-15 (Session 13 — QLoRA FT of LLaMA-2 7B on OWT2, in progress)
+**Last Updated:** 2026-04-07 (Session 11 — Multi-model 5-gram evaluation)
 
 ---
 
@@ -9,8 +9,8 @@
 Replace GRU phoneme decoder with Transformer/Conformer; integrate with LM pipeline.
 
 **Two contributions:**
-1. **Transformer Phoneme Decoder** — Conformer 24-sess PER=0.1654 beats GRU PER=0.1817. **COMPLETE.**
-2. **Full Speech Pipeline** — Best WER = **0.1895** (Conformer T=1.5+beam=24, LLaMA-2 BSSF). **IN PROGRESS.**
+1. **Transformer Phoneme Decoder** — Conformer 24-sess PER=0.1654 beats GRU PER=0.1818. **COMPLETE.**
+2. **Full Speech Pipeline** — WFST 5-gram WER=0.2141 (GRU) / 0.2155 (Conformer). **IN PROGRESS.**
 
 **Key references:**
 - `s41586-023-06377-x.pdf` — Willett et al. (2023)
@@ -25,16 +25,13 @@ Runs on **vast.ai** GPU (RTX 4090). On every new instance:
 
 ```bash
 bash setup_runpod.sh && source /workspace/venv311/bin/activate
-cd LanguageModelDecoder/runtime/server/x86 && pip install .   # builds lm_decoder .so
 ```
 
 **Key compatibility:**
 - TF 2.15 + Python 3.11, cuDNN 8.9.7.29 (pinned after PyTorch)
-- `lm_decoder` (C++) links libtorch 1.13.1 — cannot coexist with torch ≥ 2.x. Fixed via subprocess separation.
-- **Torch upgraded to 2.6.0+cu124** (Session 13) — transformers now blocks `torch.load` resume of Trainer checkpoints with torch < 2.6. If reinstalling, grab torch from the cu124 index (cu121 only has ≤ 2.5.1). Re-pin `nvidia-cudnn-cu12==8.9.7.29 --no-deps` afterward.
-- `peft==0.13.2`, `bitsandbytes==0.46.1`, `datasets==3.1.0` pinned in `setup_runpod.sh`.
-- `sympy` must be 1.13.1
-- **Thread exhaustion fix:** Always run eval with `ulimit -s unlimited` prefix. Also patched `speechDataset.py` to set `private_threadpool_size=2`.
+- `lm_decoder` (C++) links libtorch 1.13.1 — cannot coexist with torch 2.5.1. Fixed via subprocess separation.
+- `sympy` must be 1.13.1 — `pip install sympy==1.13.1` if broken
+- **Thread exhaustion fix:** Always run eval with `ulimit -s unlimited` prefix (24 sessions × AUTOTUNE threadpools hits pthread limit without it). Also patched `speechDataset.py` to set `private_threadpool_size=2`.
 
 ---
 
@@ -44,13 +41,11 @@ cd LanguageModelDecoder/runtime/server/x86 && pip install .   # builds lm_decode
 |---|---|
 | `NeuralDecoder/neuralDecoder/models.py` | Added `TransformerEncoder`, `ConformerEncoder` (with spatial attention) |
 | `NeuralDecoder/neuralDecoder/neuralSequenceDecoder.py` | Conformer instantiation; cosine LR; early stopping; mixed precision |
-| `NeuralDecoder/neuralDecoder/datasets/speechDataset.py` | `private_threadpool_size=2` |
-| `AnalysisExamples/eval_wfst_lm.py` | WFST pipeline; `--temperature`, `--beam`, `--nbest`, `--grid-search`; auto LD_LIBRARY_PATH; saves `_nbest_tmp.json` for cheap re-rescoring |
-| `AnalysisExamples/rescore_nbest.py` | Proper BSSF fusion `asc·ac + β·lm_wfst + α·lm_neural + γ·len`; 4D grid; chunked LLaMA inference for nbest≥500 |
-| `AnalysisExamples/run_bssf.py` | Driver that runs `rescore_nbest.py` as subprocess to dodge the lm_decoder↔torch ABI conflict; `--lora-dir` pass-through |
-| `AnalysisExamples/rescore_nbest.py` | `--lora-dir` attaches a PEFT LoRA adapter (`merge_and_unload`) on top of the base LM |
-| `AnalysisExamples/finetune_llama_owt2.py` | **NEW.** QLoRA trainer (4-bit NF4 + LoRA r=16 on q/k/v/o_proj). Auto-resumes from latest `checkpoint-*` in `--output-dir`. Early stopping + `load_best_model_at_end` on `eval_loss`. |
-| `scripts/prepare_owt2.py` | **NEW.** Streams `Skylion007/openwebtext`, packs LLaMA tokens into fixed-length seqs, saves Arrow shards. Used to build `data/owt2_seq128/` (625k train / 3.9k val seqs of 128 tokens ≈ 80M train tokens). |
+| `NeuralDecoder/neuralDecoder/datasets/speechDataset.py` | `private_threadpool_size=2` to prevent pthread exhaustion with 24 sessions |
+| `setup_runpod.sh` | Full env setup |
+| `AnalysisExamples/eval_wfst_lm.py` | WFST pipeline; `--wfst-rescore`; acoustic scale grid search (`--grid-search --lm none`); auto LD_LIBRARY_PATH |
+| `AnalysisExamples/rescore_nbest.py` | N-best rescoring with GPT-2/Gemma/LLaMA via subprocess |
+| `NeuralDecoder/neuralDecoder/utils/lmDecoderUtils.py` | `load_rescore` param — skips G.fst+G_no_prune.fst when not rescoring |
 
 ---
 
@@ -59,181 +54,169 @@ cd LanguageModelDecoder/runtime/server/x86 && pip install .   # builds lm_decode
 | Model | Sessions | PER |
 |---|---|---|
 | **Conformer 512d+spatial** | **24** | **0.1654** |
-| GRU 1024u 5L | 24 | 0.1817 |
+| GRU (Willett et al.) | 24 | 0.1818 |
 | Conformer 512d (vanilla) | 24 | 0.1699 |
+| Conformer 512d+LSO | 19 | 0.2130 |
 
-Checkpoints under `experiments/24sess/`.
-
----
-
-## 5. LM Pipeline — Decode Knobs
-
-The WFST decoder and BSSF rescorer expose a small set of hyperparameters. The Session 12 sweep varies three of them:
-
-| Knob | Default | What it does |
-|---|---|---|
-| `--temperature` (T) | 1.0 | Divides CTC logits before the WFST stage. T>1 softens the acoustic distribution → richer lattices and more diverse n-best (helps Conformer, whose logits are peaky). T<1 sharpens. |
-| `--beam` | 18 | WFST beam width. Wider beam keeps more partial hypotheses alive → lower coverage failure. |
-| `--nbest` | 100 | Size of n-best list emitted after decode. Must be wide enough that the correct answer survives. |
-| `--acoustic-scale` (asc) | 0.5 | Scale on acoustic score `ac` in the log-linear fusion. Too high → ignore LM; too low → LM dominates. |
-| `--beta` (β) | 1.0 | Weight on the WFST 5-gram score `lm_wfst` in BSSF. |
-| `--alpha` (α) | 0.5 | Weight on the neural LM score `lm_neural` in BSSF. |
-| `--gamma` (γ) | 0.0 | Per-word length bonus (fights the LM's bias toward short hypotheses). |
-
-**BSSF fusion** (log-linear, per hypothesis `s`):
-```
-score(s) = asc·ac(s) + β·lm_wfst(s) + α·lm_neural(s) + γ·|s|_words
-```
-
-**Default grid for BSSF rescoring** (`run_bssf.py --grid-search`): asc∈{0.3, 0.5, 0.7}, β∈{0.5, 1.0, 1.5}, α∈{0, 0.3, 0.5, 0.8, 1.2}, γ∈{0}. Cheap once the n-best is cached — evaluating the grid on a saved `_nbest_tmp.json` takes seconds after the LM forward pass.
-
-**Workflow:**
-1. Run `eval_wfst_lm.py --lm none --temperature T --beam B --nbest N …` → `_nbest_tmp.json` + WFST-only WER/CER + oracle WER.
-2. Run `run_bssf.py --nbest-file _nbest_tmp.json --lm {gpt2,gemma3_270m,llama2_7b} --grid-search …` → best `(asc, β, α, γ)` for that LM.
-
-Step 2 never re-decodes; it is subprocess-isolated because `rescore_nbest.py` imports torch 2.5.1 and `lm_decoder` (libtorch 1.13.1) cannot share a process.
+Checkpoint: `experiments/24sess/conformer_spatial_24sess/ckpt-126000`
 
 ---
 
-## 6. Session 12 Experiment Table (current best pipeline)
+## 5. LM Pipeline Results (Session 11 — Current Best)
 
-All Conformer rows use `24sess/conformer_spatial_24sess` (PER=0.1654). All GRU rows use `24sess/gru_1024u_5L_24sess` (PER=0.1817). Eval split = test portion of each model's training sessions. BSSF columns are the best cell of the 45-point grid for each LM.
+**Evaluation:** test split of each model's training sessions, `asc=0.5`, 5-gram WFST, `--lm none`.
 
-| Config | WFST WER / CER | Oracle WER / CER | GPT-2 WER / CER | LLaMA-2 WER / CER |
+### 24-session models
+
+| Model | PER | WER | CER | Oracle WER |
 |---|---|---|---|---|
-| **Conformer baselines** | | | | |
-| T=1.0, beam=18, nb=100 *(baseline)* | 0.2155 / 0.1466 | 0.1262 / 0.1331 | — | — |
-| T=1.0, beam=24, nb=200 | 0.2148 / 0.1462 | 0.1219 / 0.1290 | 0.2055 / 0.1453 | 0.1961 / 0.1420 |
-| T=1.2 | 0.2112 / 0.1441 | 0.1153 / 0.1243 | 0.2033 / 0.1422 | 0.1937 / 0.1384 |
-| T=1.3 | 0.2115 / 0.1451 | 0.1117 / 0.1223 | 0.2015 / 0.1415 | 0.1930 / 0.1389 |
-| T=1.5 | 0.2070 / 0.1439 | 0.1044 / 0.1176 | 0.2015 / 0.1441 | 0.1908 / 0.1364 |
-| **T=1.5 + beam=24/nb=200** | **0.2066 / 0.1437** | 0.0989 / 0.1145 | 0.2012 / 0.1439 | **0.1895 / 0.1362** |
-| **GRU baselines** | | | | |
-| T=1.0, beam=18, nb=100 *(baseline)* | 0.2141 / 0.1546 | 0.1028 / 0.1190 | — | — |
-| T=1.0, beam=24, nb=200 | 0.2141 / 0.1546 | 0.0959 / 0.1140 | 0.2095 / 0.1525 | 0.1915 / 0.1399 |
-| T=1.2 | 0.2128 / 0.1547 | 0.0969 / 0.1132 | 0.2081 / 0.1517 | 0.1933 / 0.1414 |
-| T=1.3 | 0.2148 / 0.1569 | 0.0969 / 0.1134 | 0.2077 / 0.1505 | 0.1952 / 0.1408 |
-| T=1.5 | 0.2184 / 0.1610 | 0.0973 / 0.1147 | 0.2097 / 0.1530 | 0.1943 / 0.1412 |
-| **T=1.2 + beam=24/nb=200** | 0.2128 / 0.1547 | **0.0902 / 0.1088** | 0.2083 / 0.1518 | **0.1906 / 0.1391** |
+| GRU 1024u 5L | 0.1817 | **0.2141** | 0.1546 | 0.1028 |
+| **Conformer spatial** | **0.1654** | 0.2155 | **0.1466** | 0.1262 |
+| Conformer vanilla | 0.1699 | 0.2170 | 0.1497 | 0.1270 |
 
-**Findings**
-- **Softening dominates for Conformer** (peaky logits → starved lattices); **widening dominates for GRU** (already-diverse lattices benefit most from more slots). Optimum T is model-dependent: T=1.5 for Conformer, T=1.2 for GRU (T>1.2 actively hurts GRU top-1).
-- **Combined softening + widening stacks.** Both models reach their best full-pipeline WER at (best-T × beam=24/nb=200): Conformer 0.1895, GRU 0.1906 — roughly tied, with Conformer nudging ahead and reversing the prior ordering (baseline had GRU 0.2141 < Conformer 0.2155).
-- **LLaMA-2 7B BSSF > GPT-2 BSSF everywhere.** Both beat the naive 2-way fusion we had before Session 12 (which ignored `lm_wfst` — now fixed).
-- **Oracle still ≈11 pts below best full-pipeline WER** (Conformer: 0.0989 vs 0.1895; GRU: 0.0902 vs 0.1906). Room to close with a stronger rescorer (fine-tuned LM, larger LM) — but only inside the 53% of utterances where the correct answer is already in the n-best.
+### 19-session models
 
-### Comparison vs Seto et al. (no fine-tuning)
+Not yet run with 5-gram. **TODO.**
+
+### Comparison vs Seto et al. (same PER baseline, no fine-tuning)
 
 | System | WER | CER |
 |---|---|---|
 | Seto — 5-gram only | 0.279 / 0.263 (OWT1/2) | — |
+| **Ours — 5-gram (Conformer spatial)** | **0.2155** | **0.1466** |
 | Seto — GPT-2 (no fine-tune) | 0.233 | 0.189 |
-| Seto — LLaMA-2 OWT2 (fine-tuned) | **0.169** | **0.145** ← target |
-| **Ours — 5-gram (Conformer spatial, baseline)** | 0.2155 | 0.1466 |
-| **Ours — 5-gram + LLaMA-2 BSSF (Conformer, T=1.5+beam=24)** | **0.1895** | **0.1362** |
+| **Ours — 5-gram (GRU 24sess)** | **0.2141** | 0.1546 |
+| Seto — LLaMA 2 OWT2 (fine-tuned) | 0.169 | 0.145 | ← target |
 
-We have closed roughly 40% of the remaining gap to Seto's fine-tuned LLaMA result without any LM fine-tuning.
+Our un-finetuned results beat Seto's un-finetuned results across the board.
 
----
+### Neural LM rescoring (5-gram N-best, Conformer spatial)
 
-## 7. Session 13 — QLoRA fine-tune of LLaMA-2 7B on OWT2 (in progress)
+All neural LMs tested on existing N-best — all hurt relative to 5-gram alone.
 
-**Goal:** close the remaining gap from 0.1895 toward Seto's 0.169 by fine-tuning LLaMA-2 on OWT2, following Seto's recipe as closely as LoRA allows.
+| LM | Best WER | Best CER |
+|---|---|---|
+| GPT-2 124M | 0.2208 | 0.1554 |
+| Gemma 3 270M | 0.2705 | 0.1676 |
+| LLaMA-2 7B | 0.2405 | 0.1570 |
 
-**Setup**
-- Corpus: `Skylion007/openwebtext` (community OWT rebuild, used as OWT2 by default). ~80M train tokens packed into seq_len=128 sequences.
-- Config: QLoRA 4-bit NF4, LoRA r=16 α=32 on `q/k/v/o_proj` only, bf16, grad ckpt, batch 32, lr 2e-4 cosine, warmup 1000, target 10k steps. Trainable params ≈ 0.25% of 7B.
-- Early stopping on `eval_loss` (patience=3, `load_best_model_at_end`), `save_total_limit=3`.
+Root cause: 46.9% coverage failure — correct answer absent from 100-best entirely. Neural LMs can only fix the 53.1% where correct answer is in the beam, but add noise elsewhere.
 
-**Status at pause (step 7000/10000):** user paused to record metrics; resume planned for next session. First attempted resume hit the torch-2.5 `torch.load` block → upgraded to torch 2.6.0+cu124 and resumed cleanly.
+### Decoding samples (Conformer spatial, 5-gram)
 
-**Mid-train BSSF readings on Conformer T=1.5 + beam=24 + nb=200 n-best:**
-
-| Checkpoint | Best grid cell (asc, β, α, γ) | WER | CER |
-|---|---|---|---|
-| Stock LLaMA-2 (Session 12) | (0.50, 1.00, 1.20, 0.00) | **0.1895** | 0.1362 |
-| FT ckpt-5000 | (0.70, 1.00, 1.20, 0.00) | 0.1928 | 0.1405 |
-| FT ckpt-6500 | (0.50, 0.50, 0.80, 0.00) | 0.1923 | 0.1371 |
-| FT ckpt-7000 | (0.50, 0.50, 0.80, 0.00) | **0.1910** | 0.1365 |
-
-**Observations**
-- Eval loss on OWT2 val still dropping monotonically through 7000 steps (≈2.298 → 2.293) — no plateau, patience never triggered.
-- WER closing the gap to stock monotonically (0.1928 → 0.1923 → 0.1910). Still below stock at ckpt-7000 but trend is favorable.
-- BSSF grid best shifts to lower (asc, β, α) as the adapter trains — fine-tuned LM carries more weight with less help from the 5-gram. Worth keeping γ∈{0} for now; could revisit if length bias creeps in.
-
-**Verdict so far:** plausible we reach parity with stock by 10k and marginally beat it. Matching Seto's 0.169 almost certainly requires more than LoRA r=16 on attention projections — likely also MLP targets and/or higher rank, or the deferred 5-gram OWT2 rebuild.
+See `experiments/wfst_lm_5gram_asc/decoding_samples.csv` — 10 samples spanning WER 0.0 → 1.67.
 
 ---
 
-## 8. Current Challenges
+## 6. Current Challenges
 
-- **Coverage failure is still the floor.** ~46% of baseline errors were due to the correct answer being absent from the n-best entirely. Softening + widening pushes this down (oracle dropped from 0.1262 → 0.0989 for Conformer), but rescoring can only help inside the in-beam set.
-- **Lattice rescoring blocked** — full unpruned 5-gram `G_no_prune.fst` (75 GB) + `TLG.fst` (42 GB) exceeds 64 GB RAM. Needs 128+ GB instance.
-- **Two-split protocol.** We tune BSSF hyperparameters on the same test split we report, as a deliberate choice (Willett-style). Worth noting before anyone compares to three-split numbers.
+- **GRU beats Conformer at WER** despite Conformer having better PER. GRU's softer logits keep more diverse hypotheses alive → better oracle (0.1028 vs 0.1262). Conformer's peaky logits prune correct paths.
+- **Neural LM rescoring fails** — small LMs (GPT-2, Gemma, LLaMA-2 7B) can't beat a strong 5-gram. Need a much larger model or fine-tuning.
+- **Lattice rescoring blocked** — 5-gram G_no_prune.fst (75 GB) + TLG (42 GB) exceeds current RAM. Needs 128+ GB instance.
 
 ---
 
-## 9. Next Steps (Priority Order)
+## 7. Next Steps (Priority Order)
 
-### Step 1 — Resume QLoRA fine-tune to 10k and re-evaluate
+### Step 1 — Run 19-session models with 5-gram (IN PROGRESS)
 ```bash
-source /workspace/venv311/bin/activate
-nohup python AnalysisExamples/finetune_llama_owt2.py \
-  --data-dir data/owt2_seq128 --output-dir experiments/llama2_owt2_lora \
-  --batch-size 32 --grad-accum 1 --lr 2e-4 \
-  --warmup-steps 1000 --max-steps 10000 \
-  --eval-steps 500 --save-steps 500 \
-  --hf-token $HF_TOKEN > /tmp/ft_llama.log 2>&1 &
-```
-Auto-resumes from latest `checkpoint-*`. ETA ~1h40m from step 7000 to 10k. Then:
-```bash
-python AnalysisExamples/run_bssf.py \
-  --nbest-file experiments/wfst_5gram_conformer_temp1p5_beam24_nb200/_nbest_tmp.json \
-  --lm llama2_7b --lora-dir experiments/llama2_owt2_lora \
-  --output-dir experiments/bssf_ft_llama2_final --grid-search --hf-token $HF_TOKEN
-```
-
-### Step 2 — If ckpt-10000 still < stock, try stronger LoRA
-Expand `target_modules` to include `gate_proj, up_proj, down_proj` and/or raise r to 32–64. Edit in `AnalysisExamples/finetune_llama_owt2.py` around the `LoraConfig(...)` block. Retrain from scratch (not a resume — base adapter shape changes).
-
-### Step 3 — 5-gram lattice rescoring (still BLOCKED on RAM)
-Needs 128+ GB. Expected WER ~0.15–0.18. Becomes top priority if LoRA cannot beat stock.
-```bash
-ulimit -s unlimited; python AnalysisExamples/eval_wfst_lm.py \
-    --lm-dir speech_5gram/lang_test \
-    --output-dir experiments/wfst_lm_5gram_rescore \
-    --lm none --wfst-rescore
-```
-
-### Step 4 — Error analysis on T=1.5+beam=24 n-best
-Decompose residual errors: OOV vs in-vocab-out-of-beam vs homophone. Regenerate samples on the new best n-best.
-
-### Step 5 — 19-session models with 5-gram
-Not yet run. Commands:
-```bash
-ulimit -s unlimited; python AnalysisExamples/eval_wfst_lm.py \
+# GRU 19sess
+bash -c 'ulimit -s unlimited; python AnalysisExamples/eval_wfst_lm.py \
     --lm-dir speech_5gram/lang_test \
     --ckpt-dir experiments/19sess/gru/baseline/gru_1024u_5L_baseline \
-    --output-dir experiments/wfst_5gram_19sess_gru --lm none
+    --output-dir experiments/wfst_5gram_19sess_gru --lm none'
+
+# Conformer spatial 19sess
+bash -c 'ulimit -s unlimited; python AnalysisExamples/eval_wfst_lm.py \
+    --lm-dir speech_5gram/lang_test \
+    --ckpt-dir experiments/19sess/conformer/spatial/conformer_512d_4L_spatial \
+    --output-dir experiments/wfst_5gram_19sess_conformer_spatial --lm none'
+
+# Conformer vanilla 19sess (higherLR)
+bash -c 'ulimit -s unlimited; python AnalysisExamples/eval_wfst_lm.py \
+    --lm-dir speech_5gram/lang_test \
+    --ckpt-dir experiments/19sess/conformer/higherLR/conformer_512d_4L_higherLR \
+    --output-dir experiments/wfst_5gram_19sess_conformer_vanilla --lm none'
 ```
-(…and similarly for the spatial + vanilla Conformer 19sess checkpoints.)
+
+### Step 2 — 5-gram lattice rescoring (BLOCKED on RAM)
+- Needs 128+ GB RAM instance
+- Expected WER ~0.15–0.18 (full unpruned 5-gram rescoring)
+```bash
+bash -c 'ulimit -s unlimited; python AnalysisExamples/eval_wfst_lm.py \
+    --lm-dir speech_5gram/lang_test \
+    --output-dir experiments/wfst_lm_5gram_rescore \
+    --lm none --wfst-rescore'
+```
+
+### Step 3 — Error analysis
+- Inspect decoding samples to characterize failure modes
+- Already saved: `experiments/wfst_lm_5gram_asc/decoding_samples.csv`
+
+### Step 4 — Stronger rescoring LM
+- LLaMA-2 7B didn't help. Try LLaMA-2 13B or fine-tuned model.
+- Root problem is coverage failure (46.9%), not reranking — bigger LM won't fully solve it.
 
 ---
 
-## 10. Known Issues
+## 8. Known Issues
 
-- **Thread exhaustion:** `ulimit -s unlimited` required before any 24-sess eval. Patched `speechDataset.py` too.
-- **lm_decoder/torch ABI conflict:** libtorch 1.13.1 vs torch 2.5.1. Fixed via subprocess (`rescore_nbest.py` as subprocess of `run_bssf.py` / `eval_wfst_lm.py`).
-- **5-gram lattice rescoring OOM:** ~122 GB RAM needed.
-- **TLG.fst / G_no_prune.fst excluded from backup** (too large). Re-fetch TLG from Dryad if needed:
-  ```
-  curl -sL "<Dryad 5gram tar URL>" | tar -xz --occurrence=1 ./speech_5gram/lang_test/TLG.fst
-  ```
-- **sympy == 1.13.1**, **scipy < 1.13**, **numpy < 2.0** required.
-- **LLaMA BSSF OOMs at nbest=500** on a single 24 GB GPU unless `rescore_with_lm` chunks (already patched — `chunk_size=32`).
+- **Thread exhaustion:** `ulimit -s unlimited` required before any eval with 24-sess models. Fixed in `speechDataset.py` too (`private_threadpool_size=2`).
+- **lm_decoder/torch ABI conflict:** lm_decoder links libtorch 1.13.1; torch 2.5.1 in same process = crash. Fixed via subprocess.
+- **5-gram lattice rescoring OOM:** ~122 GB RAM needed. Use 128+ GB instance.
+- **sympy version:** Must be 1.13.1 — newer versions break torch imports.
+- **3-gram LM deleted** — re-download from Dryad if needed.
+- **scipy < 1.13**, **numpy < 2.0** required.
 
 ---
 
-## 11. Hardware
+## 9. Session 14 — E2E Architecture (in progress)
+
+**Goal:** Build an end-to-end model that maps ECoG directly to text via a foundation model (no phoneme intermediate), eliminating the error-propagation ceiling of the two-stage pipeline.
+
+**Architecture A (LLaVA-style, decoder-only):**
+```
+ECoG (B,T,256) → Conformer Encoder (PyTorch, 4L 512d, 4× subsample)
+              → MLP Projector (512 → llm_dim, 2-layer GELU)
+              → [ECoG tokens | BOS | text tokens] → Qwen3.5-Base (LoRA)
+Loss: CE on text positions only
+```
+
+**Files created:** `AnalysisExamples/e2e/`
+| File | Purpose |
+|---|---|
+| `conformer_pt.py` | PyTorch Conformer (spatial attn, conv stem 4× subsample) |
+| `model.py` | `E2EBCIModel`: encoder + MLP projector + LLM + LoRA |
+| `dataset.py` | TFRecord → PyTorch Dataset; reads `transcription` ASCII field |
+| `train.py` | Phase 1 (projector warmup) + Phase 2 (joint fine-tuning) |
+| `eval.py` | Greedy/beam decode → WER/CER vs two-stage baseline |
+
+**LLM choice:** `Qwen/Qwen3.5-0.8B-Base` (validate) → `Qwen/Qwen3.5-2B-Base` (main). Base (not chat) model. 2–7B is the sweet spot — data (~5k utterances) is the bottleneck, not model size.
+
+**Training commands:**
+```bash
+# Phase 1: projector warmup only
+python AnalysisExamples/e2e/train.py \
+  --data-dir data/derived/tfRecords --lm Qwen/Qwen3.5-0.8B-Base \
+  --output-dir experiments/e2e_0.8b --phase 1 --phase1-steps 300 --batch-size 4
+
+# Phase 2: joint fine-tuning (auto-resumes)
+python AnalysisExamples/e2e/train.py \
+  --data-dir data/derived/tfRecords --lm Qwen/Qwen3.5-0.8B-Base \
+  --output-dir experiments/e2e_0.8b --phase 2 --max-steps 20000 --batch-size 8
+
+# Evaluate
+python AnalysisExamples/e2e/eval.py \
+  --data-dir data/derived/tfRecords --ckpt experiments/e2e_0.8b/best \
+  --lm Qwen/Qwen3.5-0.8B-Base --beam 4
+```
+
+**Architecture B (Whisper-style encoder-decoder):** Deferred until A is validated. Cross-attention from LLM decoder to Conformer encoder — more principled for the transduction task.
+
+**Status:** Code complete, not yet trained (waiting for data files from Drive + GPU instance).
+
+---
+
+## 10. Hardware
 
 RTX 4090 (24 GB VRAM). Recommend 256 GB disk, 64 GB RAM (128+ for lattice rescoring).

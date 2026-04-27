@@ -49,7 +49,6 @@ Archive/*
 
 data
 
-# Claude Code local config
 .claude/
 
 languageModel
@@ -66,6 +65,7 @@ speech_5gramexperiments/bssf_runs_logs/
 *.log
 *.fst
 *.txt
+*.pt
 
 # Large model checkpoints (store on Drive / HF Hub; GitHub rejects >100 MB files)
 experiments/19sess/
