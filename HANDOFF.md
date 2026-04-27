@@ -1,6 +1,6 @@
 # Speech BCI: Thesis Progress Handoff
 
-**Last Updated:** 2026-04-07 (Session 11 — Multi-model 5-gram evaluation)
+**Last Updated:** 2026-04-27 (Session 15 — E2E training run 1+2, diagnostics)
 
 ---
 
@@ -193,27 +193,54 @@ Loss: CE on text positions only
 
 **LLM choice:** `Qwen/Qwen3.5-0.8B-Base` (validate) → `Qwen/Qwen3.5-2B-Base` (main). Base (not chat) model. 2–7B is the sweet spot — data (~5k utterances) is the bottleneck, not model size.
 
-**Training commands:**
+**Training history:**
+- Phase 1 (300 steps, projector warmup only): loss 7.56 → 4.42 ✓
+- Phase 2 run 1 (steps 300→10000, early stopped): best val WER=0.8877 at step 7500
+- Phase 2 run 2 (steps 10000→10700, killed for machine switch): loss ~1.2, WER regressing to 1.0 at step 10500
+
+**Checkpoints saved in `experiments/e2e_0.8b/`:**
+- `checkpoint.pt` — step 10000 (latest, use to resume)
+- `best/checkpoint.pt` — step 7500, WER=0.8877
+
+**Diagnostic results:**
+- Zeroed ECoG WER=2.53 vs real ECoG WER=0.99 → model IS using brain signal (+1.53 delta)
+- WER regressing (0.8877→1.0) while loss decreasing → LoRA LR too high, LLM finding language-prior shortcut
+
+**Root cause analysis:**
+1. Cold-start encoder (biggest issue) — Conformer trains from random weights with only 5k utterances
+2. LoRA LR 2e-4 too aggressive — LLM adapts away from ECoG signal as training progresses
+3. Data size — 5k utterances is small for end-to-end learning
+
+**Next step — resume Phase 2 with corrected hyperparameters:**
 ```bash
-# Phase 1: projector warmup only
+source /workspace/venv311/bin/activate
 python AnalysisExamples/e2e/train.py \
-  --data-dir data/derived/tfRecords --lm Qwen/Qwen3.5-0.8B-Base \
-  --output-dir experiments/e2e_0.8b --phase 1 --phase1-steps 300 --batch-size 4
+  --data-dir data/derived/tfRecords \
+  --lm Qwen/Qwen3.5-0.8B-Base \
+  --output-dir experiments/e2e_0.8b \
+  --phase 2 --max-steps 20000 \
+  --batch-size 8 --grad-accum 2 \
+  --lr-encoder 2e-4 --lr-projector 2e-4 --lr-lora 5e-5 \
+  --patience 0 --eval-every 500 --save-every 2000 --log-every 100
+```
 
-# Phase 2: joint fine-tuning (auto-resumes)
-python AnalysisExamples/e2e/train.py \
-  --data-dir data/derived/tfRecords --lm Qwen/Qwen3.5-0.8B-Base \
-  --output-dir experiments/e2e_0.8b --phase 2 --max-steps 20000 --batch-size 8
+Key changes vs previous run:
+- `--lr-encoder 2e-4` (was 5e-5) — encoder needs stronger signal, it's training from scratch
+- `--lr-lora 5e-5` (was 2e-4) — constrain LLM drift, force reliance on ECoG
+- `--batch-size 8 --grad-accum 2` (was 4/4) — ~40% faster, VRAM is only 8GB/24GB used
+- `--patience 0` — no early stopping, run full 20k steps
 
-# Evaluate
+**Evaluate:**
+```bash
 python AnalysisExamples/e2e/eval.py \
   --data-dir data/derived/tfRecords --ckpt experiments/e2e_0.8b/best \
-  --lm Qwen/Qwen3.5-0.8B-Base --beam 4
+  --lm Qwen/Qwen3.5-0.8B-Base --beam 1 \
+  --output experiments/e2e_0.8b/eval_best.json
 ```
 
 **Architecture B (Whisper-style encoder-decoder):** Deferred until A is validated. Cross-attention from LLM decoder to Conformer encoder — more principled for the transduction task.
 
-**Status:** Code complete, not yet trained (waiting for data files from Drive + GPU instance).
+**Status:** Training in progress. Best WER so far 0.8877 (target: beat two-stage baseline 0.1895).
 
 ---
 
