@@ -1,0 +1,4772 @@
+{
+  "checkpoint": "experiments/e2e_0.8b_v2/best",
+  "lm": "Qwen/Qwen3.5-0.8B-Base",
+  "beam": 1,
+  "wer": 0.6416589002795899,
+  "cer": 0.570684400110834,
+  "n_examples": 680,
+  "baseline_wer": 0.1895,
+  "baseline_cer": 0.1362,
+  "details": [
+    {
+      "ref": "theocracy reconsidered",
+      "hyp": "the exorcist's plan failed",
+      "wer": 2.0,
+      "errors": 4,
+      "words": 2
+    },
+    {
+      "ref": "rich purchased several signed lithographs",
+      "hyp": "that's what I've never seen before",
+      "wer": 1.2,
+      "errors": 6,
+      "words": 5
+    },
+    {
+      "ref": "so rules we made in unabashed collusion",
+      "hyp": "the rule is made by an unanimous decision",
+      "wer": 1.0,
+      "errors": 7,
+      "words": 7
+    },
+    {
+      "ref": "lori's costume needed black gloves to be completely elegant",
+      "hyp": "when customers need pickpockets for beavers",
+      "wer": 1.0,
+      "errors": 9,
+      "words": 9
+    },
+    {
+      "ref": "the tooth fairy forgot to come when roger's tooth fell out",
+      "hyp": "the two visitors procured two steaming omens from a steaming pot",
+      "wer": 0.9090909090909091,
+      "errors": 10,
+      "words": 11
+    },
+    {
+      "ref": "that stinging vapor was caused by chloride vaporization",
+      "hyp": "that kind of movie was worth watching despite the terrible script",
+      "wer": 1.125,
+      "errors": 9,
+      "words": 8
+    },
+    {
+      "ref": "before thursday's exam review every formula",
+      "hyp": "This is a great opportunity for a really cool person",
+      "wer": 1.6666666666666667,
+      "errors": 10,
+      "words": 6
+    },
+    {
+      "ref": "wildfire near sunshine forces park closures",
+      "hyp": "ignore the noise listen to the voice",
+      "wer": 1.1666666666666667,
+      "errors": 7,
+      "words": 6
+    },
+    {
+      "ref": "the word means it won't boil away easily nothing else",
+      "hyp": "the roof made it warm for two days",
+      "wer": 0.8,
+      "errors": 8,
+      "words": 10
+    },
+    {
+      "ref": "would a blue feather in a man's hat make him happy all day",
+      "hyp": "what a beautiful scene in a park",
+      "wer": 0.7692307692307693,
+      "errors": 10,
+      "words": 13
+    },
+    {
+      "ref": "he talked about unauthentic storylines too",
+      "hyp": "he took up his ink pad near the edge of the table",
+      "wer": 1.8333333333333333,
+      "errors": 11,
+      "words": 6
+    },
+    {
+      "ref": "most young rise early every morning",
+      "hyp": "best price first",
+      "wer": 1.0,
+      "errors": 6,
+      "words": 6
+    },
+    {
+      "ref": "with this no loyal citizen can quarrel",
+      "hyp": "This is such a lovely day sky blue",
+      "wer": 1.1428571428571428,
+      "errors": 8,
+      "words": 7
+    },
+    {
+      "ref": "primitive tribes have an upbeat attitude",
+      "hyp": "make sure you have an up-to-date edition",
+      "wer": 0.8333333333333334,
+      "errors": 5,
+      "words": 6
+    },
+    {
+      "ref": "and it was not a judge but a justice of the peace who made the decision",
+      "hyp": "and it's not a job but a jobless occasion",
+      "wer": 0.6875,
+      "errors": 11,
+      "words": 16
+    },
+    {
+      "ref": "we seemed to be witnessing the population explosion right in our own backyards",
+      "hyp": "we've seen so many interesting thesaurus that i'm lost in my own macrostructure",
+      "wer": 0.8461538461538461,
+      "errors": 11,
+      "words": 13
+    },
+    {
+      "ref": "sometimes desperate measures can also turn into solid moves for the future",
+      "hyp": "don't forget to turn on the illuminator before you go",
+      "wer": 0.9166666666666666,
+      "errors": 11,
+      "words": 12
+    },
+    {
+      "ref": "those answers will be straightforward if you think them through carefully first",
+      "hyp": "the rules will be changed soon though",
+      "wer": 0.8333333333333334,
+      "errors": 10,
+      "words": 12
+    },
+    {
+      "ref": "she gets dressed faster and spends less energy making clothing decisions",
+      "hyp": "the second great change was the emergence of mobile devices",
+      "wer": 1.0,
+      "errors": 11,
+      "words": 11
+    },
+    {
+      "ref": "academic aptitude guarantees your diploma",
+      "hyp": "create something new colorless you cannot visualize",
+      "wer": 1.4,
+      "errors": 7,
+      "words": 5
+    },
+    {
+      "ref": "to some extent predispositions are shaped by exposure to group environments",
+      "hyp": "the sign says things respectably or exploitative to your advantage",
+      "wer": 0.9090909090909091,
+      "errors": 10,
+      "words": 11
+    },
+    {
+      "ref": "an adult male baboon's teeth are not suitable for eating shellfish",
+      "hyp": "an additional millisecond delay means that you are not getting the exact timing you expected",
+      "wer": 1.0909090909090908,
+      "errors": 12,
+      "words": 11
+    },
+    {
+      "ref": "in this context it would do well for us to bear in mind the vision of peace",
+      "hyp": "in the context of what I call our world view the above is something you do",
+      "wer": 0.8823529411764706,
+      "errors": 15,
+      "words": 17
+    },
+    {
+      "ref": "you're boiling milk ain't you",
+      "hyp": "you're pretty big at this age",
+      "wer": 1.0,
+      "errors": 5,
+      "words": 5
+    },
+    {
+      "ref": "rich looked for spotted hyenas and jaguars on the safari",
+      "hyp": "which luck were you lucky in creating an algorithm on the computer",
+      "wer": 1.0,
+      "errors": 10,
+      "words": 10
+    },
+    {
+      "ref": "traffic frequently has failed to measure up to engineers' rosy estimates",
+      "hyp": "The next thing you're supposed to do is to read her entire book",
+      "wer": 1.0,
+      "errors": 11,
+      "words": 11
+    },
+    {
+      "ref": "ralph prepared red snapper with fresh lemon sauce for dinner",
+      "hyp": "rock paper duel",
+      "wer": 1.0,
+      "errors": 10,
+      "words": 10
+    },
+    {
+      "ref": "did you buy any corduroy overalls",
+      "hyp": "create a box and assign values",
+      "wer": 1.0,
+      "errors": 6,
+      "words": 6
+    },
+    {
+      "ref": "clear pronunciation is appreciated",
+      "hyp": "yes! potential is appreciated",
+      "wer": 0.5,
+      "errors": 2,
+      "words": 4
+    },
+    {
+      "ref": "please shorten this skirt for joyce",
+      "hyp": "better than the horse for horse",
+      "wer": 0.8333333333333334,
+      "errors": 5,
+      "words": 6
+    },
+    {
+      "ref": "who authorized the unlimited expense account",
+      "hyp": "who considers the enemy external",
+      "wer": 0.6666666666666666,
+      "errors": 4,
+      "words": 6
+    },
+    {
+      "ref": "the family requests that flowers be omitted",
+      "hyp": "the clay container that they used for cooking",
+      "wer": 0.8571428571428571,
+      "errors": 6,
+      "words": 7
+    },
+    {
+      "ref": "the museum hires musicians every evening",
+      "hyp": "the moisture absorbs excess oil every evening",
+      "wer": 0.6666666666666666,
+      "errors": 4,
+      "words": 6
+    },
+    {
+      "ref": "we'll serve rhubarb pie after rachel's talk",
+      "hyp": "we'll take 20% off any order above $100",
+      "wer": 1.0,
+      "errors": 7,
+      "words": 7
+    },
+    {
+      "ref": "they enjoy it when i audition",
+      "hyp": "this looks as if it's on a collision course",
+      "wer": 1.5,
+      "errors": 9,
+      "words": 6
+    },
+    {
+      "ref": "the avocado should have a give to it as you hold it when it is ripe",
+      "hyp": "the oval shape helps protect your eyes from it's sharp rays",
+      "wer": 0.9375,
+      "errors": 15,
+      "words": 16
+    },
+    {
+      "ref": "energy suppliers usually deal with this by conducting regular inspections and trimming",
+      "hyp": "The plans usually involve selling a house privately and renting out the rooms.",
+      "wer": 1.0,
+      "errors": 12,
+      "words": 12
+    },
+    {
+      "ref": "the saw is broken so chop the wood instead",
+      "hyp": "the syringe is blacked out to protect you",
+      "wer": 0.7777777777777778,
+      "errors": 7,
+      "words": 9
+    },
+    {
+      "ref": "the cleaned version is given below",
+      "hyp": "the cat chased a secret pothole",
+      "wer": 0.8333333333333334,
+      "errors": 5,
+      "words": 6
+    },
+    {
+      "ref": "they seem darned proud of it",
+      "hyp": "with some programs running off it",
+      "wer": 0.8333333333333334,
+      "errors": 5,
+      "words": 6
+    },
+    {
+      "ref": "a sharp tremor was followed by a jerky roll",
+      "hyp": "a clod somewhere was pulled by a dog",
+      "wer": 0.5555555555555556,
+      "errors": 5,
+      "words": 9
+    },
+    {
+      "ref": "boy you ain't fooling nobody but yourself",
+      "hyp": "by she had cleaned promptly about time",
+      "wer": 1.0,
+      "errors": 7,
+      "words": 7
+    },
+    {
+      "ref": "teaching guides are included with each record",
+      "hyp": "that's what are you attempting with",
+      "wer": 0.8571428571428571,
+      "errors": 6,
+      "words": 7
+    },
+    {
+      "ref": "the man's eyelids fluttered",
+      "hyp": "the main assistant doctor",
+      "wer": 0.75,
+      "errors": 3,
+      "words": 4
+    },
+    {
+      "ref": "this kid's froze bad",
+      "hyp": "this code works bad",
+      "wer": 0.5,
+      "errors": 2,
+      "words": 4
+    },
+    {
+      "ref": "she radiated warmth and good fellowship",
+      "hyp": "there is nothing odd and not even curious",
+      "wer": 1.1666666666666667,
+      "errors": 7,
+      "words": 6
+    },
+    {
+      "ref": "do you know where it might have gone",
+      "hyp": "you do know there is at least one of us",
+      "wer": 1.125,
+      "errors": 9,
+      "words": 8
+    },
+    {
+      "ref": "in the pity for them his loneliness was gone",
+      "hyp": "in the case of a system he is usually found on the ground floor",
+      "wer": 1.3333333333333333,
+      "errors": 12,
+      "words": 9
+    },
+    {
+      "ref": "join us on twitter and facebook",
+      "hyp": "do you use color in your graphics",
+      "wer": 1.1666666666666667,
+      "errors": 7,
+      "words": 6
+    },
+    {
+      "ref": "he said they'll be working toward a decision",
+      "hyp": "he said they'll 'all be working harder'",
+      "wer": 0.5,
+      "errors": 4,
+      "words": 8
+    },
+    {
+      "ref": "shaving cream is a popular item on halloween",
+      "hyp": "seamings came as a package from a single point",
+      "wer": 1.0,
+      "errors": 8,
+      "words": 8
+    },
+    {
+      "ref": "then simmer fifteen minutes longer",
+      "hyp": "that's too far away maybe",
+      "wer": 1.0,
+      "errors": 5,
+      "words": 5
+    },
+    {
+      "ref": "a third shot doused the light",
+      "hyp": "a little bit of exercise the lot",
+      "wer": 0.8333333333333334,
+      "errors": 5,
+      "words": 6
+    },
+    {
+      "ref": "the guttural language from the ghetto stopped",
+      "hyp": "the kid's age ranges from the 80s",
+      "wer": 0.7142857142857143,
+      "errors": 5,
+      "words": 7
+    },
+    {
+      "ref": "like as if it were built of books",
+      "hyp": "such as if you were out of money",
+      "wer": 0.5,
+      "errors": 4,
+      "words": 8
+    },
+    {
+      "ref": "then he  then what",
+      "hyp": "and he did not want",
+      "wer": 1.0,
+      "errors": 4,
+      "words": 4
+    },
+    {
+      "ref": "i am an artist lost in my own vision",
+      "hyp": "i am an artist lost in my own world",
+      "wer": 0.1111111111111111,
+      "errors": 1,
+      "words": 9
+    },
+    {
+      "ref": "blockade is one answer offered by experts",
+      "hyp": "basically it's one-and-the same as your expat",
+      "wer": 1.0,
+      "errors": 7,
+      "words": 7
+    },
+    {
+      "ref": "those musicians harmonize marvelously",
+      "hyp": "no measure available for independent evaluation",
+      "wer": 1.5,
+      "errors": 6,
+      "words": 4
+    },
+    {
+      "ref": "it all did look very efficient and shipshape",
+      "hyp": "it all depends on your decision and courage",
+      "wer": 0.625,
+      "errors": 5,
+      "words": 8
+    },
+    {
+      "ref": "yet we no longer feel uneasy",
+      "hyp": "that was the last lucky one",
+      "wer": 1.0,
+      "errors": 6,
+      "words": 6
+    },
+    {
+      "ref": "inflammatory cells were strikingly absent",
+      "hyp": "# snowflake shape code format",
+      "wer": 1.0,
+      "errors": 5,
+      "words": 5
+    },
+    {
+      "ref": "it can project long-range goals for itself",
+      "hyp": "it could be made longer or shorter",
+      "wer": 0.8571428571428571,
+      "errors": 6,
+      "words": 7
+    },
+    {
+      "ref": "intelligence jabbed at him accusingly",
+      "hyp": "general attitude at home",
+      "wer": 0.8,
+      "errors": 4,
+      "words": 5
+    },
+    {
+      "ref": "do you hear the sleigh bells ringing",
+      "hyp": "do you hear the loud noise again",
+      "wer": 0.42857142857142855,
+      "errors": 3,
+      "words": 7
+    },
+    {
+      "ref": "there was much embracing much exclaiming",
+      "hyp": "there was much embarrassment about him",
+      "wer": 0.5,
+      "errors": 3,
+      "words": 6
+    },
+    {
+      "ref": "below is a specific guide keyed to the calendar",
+      "hyp": "there's a significant gap in knowledge about the latter",
+      "wer": 0.8888888888888888,
+      "errors": 8,
+      "words": 9
+    },
+    {
+      "ref": "finally he asked do you object to petting",
+      "hyp": "how long do you expect to pay",
+      "wer": 0.625,
+      "errors": 5,
+      "words": 8
+    },
+    {
+      "ref": "we'll pay you back if you'll let us",
+      "hyp": "all pay he made he'll have to leave",
+      "wer": 0.875,
+      "errors": 7,
+      "words": 8
+    },
+    {
+      "ref": "they close sometime after eight",
+      "hyp": "they chose something elegant",
+      "wer": 0.8,
+      "errors": 4,
+      "words": 5
+    },
+    {
+      "ref": "then we were off again",
+      "hyp": "and we were off joining",
+      "wer": 0.4,
+      "errors": 2,
+      "words": 5
+    },
+    {
+      "ref": "his wife didn't give a sign she'd heard",
+      "hyp": "he never had a clue about art",
+      "wer": 0.875,
+      "errors": 7,
+      "words": 8
+    },
+    {
+      "ref": "for a man of his mass he was curiously short",
+      "hyp": "Why a man's life is as precious as his soul",
+      "wer": 0.9,
+      "errors": 9,
+      "words": 10
+    },
+    {
+      "ref": "pam gives driving lessons on thursdays",
+      "hyp": "make sure you give them enough food",
+      "wer": 1.1666666666666667,
+      "errors": 7,
+      "words": 6
+    },
+    {
+      "ref": "read the decision below",
+      "hyp": "what is this thing called",
+      "wer": 1.25,
+      "errors": 5,
+      "words": 4
+    },
+    {
+      "ref": "receiving no answer they set the fire",
+      "hyp": "urse no longer enjoy this food the way it was",
+      "wer": 1.1428571428571428,
+      "errors": 8,
+      "words": 7
+    },
+    {
+      "ref": "where is your usual upbeat personality",
+      "hyp": "where do you usually eat food",
+      "wer": 0.8333333333333334,
+      "errors": 5,
+      "words": 6
+    },
+    {
+      "ref": "nice country to meet a lion in face to face",
+      "hyp": "How do you get a lot of that price difference",
+      "wer": 0.9,
+      "errors": 9,
+      "words": 10
+    },
+    {
+      "ref": "with a whirling jump it could get into gear",
+      "hyp": "if a really tough job is done it does",
+      "wer": 0.8888888888888888,
+      "errors": 8,
+      "words": 9
+    },
+    {
+      "ref": "marksmanship example",
+      "hyp": "make me a cup of coffee",
+      "wer": 3.0,
+      "errors": 6,
+      "words": 2
+    },
+    {
+      "ref": "it's really hard to find something that works",
+      "hyp": "it's really odd to me something like that",
+      "wer": 0.5,
+      "errors": 4,
+      "words": 8
+    },
+    {
+      "ref": "and i loved ths shining",
+      "hyp": "and i love the sea",
+      "wer": 0.6,
+      "errors": 3,
+      "words": 5
+    },
+    {
+      "ref": "i do have a friend that ran",
+      "hyp": "i don't have a fan that i can find",
+      "wer": 0.7142857142857143,
+      "errors": 5,
+      "words": 7
+    },
+    {
+      "ref": "just way in the back",
+      "hyp": "so what's in the bag",
+      "wer": 0.6,
+      "errors": 3,
+      "words": 5
+    },
+    {
+      "ref": "actually it makes sense to a certain extent",
+      "hyp": "actually it makes sense to a certain extent",
+      "wer": 0.0,
+      "errors": 0,
+      "words": 8
+    },
+    {
+      "ref": "assure the government that he was employed",
+      "hyp": "use the system that he was using",
+      "wer": 0.42857142857142855,
+      "errors": 3,
+      "words": 7
+    },
+    {
+      "ref": "they feel good about what they're doing",
+      "hyp": "if you call up about what they're doing",
+      "wer": 0.5714285714285714,
+      "errors": 4,
+      "words": 7
+    },
+    {
+      "ref": "besides its an invasion of personal privacy",
+      "hyp": "because it's an innovation of ours",
+      "wer": 0.7142857142857143,
+      "errors": 5,
+      "words": 7
+    },
+    {
+      "ref": "so you travel a lot",
+      "hyp": "do you have a lot of it",
+      "wer": 0.8,
+      "errors": 4,
+      "words": 5
+    },
+    {
+      "ref": "so we're going to wait",
+      "hyp": "those were going to be",
+      "wer": 0.6,
+      "errors": 3,
+      "words": 5
+    },
+    {
+      "ref": "any kind of a good environment to live in",
+      "hyp": "is it kind of good enough to allow a live-in",
+      "wer": 0.7777777777777778,
+      "errors": 7,
+      "words": 9
+    },
+    {
+      "ref": "the best of android",
+      "hyp": "the best of both worlds",
+      "wer": 0.5,
+      "errors": 2,
+      "words": 4
+    },
+    {
+      "ref": "i don't know what you think about the point",
+      "hyp": "i don't know what you think about that one",
+      "wer": 0.2222222222222222,
+      "errors": 2,
+      "words": 9
+    },
+    {
+      "ref": "i believe it costs about ten dollars",
+      "hyp": "i've never done anything about it",
+      "wer": 0.8571428571428571,
+      "errors": 6,
+      "words": 7
+    },
+    {
+      "ref": "what in the world drugs are you on to",
+      "hyp": "what in the world do dogs look at on tv",
+      "wer": 0.5555555555555556,
+      "errors": 5,
+      "words": 9
+    },
+    {
+      "ref": "android tv box",
+      "hyp": "and that's enough",
+      "wer": 1.0,
+      "errors": 3,
+      "words": 3
+    },
+    {
+      "ref": "a couple of times",
+      "hyp": "a couple of times",
+      "wer": 0.0,
+      "errors": 0,
+      "words": 4
+    },
+    {
+      "ref": "i had the brakes done on it",
+      "hyp": "i had the big one on",
+      "wer": 0.42857142857142855,
+      "errors": 3,
+      "words": 7
+    },
+    {
+      "ref": "which i use as a reference and has been real handy",
+      "hyp": "what do you do when you have a ban",
+      "wer": 1.0,
+      "errors": 11,
+      "words": 11
+    },
+    {
+      "ref": "i know when i was working",
+      "hyp": "The new one is white cocker spaniel",
+      "wer": 1.1666666666666667,
+      "errors": 7,
+      "words": 6
+    },
+    {
+      "ref": "it's a package deal",
+      "hyp": "it's a picking deal",
+      "wer": 0.25,
+      "errors": 1,
+      "words": 4
+    },
+    {
+      "ref": "i have seen it",
+      "hyp": "i have tried it",
+      "wer": 0.25,
+      "errors": 1,
+      "words": 4
+    },
+    {
+      "ref": "the measures already passed a senate committee",
+      "hyp": "the media should avoid pressing a citizen",
+      "wer": 0.8571428571428571,
+      "errors": 6,
+      "words": 7
+    },
+    {
+      "ref": "they told me that this was a topic",
+      "hyp": "this title means that this was a top",
+      "wer": 0.5,
+      "errors": 4,
+      "words": 8
+    },
+    {
+      "ref": "in the red square or wherever said",
+      "hyp": "in the big way i want a variety",
+      "wer": 0.8571428571428571,
+      "errors": 6,
+      "words": 7
+    },
+    {
+      "ref": "they did a lot of play work and stuff",
+      "hyp": "they do a lot of play of power and toughness",
+      "wer": 0.4444444444444444,
+      "errors": 4,
+      "words": 9
+    },
+    {
+      "ref": "you can gain too much weight",
+      "hyp": "you can count them up right",
+      "wer": 0.6666666666666666,
+      "errors": 4,
+      "words": 6
+    },
+    {
+      "ref": "recent legislation",
+      "hyp": "random selection",
+      "wer": 1.0,
+      "errors": 2,
+      "words": 2
+    },
+    {
+      "ref": "i'm a car buff too",
+      "hyp": "The aces are far above you",
+      "wer": 1.2,
+      "errors": 6,
+      "words": 5
+    },
+    {
+      "ref": "joy springs from a grateful heart",
+      "hyp": "you're coming from a gated community",
+      "wer": 0.6666666666666666,
+      "errors": 4,
+      "words": 6
+    },
+    {
+      "ref": "char onion over grill never allow oil to smoke",
+      "hyp": "there's even a dollhouse near here",
+      "wer": 1.0,
+      "errors": 9,
+      "words": 9
+    },
+    {
+      "ref": "noise causes air pollution",
+      "hyp": "# six city leagues",
+      "wer": 1.0,
+      "errors": 4,
+      "words": 4
+    },
+    {
+      "ref": "and then you sprinkle the cheese on top of that",
+      "hyp": "and then you recycle the scraps of that",
+      "wer": 0.4,
+      "errors": 4,
+      "words": 10
+    },
+    {
+      "ref": "just saying that clear vision is a necessity",
+      "hyp": "she's been at carol's school is a mystery",
+      "wer": 0.75,
+      "errors": 6,
+      "words": 8
+    },
+    {
+      "ref": "factors that affect earnings of an employee",
+      "hyp": "practice is effective unless driven by an emotion",
+      "wer": 1.0,
+      "errors": 7,
+      "words": 7
+    },
+    {
+      "ref": "if you drink a lot of caffeine you'll stay awake",
+      "hyp": "if you sing a lot of songs will you be sick",
+      "wer": 0.6,
+      "errors": 6,
+      "words": 10
+    },
+    {
+      "ref": "that's a nice car",
+      "hyp": "that's a nice way",
+      "wer": 0.25,
+      "errors": 1,
+      "words": 4
+    },
+    {
+      "ref": "visionary leaders",
+      "hyp": "vertical loot box",
+      "wer": 1.5,
+      "errors": 3,
+      "words": 2
+    },
+    {
+      "ref": "the only other place i've ever vacationed",
+      "hyp": "the large large pieces of every kind",
+      "wer": 0.8571428571428571,
+      "errors": 6,
+      "words": 7
+    },
+    {
+      "ref": "i just kind of went through",
+      "hyp": "i just can't find it",
+      "wer": 0.6666666666666666,
+      "errors": 4,
+      "words": 6
+    },
+    {
+      "ref": "this is unifying voice we need",
+      "hyp": "this is amazing what we found",
+      "wer": 0.5,
+      "errors": 3,
+      "words": 6
+    },
+    {
+      "ref": "do you have your bag",
+      "hyp": "do you have your dog",
+      "wer": 0.2,
+      "errors": 1,
+      "words": 5
+    },
+    {
+      "ref": "so you know it keeps us pretty busy",
+      "hyp": "the new year it will come as a pleasure",
+      "wer": 1.0,
+      "errors": 8,
+      "words": 8
+    },
+    {
+      "ref": "that's a science in itself",
+      "hyp": "that's a sum in itself",
+      "wer": 0.2,
+      "errors": 1,
+      "words": 5
+    },
+    {
+      "ref": "so when you get in tight situations",
+      "hyp": "so when you get into that sport",
+      "wer": 0.42857142857142855,
+      "errors": 3,
+      "words": 7
+    },
+    {
+      "ref": "i can relate to that",
+      "hyp": "i can't recall to that point",
+      "wer": 0.6,
+      "errors": 3,
+      "words": 5
+    },
+    {
+      "ref": "it's all ready quit playing",
+      "hyp": "it's all very good planning",
+      "wer": 0.6,
+      "errors": 3,
+      "words": 5
+    },
+    {
+      "ref": "if they're around anymore",
+      "hyp": "if there's even enough",
+      "wer": 0.75,
+      "errors": 3,
+      "words": 4
+    },
+    {
+      "ref": "i am not even aware that i could have seen it",
+      "hyp": "The man said even even though they could have done it",
+      "wer": 0.6363636363636364,
+      "errors": 7,
+      "words": 11
+    },
+    {
+      "ref": "the ranks of asian riders are swelling too",
+      "hyp": "the planes of hawaii are very sensitive to weather",
+      "wer": 0.875,
+      "errors": 7,
+      "words": 8
+    },
+    {
+      "ref": "einstein equation",
+      "hyp": "anomaly detection",
+      "wer": 1.0,
+      "errors": 2,
+      "words": 2
+    },
+    {
+      "ref": "most points at the end wins",
+      "hyp": "both parents agreed that the end of the year",
+      "wer": 1.1666666666666667,
+      "errors": 7,
+      "words": 6
+    },
+    {
+      "ref": "i think it's one hundred and eighty miles",
+      "hyp": "i think it's one of the ones that's doing better",
+      "wer": 0.75,
+      "errors": 6,
+      "words": 8
+    },
+    {
+      "ref": "we don't usually take the kids when we go there",
+      "hyp": "we don't usually take the heat when we go there",
+      "wer": 0.1,
+      "errors": 1,
+      "words": 10
+    },
+    {
+      "ref": "one of those generation novels",
+      "hyp": "one of those things inspired me",
+      "wer": 0.6,
+      "errors": 3,
+      "words": 5
+    },
+    {
+      "ref": "they 'll never get caught",
+      "hyp": "the next seat right",
+      "wer": 1.0,
+      "errors": 5,
+      "words": 5
+    },
+    {
+      "ref": "i don't buy the newspaper",
+      "hyp": "i don't know what the price is",
+      "wer": 0.8,
+      "errors": 4,
+      "words": 5
+    },
+    {
+      "ref": "bringing something for a potluck picnic",
+      "hyp": "summing something for a profit",
+      "wer": 0.5,
+      "errors": 3,
+      "words": 6
+    },
+    {
+      "ref": "i 'll take it out",
+      "hyp": "i'll take it out",
+      "wer": 0.4,
+      "errors": 2,
+      "words": 5
+    },
+    {
+      "ref": "improved evasion does not work",
+      "hyp": "everybody involved in not working",
+      "wer": 0.8,
+      "errors": 4,
+      "words": 5
+    },
+    {
+      "ref": "casualties were reported",
+      "hyp": "other than your return",
+      "wer": 1.3333333333333333,
+      "errors": 4,
+      "words": 3
+    },
+    {
+      "ref": "you just like to sit down and watch it",
+      "hyp": "you just like to sit down and write it down",
+      "wer": 0.2222222222222222,
+      "errors": 2,
+      "words": 9
+    },
+    {
+      "ref": "he helps by giving little pointers",
+      "hyp": "he seemed to give them little points",
+      "wer": 0.8333333333333334,
+      "errors": 5,
+      "words": 6
+    },
+    {
+      "ref": "cause they all grew up in new york city",
+      "hyp": "all you all are up in my location",
+      "wer": 0.6666666666666666,
+      "errors": 6,
+      "words": 9
+    },
+    {
+      "ref": "you make such a choice",
+      "hyp": "you make such a mistake",
+      "wer": 0.2,
+      "errors": 1,
+      "words": 5
+    },
+    {
+      "ref": "but they have snakes over there",
+      "hyp": "but they have such sleek overalls",
+      "wer": 0.5,
+      "errors": 3,
+      "words": 6
+    },
+    {
+      "ref": "a good positive direction",
+      "hyp": "a good price for paper",
+      "wer": 0.75,
+      "errors": 3,
+      "words": 4
+    },
+    {
+      "ref": "that's what i was going to point out",
+      "hyp": "that's what i was going to do it",
+      "wer": 0.25,
+      "errors": 2,
+      "words": 8
+    },
+    {
+      "ref": "i turned mine in about twelve hours early at noon",
+      "hyp": "it seems to me about about five years ago",
+      "wer": 0.9,
+      "errors": 9,
+      "words": 10
+    },
+    {
+      "ref": "it's a telecommunications type of company",
+      "hyp": "it's a total nightmare type of company",
+      "wer": 0.3333333333333333,
+      "errors": 2,
+      "words": 6
+    },
+    {
+      "ref": "i work out of my home",
+      "hyp": "i work out every day",
+      "wer": 0.5,
+      "errors": 3,
+      "words": 6
+    },
+    {
+      "ref": "the way it works",
+      "hyp": "the way it works",
+      "wer": 0.0,
+      "errors": 0,
+      "words": 4
+    },
+    {
+      "ref": "it doesn't have an air conditioner",
+      "hyp": "it doesn't have an air conditioner",
+      "wer": 0.0,
+      "errors": 0,
+      "words": 6
+    },
+    {
+      "ref": "then you have to make a salad",
+      "hyp": "then you have to make a decision",
+      "wer": 0.14285714285714285,
+      "errors": 1,
+      "words": 7
+    },
+    {
+      "ref": "solving the variables in the equation",
+      "hyp": "about the material in the academy",
+      "wer": 0.5,
+      "errors": 3,
+      "words": 6
+    },
+    {
+      "ref": "i read in the paper",
+      "hyp": "i heard in the paper",
+      "wer": 0.2,
+      "errors": 1,
+      "words": 5
+    },
+    {
+      "ref": "i'm in the speech processing business",
+      "hyp": "from in the picture description",
+      "wer": 0.6666666666666666,
+      "errors": 4,
+      "words": 6
+    },
+    {
+      "ref": "once every year or two",
+      "hyp": "once every year or two",
+      "wer": 0.0,
+      "errors": 0,
+      "words": 5
+    },
+    {
+      "ref": "you don't eat it at all",
+      "hyp": "you don't eat it at all",
+      "wer": 0.0,
+      "errors": 0,
+      "words": 6
+    },
+    {
+      "ref": "twelve men tried and true",
+      "hyp": "always been able to try",
+      "wer": 1.0,
+      "errors": 5,
+      "words": 5
+    },
+    {
+      "ref": "i think that's something we might want",
+      "hyp": "i think that's something we might one day",
+      "wer": 0.2857142857142857,
+      "errors": 2,
+      "words": 7
+    },
+    {
+      "ref": "she thought for a few minutes",
+      "hyp": "she took for a photo",
+      "wer": 0.5,
+      "errors": 3,
+      "words": 6
+    },
+    {
+      "ref": "that is a sad situation",
+      "hyp": "that is a sad situation",
+      "wer": 0.0,
+      "errors": 0,
+      "words": 5
+    },
+    {
+      "ref": "they do have capital punishment",
+      "hyp": "there are have have there been any",
+      "wer": 1.2,
+      "errors": 6,
+      "words": 5
+    },
+    {
+      "ref": "it was nice talking to you dudley",
+      "hyp": "it was nice talking to you",
+      "wer": 0.14285714285714285,
+      "errors": 1,
+      "words": 7
+    },
+    {
+      "ref": "my favorite team is the rangers",
+      "hyp": "my husband's coming to the ranch",
+      "wer": 0.6666666666666666,
+      "errors": 4,
+      "words": 6
+    },
+    {
+      "ref": "kind of goes along with what you were saying",
+      "hyp": "and if you do not like it you can turn you off",
+      "wer": 1.2222222222222223,
+      "errors": 11,
+      "words": 9
+    },
+    {
+      "ref": "why they don't go with fourteen one",
+      "hyp": "i do not know if we were fishing",
+      "wer": 1.1428571428571428,
+      "errors": 8,
+      "words": 7
+    },
+    {
+      "ref": "reader's choice award",
+      "hyp": "she's just so warm",
+      "wer": 1.3333333333333333,
+      "errors": 4,
+      "words": 3
+    },
+    {
+      "ref": "they are the detroit delegates",
+      "hyp": "here are the details",
+      "wer": 0.6,
+      "errors": 3,
+      "words": 5
+    },
+    {
+      "ref": "he went to vietnam one man and came back another",
+      "hyp": "how much to budget for each step and some tips",
+      "wer": 0.9,
+      "errors": 9,
+      "words": 10
+    },
+    {
+      "ref": "as any city grows up",
+      "hyp": "is any any news up north",
+      "wer": 0.8,
+      "errors": 4,
+      "words": 5
+    },
+    {
+      "ref": "so you did buy a pattern",
+      "hyp": "do you need power tool",
+      "wer": 0.8333333333333334,
+      "errors": 5,
+      "words": 6
+    },
+    {
+      "ref": "it's about sixteen and a half percent",
+      "hyp": "it's about fifteen miles away",
+      "wer": 0.7142857142857143,
+      "errors": 5,
+      "words": 7
+    },
+    {
+      "ref": "i agree with the phone",
+      "hyp": "i guess we should find the fun",
+      "wer": 1.0,
+      "errors": 5,
+      "words": 5
+    },
+    {
+      "ref": "so i think it's going to be a lot easier",
+      "hyp": "so i think it's going to go to a lot of outlets here",
+      "wer": 0.5,
+      "errors": 5,
+      "words": 10
+    },
+    {
+      "ref": "not too much soy sauce",
+      "hyp": "don't too much too fast",
+      "wer": 0.6,
+      "errors": 3,
+      "words": 5
+    },
+    {
+      "ref": "we take a certain portion of your paycheck",
+      "hyp": "we take a stand against your facilities",
+      "wer": 0.5,
+      "errors": 4,
+      "words": 8
+    },
+    {
+      "ref": "who sponsors you",
+      "hyp": "who's playing her",
+      "wer": 1.0,
+      "errors": 3,
+      "words": 3
+    },
+    {
+      "ref": "and i don't know what's going to happen",
+      "hyp": "and i don't know how long it's been",
+      "wer": 0.5,
+      "errors": 4,
+      "words": 8
+    },
+    {
+      "ref": "i think we have about thirteen months left on it",
+      "hyp": "i think we have about thirty minutes left",
+      "wer": 0.4,
+      "errors": 4,
+      "words": 10
+    },
+    {
+      "ref": "i do particularly find it annoying",
+      "hyp": "i do specialize in it",
+      "wer": 0.5,
+      "errors": 3,
+      "words": 6
+    },
+    {
+      "ref": "they have clubs and a swimming pool",
+      "hyp": "they have changed and a hundred times",
+      "wer": 0.42857142857142855,
+      "errors": 3,
+      "words": 7
+    },
+    {
+      "ref": "our point of view",
+      "hyp": "a point out of here",
+      "wer": 0.75,
+      "errors": 3,
+      "words": 4
+    },
+    {
+      "ref": "it really is worth while to sew",
+      "hyp": "it really is which was thrilling",
+      "wer": 0.5714285714285714,
+      "errors": 4,
+      "words": 7
+    },
+    {
+      "ref": "i felt that was a little insensitive",
+      "hyp": "i think that was a little intense",
+      "wer": 0.2857142857142857,
+      "errors": 2,
+      "words": 7
+    },
+    {
+      "ref": "public transportation",
+      "hyp": "public management",
+      "wer": 0.5,
+      "errors": 1,
+      "words": 2
+    },
+    {
+      "ref": "focal point",
+      "hyp": "local government",
+      "wer": 1.0,
+      "errors": 2,
+      "words": 2
+    },
+    {
+      "ref": "i tried one on and was disappointed",
+      "hyp": "i got one in an apartment",
+      "wer": 0.7142857142857143,
+      "errors": 5,
+      "words": 7
+    },
+    {
+      "ref": "what are we doing",
+      "hyp": "what are we doing",
+      "wer": 0.0,
+      "errors": 0,
+      "words": 4
+    },
+    {
+      "ref": "my job tends to be very demanding",
+      "hyp": "my wife's had a beaver fountain",
+      "wer": 0.8571428571428571,
+      "errors": 6,
+      "words": 7
+    },
+    {
+      "ref": "you know it was just in jest",
+      "hyp": "you know it was less gas",
+      "wer": 0.42857142857142855,
+      "errors": 3,
+      "words": 7
+    },
+    {
+      "ref": "and most people like that are old",
+      "hyp": "and most people like that too",
+      "wer": 0.2857142857142857,
+      "errors": 2,
+      "words": 7
+    },
+    {
+      "ref": "that's what i was doing before",
+      "hyp": "that's what i was trying to say",
+      "wer": 0.5,
+      "errors": 3,
+      "words": 6
+    },
+    {
+      "ref": "the best teachers and the best students",
+      "hyp": "the best approach is in the base stacking",
+      "wer": 0.7142857142857143,
+      "errors": 5,
+      "words": 7
+    },
+    {
+      "ref": "i don't like it cold",
+      "hyp": "i don't like it either",
+      "wer": 0.2,
+      "errors": 1,
+      "words": 5
+    },
+    {
+      "ref": "she was inaugurated in january",
+      "hyp": "she was excited and anxious",
+      "wer": 0.6,
+      "errors": 3,
+      "words": 5
+    },
+    {
+      "ref": "wait a minute",
+      "hyp": "what a moment",
+      "wer": 0.6666666666666666,
+      "errors": 2,
+      "words": 3
+    },
+    {
+      "ref": "those are no good anymore",
+      "hyp": "those are the new ones",
+      "wer": 0.6,
+      "errors": 3,
+      "words": 5
+    },
+    {
+      "ref": "i do want to have a raised bed",
+      "hyp": "i don't want to have a visa pad",
+      "wer": 0.375,
+      "errors": 3,
+      "words": 8
+    },
+    {
+      "ref": "i say that but yet i know too",
+      "hyp": "if they're leaving but they've given us too",
+      "wer": 0.75,
+      "errors": 6,
+      "words": 8
+    },
+    {
+      "ref": "it wasn't organized enough for me",
+      "hyp": "it wasn't intended though for use",
+      "wer": 0.5,
+      "errors": 3,
+      "words": 6
+    },
+    {
+      "ref": "if i don't know the story line",
+      "hyp": "if i don't know the story",
+      "wer": 0.14285714285714285,
+      "errors": 1,
+      "words": 7
+    },
+    {
+      "ref": "that i've liked in the past",
+      "hyp": "that i've seen in the past",
+      "wer": 0.16666666666666666,
+      "errors": 1,
+      "words": 6
+    },
+    {
+      "ref": "your spam my treasure",
+      "hyp": "you're coming my daughter",
+      "wer": 0.75,
+      "errors": 3,
+      "words": 4
+    },
+    {
+      "ref": "he had choices to make the counselor told him",
+      "hyp": "How hard it is to make a number of them",
+      "wer": 0.8888888888888888,
+      "errors": 8,
+      "words": 9
+    },
+    {
+      "ref": "the last time he came was in march",
+      "hyp": "the last time he came was in july",
+      "wer": 0.125,
+      "errors": 1,
+      "words": 8
+    },
+    {
+      "ref": "i'm getting pretty",
+      "hyp": "i'm going forward",
+      "wer": 0.6666666666666666,
+      "errors": 2,
+      "words": 3
+    },
+    {
+      "ref": "it's really a cost",
+      "hyp": "it really is cute",
+      "wer": 0.75,
+      "errors": 3,
+      "words": 4
+    },
+    {
+      "ref": "have little material luxury but want a lot more",
+      "hyp": "have you heard about this one a lot",
+      "wer": 0.6666666666666666,
+      "errors": 6,
+      "words": 9
+    },
+    {
+      "ref": "you guys really are newlyweds",
+      "hyp": "you get really old by age",
+      "wer": 0.8,
+      "errors": 4,
+      "words": 5
+    },
+    {
+      "ref": "we've got a stone from austin",
+      "hyp": "we've tried a dozen them",
+      "wer": 0.6666666666666666,
+      "errors": 4,
+      "words": 6
+    },
+    {
+      "ref": "competition with japan",
+      "hyp": "top image was destroyed",
+      "wer": 1.3333333333333333,
+      "errors": 4,
+      "words": 3
+    },
+    {
+      "ref": "it still makes most of its profit in asia",
+      "hyp": "it will make sense after he's lived in asia",
+      "wer": 0.6666666666666666,
+      "errors": 6,
+      "words": 9
+    },
+    {
+      "ref": "i think that is important too",
+      "hyp": "i think that is important too",
+      "wer": 0.0,
+      "errors": 0,
+      "words": 6
+    },
+    {
+      "ref": "have a good evening",
+      "hyp": "have a good evening",
+      "wer": 0.0,
+      "errors": 0,
+      "words": 4
+    },
+    {
+      "ref": "unfortunately we tend to make these equations",
+      "hyp": "include you can make better decisions",
+      "wer": 0.8571428571428571,
+      "errors": 6,
+      "words": 7
+    },
+    {
+      "ref": "he didn't eat flies",
+      "hyp": "she didn't eat much",
+      "wer": 0.5,
+      "errors": 2,
+      "words": 4
+    },
+    {
+      "ref": "most of the time they don't bother with it",
+      "hyp": "some of the time they don't know what to do",
+      "wer": 0.5555555555555556,
+      "errors": 5,
+      "words": 9
+    },
+    {
+      "ref": "they didn't strip it so i got it back",
+      "hyp": "they didn't leave it so she could get it back",
+      "wer": 0.4444444444444444,
+      "errors": 4,
+      "words": 9
+    },
+    {
+      "ref": "i'm sure all the eggs are in it",
+      "hyp": "i'm sure all the kids are in it",
+      "wer": 0.125,
+      "errors": 1,
+      "words": 8
+    },
+    {
+      "ref": "the family issues that get discussed",
+      "hyp": "the family uses that as a restaurant",
+      "wer": 0.6666666666666666,
+      "errors": 4,
+      "words": 6
+    },
+    {
+      "ref": "a lot of the industry's moving southward",
+      "hyp": "a lot of the patients' doctors",
+      "wer": 0.42857142857142855,
+      "errors": 3,
+      "words": 7
+    },
+    {
+      "ref": "when disclosure isn't enough",
+      "hyp": "when soldiers exit navy",
+      "wer": 0.75,
+      "errors": 3,
+      "words": 4
+    },
+    {
+      "ref": "contact points",
+      "hyp": "toxicology",
+      "wer": 1.0,
+      "errors": 2,
+      "words": 2
+    },
+    {
+      "ref": "this morning it was twenty nine",
+      "hyp": "i'm looking at it every day",
+      "wer": 1.0,
+      "errors": 6,
+      "words": 6
+    },
+    {
+      "ref": "satan rejoiced with his birth",
+      "hyp": "scanned radiographs with his mouth",
+      "wer": 0.6,
+      "errors": 3,
+      "words": 5
+    },
+    {
+      "ref": "they fell out because of the drug issue",
+      "hyp": "the pool's hot because of the direct sun",
+      "wer": 0.625,
+      "errors": 5,
+      "words": 8
+    },
+    {
+      "ref": "these are done with a flour tortilla",
+      "hyp": "they're a done thing with a fee",
+      "wer": 0.7142857142857143,
+      "errors": 5,
+      "words": 7
+    },
+    {
+      "ref": "don't collect unemployment",
+      "hyp": "not just in terms",
+      "wer": 1.3333333333333333,
+      "errors": 4,
+      "words": 3
+    },
+    {
+      "ref": "that is realistic for some people",
+      "hyp": "that is really a sum up",
+      "wer": 0.6666666666666666,
+      "errors": 4,
+      "words": 6
+    },
+    {
+      "ref": "i'm away from my other son during those hours",
+      "hyp": "i'm trying to find other sunners who do that",
+      "wer": 0.7777777777777778,
+      "errors": 7,
+      "words": 9
+    },
+    {
+      "ref": "where do you have to do a whole bunch of work",
+      "hyp": "where do you have to do a hot pad of water",
+      "wer": 0.2727272727272727,
+      "errors": 3,
+      "words": 11
+    },
+    {
+      "ref": "i take it she was an accountant",
+      "hyp": "i like it there was an accent",
+      "wer": 0.42857142857142855,
+      "errors": 3,
+      "words": 7
+    },
+    {
+      "ref": "go to a trip through the indonesian",
+      "hyp": "try to a step further with the invention",
+      "wer": 0.7142857142857143,
+      "errors": 5,
+      "words": 7
+    },
+    {
+      "ref": "no problem there at all",
+      "hyp": "my problem is at school",
+      "wer": 0.6,
+      "errors": 3,
+      "words": 5
+    },
+    {
+      "ref": "their way of life changed",
+      "hyp": "they're both alive right",
+      "wer": 1.0,
+      "errors": 5,
+      "words": 5
+    },
+    {
+      "ref": "pass me that joint bank account statement",
+      "hyp": "keep me that weed big green seedless fruit",
+      "wer": 0.8571428571428571,
+      "errors": 6,
+      "words": 7
+    },
+    {
+      "ref": "filters for air filtration for hospitals",
+      "hyp": "looked for a new device for text messaging",
+      "wer": 1.0,
+      "errors": 6,
+      "words": 6
+    },
+    {
+      "ref": "i do that when we travel",
+      "hyp": "i do that when we travel",
+      "wer": 0.0,
+      "errors": 0,
+      "words": 6
+    },
+    {
+      "ref": "i only saw the end of the first quarter",
+      "hyp": "i only saw the end of the first one",
+      "wer": 0.1111111111111111,
+      "errors": 1,
+      "words": 9
+    },
+    {
+      "ref": "is there work to support this conclusion",
+      "hyp": "is there a way to support this channel",
+      "wer": 0.42857142857142855,
+      "errors": 3,
+      "words": 7
+    },
+    {
+      "ref": "buy a sewing machine",
+      "hyp": "try a different menu",
+      "wer": 0.75,
+      "errors": 3,
+      "words": 4
+    },
+    {
+      "ref": "as soon as we get this house finished",
+      "hyp": "i's too bad we got those housekeepers",
+      "wer": 0.875,
+      "errors": 7,
+      "words": 8
+    },
+    {
+      "ref": "and just keep chipping away at the ice",
+      "hyp": "and just keep trying until you get at the house",
+      "wer": 0.625,
+      "errors": 5,
+      "words": 8
+    },
+    {
+      "ref": "all the money",
+      "hyp": "all the money",
+      "wer": 0.0,
+      "errors": 0,
+      "words": 3
+    },
+    {
+      "ref": "my husband has a tool shed out back",
+      "hyp": "my husband has a cool set at black rock",
+      "wer": 0.625,
+      "errors": 5,
+      "words": 8
+    },
+    {
+      "ref": "certain kinds of sin",
+      "hyp": "sound system of sin",
+      "wer": 0.5,
+      "errors": 2,
+      "words": 4
+    },
+    {
+      "ref": "i always threaten my daughters with time-out",
+      "hyp": "i always said my decision was made out of heart",
+      "wer": 1.0,
+      "errors": 7,
+      "words": 7
+    },
+    {
+      "ref": "north korea is still allowed to receive oil",
+      "hyp": "not necessarily is still a real problem",
+      "wer": 0.75,
+      "errors": 6,
+      "words": 8
+    },
+    {
+      "ref": "let's see about getting parents more involved",
+      "hyp": "'s too bad about getting more information",
+      "wer": 0.7142857142857143,
+      "errors": 5,
+      "words": 7
+    },
+    {
+      "ref": "pass me that joint bank account statement",
+      "hyp": "as soon as that sounds like animation",
+      "wer": 1.0,
+      "errors": 7,
+      "words": 7
+    },
+    {
+      "ref": "what you need is a tougher punishment regime",
+      "hyp": "which you need is a couple of times",
+      "wer": 0.5,
+      "errors": 4,
+      "words": 8
+    },
+    {
+      "ref": "so it was really too late to do much",
+      "hyp": "so it was really too too late to do this",
+      "wer": 0.2222222222222222,
+      "errors": 2,
+      "words": 9
+    },
+    {
+      "ref": "i wanted to go to that golf course down south",
+      "hyp": "i wanted to go to that school down there",
+      "wer": 0.3,
+      "errors": 3,
+      "words": 10
+    },
+    {
+      "ref": "you get a little taste of it and you say no",
+      "hyp": "you get a little bit of it and you see it",
+      "wer": 0.2727272727272727,
+      "errors": 3,
+      "words": 11
+    },
+    {
+      "ref": "they don't even check my social security number",
+      "hyp": "don't don't even touch my sister again",
+      "wer": 0.625,
+      "errors": 5,
+      "words": 8
+    },
+    {
+      "ref": "chicago and philadelphia",
+      "hyp": "steve's age and age level",
+      "wer": 1.3333333333333333,
+      "errors": 4,
+      "words": 3
+    },
+    {
+      "ref": "i don't know if you have ever heard of it",
+      "hyp": "i don't know if you have ever heard of it",
+      "wer": 0.0,
+      "errors": 0,
+      "words": 10
+    },
+    {
+      "ref": "social arbitrage",
+      "hyp": "single star",
+      "wer": 1.0,
+      "errors": 2,
+      "words": 2
+    },
+    {
+      "ref": "that's exactly the way he feels",
+      "hyp": "that's like the worst he could be",
+      "wer": 0.6666666666666666,
+      "errors": 4,
+      "words": 6
+    },
+    {
+      "ref": "do you really not remember",
+      "hyp": "do you really really love romance",
+      "wer": 0.6,
+      "errors": 3,
+      "words": 5
+    },
+    {
+      "ref": "it am enjoying that side of it",
+      "hyp": "it's from Australia that's kind of it",
+      "wer": 0.7142857142857143,
+      "errors": 5,
+      "words": 7
+    },
+    {
+      "ref": "the ranks of asian riders are swelling too",
+      "hyp": "the market of asian food is expanding too",
+      "wer": 0.5,
+      "errors": 4,
+      "words": 8
+    },
+    {
+      "ref": "the mission will draw the corresponding conclusions",
+      "hyp": "the paint will cure the surface entirely",
+      "wer": 0.5714285714285714,
+      "errors": 4,
+      "words": 7
+    },
+    {
+      "ref": "burials usually happen during the morning",
+      "hyp": "retail usually comes after the mining",
+      "wer": 0.6666666666666666,
+      "errors": 4,
+      "words": 6
+    },
+    {
+      "ref": "be kind to your whole self",
+      "hyp": "my goal to you is whole life",
+      "wer": 0.8333333333333334,
+      "errors": 5,
+      "words": 6
+    },
+    {
+      "ref": "that's the other bar that we went to that night",
+      "hyp": "that's the other bubble that we bought",
+      "wer": 0.5,
+      "errors": 5,
+      "words": 10
+    },
+    {
+      "ref": "i don't know why",
+      "hyp": "i don't know why",
+      "wer": 0.0,
+      "errors": 0,
+      "words": 4
+    },
+    {
+      "ref": "you can fake sex love explosions special effects horror",
+      "hyp": "you can pick up pickpockets according to your desire",
+      "wer": 0.7777777777777778,
+      "errors": 7,
+      "words": 9
+    },
+    {
+      "ref": "he's in first grade now",
+      "hyp": "he's in first division now",
+      "wer": 0.2,
+      "errors": 1,
+      "words": 5
+    },
+    {
+      "ref": "i guess there's some companies that aren't growing fast enough",
+      "hyp": "i guess you're some kind of art student",
+      "wer": 0.7,
+      "errors": 7,
+      "words": 10
+    },
+    {
+      "ref": "increasingly democratically oriented",
+      "hyp": "unfortunately suspense doesn't exist",
+      "wer": 1.3333333333333333,
+      "errors": 4,
+      "words": 3
+    },
+    {
+      "ref": "something a little extra",
+      "hyp": "Ensure a little extra",
+      "wer": 0.25,
+      "errors": 1,
+      "words": 4
+    },
+    {
+      "ref": "i kind of wish that they had a little league for the boys",
+      "hyp": "i kind of wish that it had a little extra space for the power cord",
+      "wer": 0.38461538461538464,
+      "errors": 5,
+      "words": 13
+    },
+    {
+      "ref": "killer bee instinct",
+      "hyp": "complete by clicking",
+      "wer": 1.0,
+      "errors": 3,
+      "words": 3
+    },
+    {
+      "ref": "i hadn't heard about that",
+      "hyp": "i had heard about that",
+      "wer": 0.2,
+      "errors": 1,
+      "words": 5
+    },
+    {
+      "ref": "the ability of people to access healthcare",
+      "hyp": "the mileage of fuel savings",
+      "wer": 0.7142857142857143,
+      "errors": 5,
+      "words": 7
+    },
+    {
+      "ref": "that's probably one of the reasons",
+      "hyp": "that's possible one of the reasons",
+      "wer": 0.16666666666666666,
+      "errors": 1,
+      "words": 6
+    },
+    {
+      "ref": "quite a few movies are based off of that",
+      "hyp": "what's a real movie where you can watch it",
+      "wer": 0.8888888888888888,
+      "errors": 8,
+      "words": 9
+    },
+    {
+      "ref": "but when i went home that's all i could think about",
+      "hyp": "but when i went home i'll all get back together",
+      "wer": 0.45454545454545453,
+      "errors": 5,
+      "words": 11
+    },
+    {
+      "ref": "i'm north of that actually",
+      "hyp": "i'm not sure of that exactly",
+      "wer": 0.6,
+      "errors": 3,
+      "words": 5
+    },
+    {
+      "ref": "a commercial project on hair conditioner",
+      "hyp": "it's curved enough on here",
+      "wer": 0.8333333333333334,
+      "errors": 5,
+      "words": 6
+    },
+    {
+      "ref": "it was something easy i could do",
+      "hyp": "it was something else i could do too",
+      "wer": 0.2857142857142857,
+      "errors": 2,
+      "words": 7
+    },
+    {
+      "ref": "i think that's why a lot of people go to west virginia",
+      "hyp": "i think we've all got a piece of this",
+      "wer": 0.75,
+      "errors": 9,
+      "words": 12
+    },
+    {
+      "ref": "brown and black patches of fur",
+      "hyp": "but when i pick up music",
+      "wer": 1.0,
+      "errors": 6,
+      "words": 6
+    },
+    {
+      "ref": "the jury is expected to announce its decision",
+      "hyp": "the jury is expected to analyze it's findings",
+      "wer": 0.375,
+      "errors": 3,
+      "words": 8
+    },
+    {
+      "ref": "summary points",
+      "hyp": "modernists",
+      "wer": 1.0,
+      "errors": 2,
+      "words": 2
+    },
+    {
+      "ref": "i don't get to watch",
+      "hyp": "i don't know too much",
+      "wer": 0.6,
+      "errors": 3,
+      "words": 5
+    },
+    {
+      "ref": "it's all money now",
+      "hyp": "who will buy my meat now",
+      "wer": 1.25,
+      "errors": 5,
+      "words": 4
+    },
+    {
+      "ref": "help promote that more",
+      "hyp": "uphill mountain peaks",
+      "wer": 1.0,
+      "errors": 4,
+      "words": 4
+    },
+    {
+      "ref": "developing everything",
+      "hyp": "into the system",
+      "wer": 1.5,
+      "errors": 3,
+      "words": 2
+    },
+    {
+      "ref": "they're probably doing it to their benefit",
+      "hyp": "the problem is it's too early",
+      "wer": 1.0,
+      "errors": 7,
+      "words": 7
+    },
+    {
+      "ref": "that is good that they're like that",
+      "hyp": "do you have any other like that",
+      "wer": 0.7142857142857143,
+      "errors": 5,
+      "words": 7
+    },
+    {
+      "ref": "there is some definite snark in her report",
+      "hyp": "with so many different flavors in your bowl",
+      "wer": 0.875,
+      "errors": 7,
+      "words": 8
+    },
+    {
+      "ref": "i remember difficult times in school being behind on work",
+      "hyp": "how many dogs do you have but for work",
+      "wer": 0.9,
+      "errors": 9,
+      "words": 10
+    },
+    {
+      "ref": "the new york catholic conference blasted the measure",
+      "hyp": "the new york times keep updating us",
+      "wer": 0.625,
+      "errors": 5,
+      "words": 8
+    },
+    {
+      "ref": "when we were in high school it was always fun",
+      "hyp": "and when we enter school it was already done",
+      "wer": 0.6,
+      "errors": 6,
+      "words": 10
+    },
+    {
+      "ref": "she knows how to do that",
+      "hyp": "she knows how to do that",
+      "wer": 0.0,
+      "errors": 0,
+      "words": 6
+    },
+    {
+      "ref": "are you going to go see the elixir of love",
+      "hyp": "or you can go to go to the exercise center",
+      "wer": 0.7,
+      "errors": 7,
+      "words": 10
+    },
+    {
+      "ref": "i'm sure there are some",
+      "hyp": "and we're at home",
+      "wer": 1.0,
+      "errors": 5,
+      "words": 5
+    },
+    {
+      "ref": "that's kind of like what we'd like to do",
+      "hyp": "that's kind of like what we had too",
+      "wer": 0.4444444444444444,
+      "errors": 4,
+      "words": 9
+    },
+    {
+      "ref": "quite a lot of variety",
+      "hyp": "keep a lot of variety",
+      "wer": 0.2,
+      "errors": 1,
+      "words": 5
+    },
+    {
+      "ref": "i haven't been to a baseball game in years",
+      "hyp": "i haven't been to a baseball team in years",
+      "wer": 0.1111111111111111,
+      "errors": 1,
+      "words": 9
+    },
+    {
+      "ref": "parents aren't parents any more",
+      "hyp": "beef beef beef beef beef beef beef beef beef beef beef beef beef beef beef beef beef beef beef beef beef beef beef beef beef beef beef beef beef beef beef beef beef beef beef beef beef beef beef beef beef beef beef beef beef beef beef beef beef beef beef beef beef beef beef beef beef beef beef beef beef beef beef",
+      "wer": 12.6,
+      "errors": 63,
+      "words": 5
+    },
+    {
+      "ref": "a dressing of oil and vinegar",
+      "hyp": "a year of life and more",
+      "wer": 0.5,
+      "errors": 3,
+      "words": 6
+    },
+    {
+      "ref": "it just kind of dragged on forever",
+      "hyp": "it's just kind of hard to imagine",
+      "wer": 0.5714285714285714,
+      "errors": 4,
+      "words": 7
+    },
+    {
+      "ref": "that's the only way you can get to canada from here",
+      "hyp": "that's the only way you can get to see them",
+      "wer": 0.2727272727272727,
+      "errors": 3,
+      "words": 11
+    },
+    {
+      "ref": "he shot a career low",
+      "hyp": "right out a few miles",
+      "wer": 0.8,
+      "errors": 4,
+      "words": 5
+    },
+    {
+      "ref": "here are the choicest excerpts from the draft",
+      "hyp": "he was the head of the police from the last five years",
+      "wer": 1.125,
+      "errors": 9,
+      "words": 8
+    },
+    {
+      "ref": "i have to think about it some more now",
+      "hyp": "i have to think about it more now",
+      "wer": 0.1111111111111111,
+      "errors": 1,
+      "words": 9
+    },
+    {
+      "ref": "i was really kind of excited to start reading",
+      "hyp": "if we really want ice to be cold",
+      "wer": 0.7777777777777778,
+      "errors": 7,
+      "words": 9
+    },
+    {
+      "ref": "what are you saying",
+      "hyp": "what are you doing",
+      "wer": 0.25,
+      "errors": 1,
+      "words": 4
+    },
+    {
+      "ref": "that's very interesting",
+      "hyp": "The weather warmed up soon after",
+      "wer": 2.0,
+      "errors": 6,
+      "words": 3
+    },
+    {
+      "ref": "i enjoyed it very much",
+      "hyp": "she decided it was time",
+      "wer": 0.8,
+      "errors": 4,
+      "words": 5
+    },
+    {
+      "ref": "he had occasionally sent her mother money",
+      "hyp": "he had actually got to move again",
+      "wer": 0.7142857142857143,
+      "errors": 5,
+      "words": 7
+    },
+    {
+      "ref": "an earlier version of this article",
+      "hyp": "and only variables of this type",
+      "wer": 0.6666666666666666,
+      "errors": 4,
+      "words": 6
+    },
+    {
+      "ref": "you might even be able to get a job there",
+      "hyp": "what about if my husband does a job there",
+      "wer": 0.7,
+      "errors": 7,
+      "words": 10
+    },
+    {
+      "ref": "enjoyable to use",
+      "hyp": "enjoy the use of this",
+      "wer": 1.3333333333333333,
+      "errors": 4,
+      "words": 3
+    },
+    {
+      "ref": "we came to a fork in the road at night",
+      "hyp": "with time you'll start looking in the right place",
+      "wer": 0.8,
+      "errors": 8,
+      "words": 10
+    },
+    {
+      "ref": "he really likes it and i don't",
+      "hyp": "he really like that and all",
+      "wer": 0.5714285714285714,
+      "errors": 4,
+      "words": 7
+    },
+    {
+      "ref": "it's nice and small",
+      "hyp": "it's nice seeing you too",
+      "wer": 0.75,
+      "errors": 3,
+      "words": 4
+    },
+    {
+      "ref": "i think there is confusion",
+      "hyp": "i think there is confusion",
+      "wer": 0.0,
+      "errors": 0,
+      "words": 5
+    },
+    {
+      "ref": "just go someplace for the day",
+      "hyp": "can't get past the way this is",
+      "wer": 1.1666666666666667,
+      "errors": 7,
+      "words": 6
+    },
+    {
+      "ref": "but they're going to learn it sometime",
+      "hyp": "but they're going to live it himself",
+      "wer": 0.2857142857142857,
+      "errors": 2,
+      "words": 7
+    },
+    {
+      "ref": "it was the big one",
+      "hyp": "it was the big one",
+      "wer": 0.0,
+      "errors": 0,
+      "words": 5
+    },
+    {
+      "ref": "it's kind of a depressing topic",
+      "hyp": "it's kind of a suspense film",
+      "wer": 0.3333333333333333,
+      "errors": 2,
+      "words": 6
+    },
+    {
+      "ref": "every six months i have to pay my taxes",
+      "hyp": "'vev'ed skin and blood to have my daughter",
+      "wer": 0.7777777777777778,
+      "errors": 7,
+      "words": 9
+    },
+    {
+      "ref": "i've never been sailing",
+      "hyp": "i've never been tilman",
+      "wer": 0.25,
+      "errors": 1,
+      "words": 4
+    },
+    {
+      "ref": "i have six years of college",
+      "hyp": "i have three years of college",
+      "wer": 0.16666666666666666,
+      "errors": 1,
+      "words": 6
+    },
+    {
+      "ref": "and then the next one down is in the marines",
+      "hyp": "and then the next one does it in the evening",
+      "wer": 0.3,
+      "errors": 3,
+      "words": 10
+    },
+    {
+      "ref": "enjoy the adventure",
+      "hyp": "and so the avatar changes",
+      "wer": 1.3333333333333333,
+      "errors": 4,
+      "words": 3
+    },
+    {
+      "ref": "not lately though",
+      "hyp": "not three years ago",
+      "wer": 1.0,
+      "errors": 3,
+      "words": 3
+    },
+    {
+      "ref": "too many serious problems for the longer term",
+      "hyp": "who may seize control for the long term",
+      "wer": 0.625,
+      "errors": 5,
+      "words": 8
+    },
+    {
+      "ref": "are there any other genres or sounds you're interested in exploring",
+      "hyp": "with the annual charitable donations her family receives",
+      "wer": 1.0,
+      "errors": 11,
+      "words": 11
+    },
+    {
+      "ref": "yes i consider myself what they call a full timer",
+      "hyp": "this can cause me to go there and fall",
+      "wer": 1.0,
+      "errors": 10,
+      "words": 10
+    },
+    {
+      "ref": "more family oriented",
+      "hyp": "my family went",
+      "wer": 0.6666666666666666,
+      "errors": 2,
+      "words": 3
+    },
+    {
+      "ref": "do you know that i've never seen a monkey",
+      "hyp": "you you know that i've never seen a bag",
+      "wer": 0.2222222222222222,
+      "errors": 2,
+      "words": 9
+    },
+    {
+      "ref": "i knew both people",
+      "hyp": "as near both places",
+      "wer": 0.75,
+      "errors": 3,
+      "words": 4
+    },
+    {
+      "ref": "he recommends the honda to a lot of people",
+      "hyp": "he returned the honours to a lot of them",
+      "wer": 0.3333333333333333,
+      "errors": 3,
+      "words": 9
+    },
+    {
+      "ref": "do you have a computer for yourself at home",
+      "hyp": "you have a problem for me to solve",
+      "wer": 0.5555555555555556,
+      "errors": 5,
+      "words": 9
+    },
+    {
+      "ref": "it's the original",
+      "hyp": "at the level",
+      "wer": 0.6666666666666666,
+      "errors": 2,
+      "words": 3
+    },
+    {
+      "ref": "you can't blame them",
+      "hyp": "you can't blame them",
+      "wer": 0.0,
+      "errors": 0,
+      "words": 4
+    },
+    {
+      "ref": "more choice more cccountability",
+      "hyp": "most stay put until age 25",
+      "wer": 1.5,
+      "errors": 6,
+      "words": 4
+    },
+    {
+      "ref": "i guess traffic could be an annoyance",
+      "hyp": "i guess i could put me an ounce",
+      "wer": 0.5714285714285714,
+      "errors": 4,
+      "words": 7
+    },
+    {
+      "ref": "we've gone for romanian food and lebanese food",
+      "hyp": "i've done for seventeen years and still a little bit",
+      "wer": 1.0,
+      "errors": 8,
+      "words": 8
+    },
+    {
+      "ref": "i hate to dust and clean",
+      "hyp": "i sat to dive and dive",
+      "wer": 0.5,
+      "errors": 3,
+      "words": 6
+    },
+    {
+      "ref": "football is an exciting sport",
+      "hyp": "putting us in an edge case",
+      "wer": 1.0,
+      "errors": 5,
+      "words": 5
+    },
+    {
+      "ref": "i'm glad it's done",
+      "hyp": "i'm glad it's on",
+      "wer": 0.25,
+      "errors": 1,
+      "words": 4
+    },
+    {
+      "ref": "i don't know the details",
+      "hyp": "i don't know the details",
+      "wer": 0.0,
+      "errors": 0,
+      "words": 5
+    },
+    {
+      "ref": "can you speak more about this system of treasury decentralization",
+      "hyp": "use bike for the first time ever!",
+      "wer": 1.0,
+      "errors": 10,
+      "words": 10
+    },
+    {
+      "ref": "too many horror stories out there",
+      "hyp": "who may be scared out of their lives",
+      "wer": 1.1666666666666667,
+      "errors": 7,
+      "words": 6
+    },
+    {
+      "ref": "every major city has a theater",
+      "hyp": "if you buy this as a luxury",
+      "wer": 1.0,
+      "errors": 6,
+      "words": 6
+    },
+    {
+      "ref": "go to the zoo and see elephants and tigers and things like that",
+      "hyp": "but to those and others and to all and anything",
+      "wer": 0.7692307692307693,
+      "errors": 10,
+      "words": 13
+    },
+    {
+      "ref": "it'd be kind of fun",
+      "hyp": "it's my kind of fun",
+      "wer": 0.4,
+      "errors": 2,
+      "words": 5
+    },
+    {
+      "ref": "that appeared to be eight or nine years old",
+      "hyp": "that's about to be hit with one of those gun shots",
+      "wer": 1.0,
+      "errors": 9,
+      "words": 9
+    },
+    {
+      "ref": "i'm kind of out of it right now",
+      "hyp": "i'm kind of out of it right now",
+      "wer": 0.0,
+      "errors": 0,
+      "words": 8
+    },
+    {
+      "ref": "i do not read everything in the paper",
+      "hyp": "i don't know what's going on in the past",
+      "wer": 0.75,
+      "errors": 6,
+      "words": 8
+    },
+    {
+      "ref": "my brother can do it",
+      "hyp": "with both kids gone",
+      "wer": 1.0,
+      "errors": 5,
+      "words": 5
+    },
+    {
+      "ref": "not everybody shows up",
+      "hyp": "notebook software",
+      "wer": 1.0,
+      "errors": 4,
+      "words": 4
+    },
+    {
+      "ref": "friday afternoon at five thirty",
+      "hyp": "venry institution at will",
+      "wer": 0.8,
+      "errors": 4,
+      "words": 5
+    },
+    {
+      "ref": "lawmakers passed a measure last year",
+      "hyp": "alpha means just a measure here",
+      "wer": 0.8333333333333334,
+      "errors": 5,
+      "words": 6
+    },
+    {
+      "ref": "i mean a large flat plate",
+      "hyp": "i mean i like patchpartics",
+      "wer": 0.6666666666666666,
+      "errors": 4,
+      "words": 6
+    },
+    {
+      "ref": "i'd like to see it be more of an amateur sport",
+      "hyp": "and I'll say it for me: it's my own fault",
+      "wer": 0.9090909090909091,
+      "errors": 10,
+      "words": 11
+    },
+    {
+      "ref": "all of our tin cans",
+      "hyp": "all of our kids can",
+      "wer": 0.4,
+      "errors": 2,
+      "words": 5
+    },
+    {
+      "ref": "praying more often than usual",
+      "hyp": "find more information on this",
+      "wer": 0.8,
+      "errors": 4,
+      "words": 5
+    },
+    {
+      "ref": "capital punishment",
+      "hyp": "about the price",
+      "wer": 1.5,
+      "errors": 3,
+      "words": 2
+    },
+    {
+      "ref": "everyone knows they're going to get it",
+      "hyp": "everybody knows that they're going to get it",
+      "wer": 0.2857142857142857,
+      "errors": 2,
+      "words": 7
+    },
+    {
+      "ref": "my in laws listen to the kind of music i hate",
+      "hyp": "my own life is this kind of life i mean",
+      "wer": 0.6363636363636364,
+      "errors": 7,
+      "words": 11
+    },
+    {
+      "ref": "download on your computer or television",
+      "hyp": "understood on your computer",
+      "wer": 0.5,
+      "errors": 3,
+      "words": 6
+    },
+    {
+      "ref": "and we play out here in the summertime",
+      "hyp": "and we we play out in the stadium",
+      "wer": 0.375,
+      "errors": 3,
+      "words": 8
+    },
+    {
+      "ref": "it never did run right again",
+      "hyp": "it never occurred to me that",
+      "wer": 0.6666666666666666,
+      "errors": 4,
+      "words": 6
+    },
+    {
+      "ref": "you are frequently exploited",
+      "hyp": "our are clearly expeded",
+      "wer": 0.75,
+      "errors": 3,
+      "words": 4
+    },
+    {
+      "ref": "especially the ones that came out and said their piece",
+      "hyp": "his personally the one that came out and said the truth",
+      "wer": 0.5,
+      "errors": 5,
+      "words": 10
+    },
+    {
+      "ref": "pay and exhaustion and you know",
+      "hyp": "be any excuses do you know",
+      "wer": 0.6666666666666666,
+      "errors": 4,
+      "words": 6
+    },
+    {
+      "ref": "where another one won't",
+      "hyp": "willingly on one's own",
+      "wer": 1.0,
+      "errors": 4,
+      "words": 4
+    },
+    {
+      "ref": "former employers",
+      "hyp": "minor changes",
+      "wer": 1.0,
+      "errors": 2,
+      "words": 2
+    },
+    {
+      "ref": "it looks like they've got a weapon",
+      "hyp": "it looks like they've got a roomie",
+      "wer": 0.14285714285714285,
+      "errors": 1,
+      "words": 7
+    },
+    {
+      "ref": "but you don't know that",
+      "hyp": "but you don't know that",
+      "wer": 0.0,
+      "errors": 0,
+      "words": 5
+    },
+    {
+      "ref": "i noticed something interesting last time",
+      "hyp": "i also hope you enjoy this time",
+      "wer": 0.8333333333333334,
+      "errors": 5,
+      "words": 6
+    },
+    {
+      "ref": "they wouldn't have to",
+      "hyp": "that's what i have",
+      "wer": 1.0,
+      "errors": 4,
+      "words": 4
+    },
+    {
+      "ref": "do you go like home cooking",
+      "hyp": "do you just like home cooking",
+      "wer": 0.16666666666666666,
+      "errors": 1,
+      "words": 6
+    },
+    {
+      "ref": "so it seems to be",
+      "hyp": "so it seems to be",
+      "wer": 0.0,
+      "errors": 0,
+      "words": 5
+    },
+    {
+      "ref": "the decision to censor the articles",
+      "hyp": "the decision to strike the athlete",
+      "wer": 0.3333333333333333,
+      "errors": 2,
+      "words": 6
+    },
+    {
+      "ref": "special rules for employment cases",
+      "hyp": "because we were about thirty years",
+      "wer": 1.2,
+      "errors": 6,
+      "words": 5
+    },
+    {
+      "ref": "it would just depend",
+      "hyp": "it would just destroy them",
+      "wer": 0.5,
+      "errors": 2,
+      "words": 4
+    },
+    {
+      "ref": "i like ice skating",
+      "hyp": "i like those",
+      "wer": 0.5,
+      "errors": 2,
+      "words": 4
+    },
+    {
+      "ref": "they've got the full weight room",
+      "hyp": "yes but the final word is in",
+      "wer": 1.0,
+      "errors": 6,
+      "words": 6
+    },
+    {
+      "ref": "you had to have a supply",
+      "hyp": "you said to have a pleasure",
+      "wer": 0.3333333333333333,
+      "errors": 2,
+      "words": 6
+    },
+    {
+      "ref": "that's neat that you like cross stitching also",
+      "hyp": "that's not that we like green",
+      "wer": 0.625,
+      "errors": 5,
+      "words": 8
+    },
+    {
+      "ref": "the measure now heads to goverment",
+      "hyp": "the money i took to the honeymoon",
+      "wer": 0.8333333333333334,
+      "errors": 5,
+      "words": 6
+    },
+    {
+      "ref": "my three year old",
+      "hyp": "my three years",
+      "wer": 0.5,
+      "errors": 2,
+      "words": 4
+    },
+    {
+      "ref": "just not feasible you know",
+      "hyp": "just not feel so new",
+      "wer": 0.6,
+      "errors": 3,
+      "words": 5
+    },
+    {
+      "ref": "i can't really think of anything else offhand",
+      "hyp": "i can't really think of any other ones",
+      "wer": 0.375,
+      "errors": 3,
+      "words": 8
+    },
+    {
+      "ref": "i'm not sure how to go about it",
+      "hyp": "i'm not sure how long this is",
+      "wer": 0.5,
+      "errors": 4,
+      "words": 8
+    },
+    {
+      "ref": "it's very tedious if you don't have a whole group",
+      "hyp": "it's very interesting if you do have a full fuel pump",
+      "wer": 0.5,
+      "errors": 5,
+      "words": 10
+    },
+    {
+      "ref": "it was a cordless phone",
+      "hyp": "it was a gorgeous room",
+      "wer": 0.4,
+      "errors": 2,
+      "words": 5
+    },
+    {
+      "ref": "but it's kind of hard",
+      "hyp": "but it's kind of hard",
+      "wer": 0.0,
+      "errors": 0,
+      "words": 5
+    },
+    {
+      "ref": "you can do so much with them",
+      "hyp": "you can do so much with them",
+      "wer": 0.0,
+      "errors": 0,
+      "words": 7
+    },
+    {
+      "ref": "my skill set got diminished by the steroid",
+      "hyp": "my little girl got about twenty bucks",
+      "wer": 0.75,
+      "errors": 6,
+      "words": 8
+    },
+    {
+      "ref": "it was like four hundred times as much",
+      "hyp": "it was like two hours away from me",
+      "wer": 0.625,
+      "errors": 5,
+      "words": 8
+    },
+    {
+      "ref": "it's beautifully done",
+      "hyp": "it's really fun",
+      "wer": 0.6666666666666666,
+      "errors": 2,
+      "words": 3
+    },
+    {
+      "ref": "i would feel that i had the right to",
+      "hyp": "i would feel that i had the right choice",
+      "wer": 0.1111111111111111,
+      "errors": 1,
+      "words": 9
+    },
+    {
+      "ref": "you just call him direct",
+      "hyp": "you just call him right",
+      "wer": 0.2,
+      "errors": 1,
+      "words": 5
+    },
+    {
+      "ref": "i know there is",
+      "hyp": "i know the last one",
+      "wer": 0.75,
+      "errors": 3,
+      "words": 4
+    },
+    {
+      "ref": "it really hurts me",
+      "hyp": "it really sounds better",
+      "wer": 0.5,
+      "errors": 2,
+      "words": 4
+    },
+    {
+      "ref": "the experience",
+      "hyp": "the expertise",
+      "wer": 0.5,
+      "errors": 1,
+      "words": 2
+    },
+    {
+      "ref": "do we have to wait until all the land fills",
+      "hyp": "do you have to paint all the ones you own",
+      "wer": 0.6,
+      "errors": 6,
+      "words": 10
+    },
+    {
+      "ref": "really scary to me",
+      "hyp": "the school's moved",
+      "wer": 1.0,
+      "errors": 4,
+      "words": 4
+    },
+    {
+      "ref": "i think it is getting worse",
+      "hyp": "i think it is going to go",
+      "wer": 0.5,
+      "errors": 3,
+      "words": 6
+    },
+    {
+      "ref": "i really would like to see them do well",
+      "hyp": "i am running like a sieve to them",
+      "wer": 0.7777777777777778,
+      "errors": 7,
+      "words": 9
+    },
+    {
+      "ref": "i don't live in a house",
+      "hyp": "i don't live in a house",
+      "wer": 0.0,
+      "errors": 0,
+      "words": 6
+    },
+    {
+      "ref": "people put them in",
+      "hyp": "people put them in",
+      "wer": 0.0,
+      "errors": 0,
+      "words": 4
+    },
+    {
+      "ref": "it can swim away fast enough and go hide",
+      "hyp": "it can seem far away and you are not",
+      "wer": 0.7777777777777778,
+      "errors": 7,
+      "words": 9
+    },
+    {
+      "ref": "for about two hundred dollars",
+      "hyp": "for about two hundred dollars",
+      "wer": 0.0,
+      "errors": 0,
+      "words": 5
+    },
+    {
+      "ref": "in that time frame",
+      "hyp": "in that situation",
+      "wer": 0.5,
+      "errors": 2,
+      "words": 4
+    },
+    {
+      "ref": "trying to make it through that",
+      "hyp": "trying to make it two stars",
+      "wer": 0.3333333333333333,
+      "errors": 2,
+      "words": 6
+    },
+    {
+      "ref": "anything like that we participated",
+      "hyp": "i think that was our favorite",
+      "wer": 1.0,
+      "errors": 5,
+      "words": 5
+    },
+    {
+      "ref": "seven years in the pros",
+      "hyp": "revving engines in the shade",
+      "wer": 0.6,
+      "errors": 3,
+      "words": 5
+    },
+    {
+      "ref": "twenty years or so",
+      "hyp": "recently left her",
+      "wer": 1.0,
+      "errors": 4,
+      "words": 4
+    },
+    {
+      "ref": "i think it does help",
+      "hyp": "i think it does help",
+      "wer": 0.0,
+      "errors": 0,
+      "words": 5
+    },
+    {
+      "ref": "that has got to be blooming this time of year",
+      "hyp": "that has got to be pretty important this time of year",
+      "wer": 0.2,
+      "errors": 2,
+      "words": 10
+    },
+    {
+      "ref": "even these buses",
+      "hyp": "enjoy their pleasures",
+      "wer": 1.0,
+      "errors": 3,
+      "words": 3
+    },
+    {
+      "ref": "take your sick leave",
+      "hyp": "that you see left",
+      "wer": 1.0,
+      "errors": 4,
+      "words": 4
+    },
+    {
+      "ref": "it's been kind of scary",
+      "hyp": "it's been kind of a joke",
+      "wer": 0.4,
+      "errors": 2,
+      "words": 5
+    },
+    {
+      "ref": "the leaves are just dead",
+      "hyp": "the life of a nest egg",
+      "wer": 1.0,
+      "errors": 5,
+      "words": 5
+    },
+    {
+      "ref": "we try to go so often",
+      "hyp": "we try to go so far as we can",
+      "wer": 0.6666666666666666,
+      "errors": 4,
+      "words": 6
+    },
+    {
+      "ref": "it took four days",
+      "hyp": "it's like building a house",
+      "wer": 1.25,
+      "errors": 5,
+      "words": 4
+    },
+    {
+      "ref": "the pros and cons of both",
+      "hyp": "the power and the code of law",
+      "wer": 0.6666666666666666,
+      "errors": 4,
+      "words": 6
+    },
+    {
+      "ref": "were thoroughbreds",
+      "hyp": "we're so ready",
+      "wer": 1.5,
+      "errors": 3,
+      "words": 2
+    },
+    {
+      "ref": "you get programming",
+      "hyp": "you get embarrassed",
+      "wer": 0.3333333333333333,
+      "errors": 1,
+      "words": 3
+    },
+    {
+      "ref": "not that i like reading",
+      "hyp": "not that i've heard",
+      "wer": 0.6,
+      "errors": 3,
+      "words": 5
+    },
+    {
+      "ref": "i think a cup or two",
+      "hyp": "i think i'll grab her too",
+      "wer": 0.6666666666666666,
+      "errors": 4,
+      "words": 6
+    },
+    {
+      "ref": "i don't mean to be knocking",
+      "hyp": "i don't know to be looking looking",
+      "wer": 0.5,
+      "errors": 3,
+      "words": 6
+    },
+    {
+      "ref": "i'd like to see those",
+      "hyp": "i'd like to see those",
+      "wer": 0.0,
+      "errors": 0,
+      "words": 5
+    },
+    {
+      "ref": "a controlled substance",
+      "hyp": "a colored pavement",
+      "wer": 0.6666666666666666,
+      "errors": 2,
+      "words": 3
+    },
+    {
+      "ref": "we're real close",
+      "hyp": "\u0421\u0442\u0430\u043b\u043b-\u0441\u0442\u0443\u0434\u0435\u043d\u0442-\u0441\u0442\u0443\u0434\u0435\u043d\u0442-\u0441\u0442\u0443\u0434\u0435\u043d\u0442-\u0441\u0442\u0443\u0434\u0435\u043d\u0442-\u0441\u0442\u0443\u0434\u0435\u043d\u0442-\u0441\u0442\u0443\u0434\u0435\u043d\u0442-\u0441\u0442\u0443\u0434\u0435\u043d\u0442-\u0441\u0442\u0443\u0434\u0435\u043d\u0442-\u0441\u0442\u0443\u0434\u0435\u043d\u0442-\u0441\u0442\u0443\u0434\u0435\u043d\u0442-\u0441\u0442\u0443\u0434\u0435\u043d\u0442-\u0441\u0442\u0443\u0434\u0435\u043d\u0442-\u0441\u0442\u0443\u0434\u0435\u043d\u0442-\u0441\u0442\u0443\u0434\u0435\u043d\u0442-\u0441\u0442\u0443\u0434ent-st",
+      "wer": 1.0,
+      "errors": 3,
+      "words": 3
+    },
+    {
+      "ref": "i guess he's trained in this",
+      "hyp": "i guess you're right on this one",
+      "wer": 0.6666666666666666,
+      "errors": 4,
+      "words": 6
+    },
+    {
+      "ref": "it might be kind of scary",
+      "hyp": "it might be kind of rare",
+      "wer": 0.16666666666666666,
+      "errors": 1,
+      "words": 6
+    },
+    {
+      "ref": "perhaps not in the manner that we do it",
+      "hyp": "What's been in the matter since we left it",
+      "wer": 0.5555555555555556,
+      "errors": 5,
+      "words": 9
+    },
+    {
+      "ref": "do you have friends with older children",
+      "hyp": "do you have pets or old cars",
+      "wer": 0.5714285714285714,
+      "errors": 4,
+      "words": 7
+    },
+    {
+      "ref": "one had more blue to it",
+      "hyp": "when i'm more busy he does it",
+      "wer": 0.8333333333333334,
+      "errors": 5,
+      "words": 6
+    },
+    {
+      "ref": "i just file federal income tax every year",
+      "hyp": "i just flow into real fun like that",
+      "wer": 0.75,
+      "errors": 6,
+      "words": 8
+    },
+    {
+      "ref": "i grew up on a farm",
+      "hyp": "i guess i've been a fan",
+      "wer": 0.6666666666666666,
+      "errors": 4,
+      "words": 6
+    },
+    {
+      "ref": "that was the one that's been really nice to have",
+      "hyp": "that was the one that's been really nice to us",
+      "wer": 0.1,
+      "errors": 1,
+      "words": 10
+    },
+    {
+      "ref": "they've done it before",
+      "hyp": "i've done it before",
+      "wer": 0.25,
+      "errors": 1,
+      "words": 4
+    },
+    {
+      "ref": "the engine was pretty good",
+      "hyp": "he seemed a pretty good kid",
+      "wer": 0.8,
+      "errors": 4,
+      "words": 5
+    },
+    {
+      "ref": "how different the people there really are",
+      "hyp": "howsoever the people are really",
+      "wer": 0.5714285714285714,
+      "errors": 4,
+      "words": 7
+    },
+    {
+      "ref": "we get out on the water occasionally",
+      "hyp": "we get out on the water occasionally",
+      "wer": 0.0,
+      "errors": 0,
+      "words": 7
+    },
+    {
+      "ref": "maybe once every quarter or so",
+      "hyp": "everybody runs every day or every two",
+      "wer": 0.8333333333333334,
+      "errors": 5,
+      "words": 6
+    },
+    {
+      "ref": "since brian was born",
+      "hyp": "that's been real fun",
+      "wer": 1.0,
+      "errors": 4,
+      "words": 4
+    },
+    {
+      "ref": "i make that once in a while",
+      "hyp": "i'm making that one in a while",
+      "wer": 0.42857142857142855,
+      "errors": 3,
+      "words": 7
+    },
+    {
+      "ref": "how to do things",
+      "hyp": "who do you know",
+      "wer": 1.0,
+      "errors": 4,
+      "words": 4
+    },
+    {
+      "ref": "i typically am not a cat person",
+      "hyp": "i think i'm not even a great writer",
+      "wer": 0.7142857142857143,
+      "errors": 5,
+      "words": 7
+    },
+    {
+      "ref": "the junk mail that you get",
+      "hyp": "the next time that you get",
+      "wer": 0.3333333333333333,
+      "errors": 2,
+      "words": 6
+    },
+    {
+      "ref": "they put him in the nurse's office",
+      "hyp": "they've put him in the diana office",
+      "wer": 0.2857142857142857,
+      "errors": 2,
+      "words": 7
+    },
+    {
+      "ref": "since this time last year i've changed",
+      "hyp": "since they're some of the highest",
+      "wer": 0.8571428571428571,
+      "errors": 6,
+      "words": 7
+    },
+    {
+      "ref": "they didn't fight together",
+      "hyp": "they didn't stop yet",
+      "wer": 0.5,
+      "errors": 2,
+      "words": 4
+    },
+    {
+      "ref": "he seemed to know what he was doing",
+      "hyp": "i seem to know what it was",
+      "wer": 0.5,
+      "errors": 4,
+      "words": 8
+    },
+    {
+      "ref": "they just live in the community",
+      "hyp": "they just livelies in the cabin",
+      "wer": 0.3333333333333333,
+      "errors": 2,
+      "words": 6
+    },
+    {
+      "ref": "it had to be november anyway",
+      "hyp": "it had to be beamed somewhere anyway",
+      "wer": 0.3333333333333333,
+      "errors": 2,
+      "words": 6
+    },
+    {
+      "ref": "if you do decide to go with child care",
+      "hyp": "if you do not know to go with the correct one",
+      "wer": 0.5555555555555556,
+      "errors": 5,
+      "words": 9
+    },
+    {
+      "ref": "does insurance pay for the body damage",
+      "hyp": "the intent pad for the power button",
+      "wer": 0.7142857142857143,
+      "errors": 5,
+      "words": 7
+    },
+    {
+      "ref": "one is eight and one is eleven",
+      "hyp": "one he talks and one he does",
+      "wer": 0.5714285714285714,
+      "errors": 4,
+      "words": 7
+    },
+    {
+      "ref": "i was drug tested",
+      "hyp": "i was great kids",
+      "wer": 0.5,
+      "errors": 2,
+      "words": 4
+    },
+    {
+      "ref": "newer neighborhoods and development communities",
+      "hyp": "no immediate costs and developments",
+      "wer": 1.0,
+      "errors": 5,
+      "words": 5
+    },
+    {
+      "ref": "they are going to get a gun no matter what",
+      "hyp": "they are going to get a good monograph about it",
+      "wer": 0.4,
+      "errors": 4,
+      "words": 10
+    },
+    {
+      "ref": "when i was in high school we had a choice",
+      "hyp": "when i was in a medical field we had a jury system",
+      "wer": 0.5,
+      "errors": 5,
+      "words": 10
+    },
+    {
+      "ref": "never painted the outside",
+      "hyp": "even funning the effort",
+      "wer": 0.75,
+      "errors": 3,
+      "words": 4
+    },
+    {
+      "ref": "that's how we got started",
+      "hyp": "that's where we got started",
+      "wer": 0.2,
+      "errors": 1,
+      "words": 5
+    },
+    {
+      "ref": "a nicer desk than i could afford",
+      "hyp": "a nice exercise then i could move around",
+      "wer": 0.7142857142857143,
+      "errors": 5,
+      "words": 7
+    },
+    {
+      "ref": "it's really beautiful",
+      "hyp": "it's really pretty",
+      "wer": 0.3333333333333333,
+      "errors": 1,
+      "words": 3
+    },
+    {
+      "ref": "most people aren't",
+      "hyp": "my dep deposit",
+      "wer": 1.0,
+      "errors": 3,
+      "words": 3
+    },
+    {
+      "ref": "i think what they will do is start paying mexico",
+      "hyp": "i think what they were doing is just bad",
+      "wer": 0.5,
+      "errors": 5,
+      "words": 10
+    },
+    {
+      "ref": "i haven't experienced it",
+      "hyp": "i haven't experienced it yet",
+      "wer": 0.25,
+      "errors": 1,
+      "words": 4
+    },
+    {
+      "ref": "you have to have a pretty good frame",
+      "hyp": "you have to have a record a record",
+      "wer": 0.375,
+      "errors": 3,
+      "words": 8
+    },
+    {
+      "ref": "those small little trucks and cars like that",
+      "hyp": "there's no little voice and no cursing like that",
+      "wer": 0.625,
+      "errors": 5,
+      "words": 8
+    },
+    {
+      "ref": "they don't have the ability to develop it",
+      "hyp": "they don't have the ability to develop it",
+      "wer": 0.0,
+      "errors": 0,
+      "words": 8
+    },
+    {
+      "ref": "you got to have a one tenth indicator",
+      "hyp": "you got to have a one dollar coin",
+      "wer": 0.25,
+      "errors": 2,
+      "words": 8
+    },
+    {
+      "ref": "there's so much going on here",
+      "hyp": "they're too much gone on here",
+      "wer": 0.5,
+      "errors": 3,
+      "words": 6
+    },
+    {
+      "ref": "the victims' families and things",
+      "hyp": "the budgeting system and things",
+      "wer": 0.4,
+      "errors": 2,
+      "words": 5
+    },
+    {
+      "ref": "being one of these late in life mothers",
+      "hyp": "meaning one of these three things in life",
+      "wer": 0.5,
+      "errors": 4,
+      "words": 8
+    },
+    {
+      "ref": "the drug dealers",
+      "hyp": "the drug cartel",
+      "wer": 0.3333333333333333,
+      "errors": 1,
+      "words": 3
+    },
+    {
+      "ref": "my wife's mother is the only grandparent left",
+      "hyp": "how much money is the bank paying us",
+      "wer": 0.75,
+      "errors": 6,
+      "words": 8
+    },
+    {
+      "ref": "they're grown now",
+      "hyp": "that's good now",
+      "wer": 0.6666666666666666,
+      "errors": 2,
+      "words": 3
+    },
+    {
+      "ref": "i have never skied before",
+      "hyp": "i have never heard about that",
+      "wer": 0.6,
+      "errors": 3,
+      "words": 5
+    },
+    {
+      "ref": "i don't know what we're going to do",
+      "hyp": "i don't know what we're going to do",
+      "wer": 0.0,
+      "errors": 0,
+      "words": 8
+    },
+    {
+      "ref": "it's second nature",
+      "hyp": "'s like twenty minutes",
+      "wer": 1.3333333333333333,
+      "errors": 4,
+      "words": 3
+    },
+    {
+      "ref": "find out where the languages are",
+      "hyp": "Finding out what the tickets are for",
+      "wer": 0.6666666666666666,
+      "errors": 4,
+      "words": 6
+    },
+    {
+      "ref": "we don't get to see too many",
+      "hyp": "we don't get to see too many",
+      "wer": 0.0,
+      "errors": 0,
+      "words": 7
+    },
+    {
+      "ref": "it's like a bullet going by",
+      "hyp": "each week a new one comes out",
+      "wer": 1.0,
+      "errors": 6,
+      "words": 6
+    },
+    {
+      "ref": "i mean lunch today was eighteen dollars",
+      "hyp": "i may not like curries but i will try garlic",
+      "wer": 1.2857142857142858,
+      "errors": 9,
+      "words": 7
+    },
+    {
+      "ref": "it's really unfortunate",
+      "hyp": "it's really impressive",
+      "wer": 0.3333333333333333,
+      "errors": 1,
+      "words": 3
+    },
+    {
+      "ref": "the next morning you want to take them out",
+      "hyp": "i just wanted you to know to send them out",
+      "wer": 0.6666666666666666,
+      "errors": 6,
+      "words": 9
+    },
+    {
+      "ref": "if the news we're getting is any good",
+      "hyp": "if the news was bad he'd die",
+      "wer": 0.625,
+      "errors": 5,
+      "words": 8
+    },
+    {
+      "ref": "if something goes wrong",
+      "hyp": "if something is wrong",
+      "wer": 0.25,
+      "errors": 1,
+      "words": 4
+    },
+    {
+      "ref": "i haven't seen any",
+      "hyp": "i haven't seen any",
+      "wer": 0.0,
+      "errors": 0,
+      "words": 4
+    },
+    {
+      "ref": "used to chase each other all through the house",
+      "hyp": "what to do each day all over the house",
+      "wer": 0.4444444444444444,
+      "errors": 4,
+      "words": 9
+    },
+    {
+      "ref": "you don't worry about them too much",
+      "hyp": "you don't usually buy them to watch",
+      "wer": 0.5714285714285714,
+      "errors": 4,
+      "words": 7
+    },
+    {
+      "ref": "that kind of gas mileage",
+      "hyp": "that kind of tax policy",
+      "wer": 0.4,
+      "errors": 2,
+      "words": 5
+    },
+    {
+      "ref": "it really doesn't make any difference",
+      "hyp": "it really doesn't make any difference",
+      "wer": 0.0,
+      "errors": 0,
+      "words": 6
+    },
+    {
+      "ref": "i was born in texas and i visited other areas",
+      "hyp": "i was running in texas and i found out",
+      "wer": 0.4,
+      "errors": 4,
+      "words": 10
+    },
+    {
+      "ref": "i guess because i work quite a bit with lawyers",
+      "hyp": "i guess because i work for a pet store",
+      "wer": 0.4,
+      "errors": 4,
+      "words": 10
+    },
+    {
+      "ref": "i guess i haven't had that much experience",
+      "hyp": "i guess i haven't had that much experience",
+      "wer": 0.0,
+      "errors": 0,
+      "words": 8
+    },
+    {
+      "ref": "reports and papers and that sort of thing",
+      "hyp": "right spot and stuff and that's kind of thing",
+      "wer": 0.625,
+      "errors": 5,
+      "words": 8
+    },
+    {
+      "ref": "spending money that does not belong to them",
+      "hyp": "Can you describe that new version to them",
+      "wer": 0.75,
+      "errors": 6,
+      "words": 8
+    },
+    {
+      "ref": "does it have to be a special color",
+      "hyp": "is it have to be a federal government",
+      "wer": 0.375,
+      "errors": 3,
+      "words": 8
+    },
+    {
+      "ref": "that's the freedom of choice",
+      "hyp": "that's the reason of this dispute",
+      "wer": 0.6,
+      "errors": 3,
+      "words": 5
+    },
+    {
+      "ref": "i don't know too much about it",
+      "hyp": "i don't know how to make it",
+      "wer": 0.42857142857142855,
+      "errors": 3,
+      "words": 7
+    },
+    {
+      "ref": "my son plays football",
+      "hyp": "my son's pretty talented",
+      "wer": 0.75,
+      "errors": 3,
+      "words": 4
+    },
+    {
+      "ref": "see how the family liked it",
+      "hyp": "she had the same job as it did",
+      "wer": 1.0,
+      "errors": 6,
+      "words": 6
+    },
+    {
+      "ref": "one's in college already",
+      "hyp": "run in collars",
+      "wer": 0.75,
+      "errors": 3,
+      "words": 4
+    },
+    {
+      "ref": "were his civil rights violated",
+      "hyp": "for his personal affairs",
+      "wer": 0.8,
+      "errors": 4,
+      "words": 5
+    },
+    {
+      "ref": "it looks like it would be",
+      "hyp": "it looks like it would be",
+      "wer": 0.0,
+      "errors": 0,
+      "words": 6
+    },
+    {
+      "ref": "doing laundry by hand and that kind of thing",
+      "hyp": "designers by hand made their own designs",
+      "wer": 0.7777777777777778,
+      "errors": 7,
+      "words": 9
+    },
+    {
+      "ref": "i don't want stubs in my lawn",
+      "hyp": "i don't want to stop in my town",
+      "wer": 0.42857142857142855,
+      "errors": 3,
+      "words": 7
+    },
+    {
+      "ref": "we can keep that out of our minds",
+      "hyp": "we can keep that out of our ones",
+      "wer": 0.125,
+      "errors": 1,
+      "words": 8
+    },
+    {
+      "ref": "forms for his photography business",
+      "hyp": "from where were he recruited",
+      "wer": 1.0,
+      "errors": 5,
+      "words": 5
+    },
+    {
+      "ref": "we are seeing that here as well",
+      "hyp": "but i know that he's real well",
+      "wer": 0.7142857142857143,
+      "errors": 5,
+      "words": 7
+    },
+    {
+      "ref": "that's what made me happy",
+      "hyp": "that's what I made for myself",
+      "wer": 0.6,
+      "errors": 3,
+      "words": 5
+    },
+    {
+      "ref": "it depends on the person",
+      "hyp": "it's reminiscent on the front door",
+      "wer": 0.8,
+      "errors": 4,
+      "words": 5
+    },
+    {
+      "ref": "i don't make that much",
+      "hyp": "i don't think that's that much",
+      "wer": 0.4,
+      "errors": 2,
+      "words": 5
+    },
+    {
+      "ref": "it's been a long time",
+      "hyp": "it's been a long time",
+      "wer": 0.0,
+      "errors": 0,
+      "words": 5
+    },
+    {
+      "ref": "no one can drive on ice",
+      "hyp": "with one kind of ice on",
+      "wer": 0.8333333333333334,
+      "errors": 5,
+      "words": 6
+    },
+    {
+      "ref": "maybe they based it on that mister mom movie",
+      "hyp": "everybody has a bat and a microphone",
+      "wer": 1.0,
+      "errors": 9,
+      "words": 9
+    },
+    {
+      "ref": "it seems like they would be able to",
+      "hyp": "it seems like they would be able to",
+      "wer": 0.0,
+      "errors": 0,
+      "words": 8
+    },
+    {
+      "ref": "just didn't fit the car",
+      "hyp": "just didn't wind up the way they did",
+      "wer": 1.0,
+      "errors": 5,
+      "words": 5
+    },
+    {
+      "ref": "she's one of those that loves",
+      "hyp": "she's one of those that they leave",
+      "wer": 0.3333333333333333,
+      "errors": 2,
+      "words": 6
+    },
+    {
+      "ref": "now i just have to finish it though",
+      "hyp": "who do you have to pay it for",
+      "wer": 0.625,
+      "errors": 5,
+      "words": 8
+    },
+    {
+      "ref": "mostly with adolescents",
+      "hyp": "mostly from washington",
+      "wer": 0.6666666666666666,
+      "errors": 2,
+      "words": 3
+    },
+    {
+      "ref": "i'm not a carpenter or anything like that",
+      "hyp": "i'm not a customer who's buying like that",
+      "wer": 0.375,
+      "errors": 3,
+      "words": 8
+    },
+    {
+      "ref": "i like to listen to piano music a whole lot",
+      "hyp": "i like to listen to music while working",
+      "wer": 0.4,
+      "errors": 4,
+      "words": 10
+    },
+    {
+      "ref": "two hour classes",
+      "hyp": "to how long",
+      "wer": 1.0,
+      "errors": 3,
+      "words": 3
+    },
+    {
+      "ref": "basically adults",
+      "hyp": "usually quite simple",
+      "wer": 1.5,
+      "errors": 3,
+      "words": 2
+    },
+    {
+      "ref": "so you enjoy camping",
+      "hyp": "do you enjoy camping",
+      "wer": 0.25,
+      "errors": 1,
+      "words": 4
+    },
+    {
+      "ref": "it's kind of a show piece",
+      "hyp": "it's kind of a two star",
+      "wer": 0.3333333333333333,
+      "errors": 2,
+      "words": 6
+    },
+    {
+      "ref": "ambiance down there",
+      "hyp": "public domain here",
+      "wer": 1.0,
+      "errors": 3,
+      "words": 3
+    },
+    {
+      "ref": "how do you like your tread mill",
+      "hyp": "of do you like your tea",
+      "wer": 0.42857142857142855,
+      "errors": 3,
+      "words": 7
+    },
+    {
+      "ref": "it was just too perfect at all times",
+      "hyp": "it was just too painful at all times",
+      "wer": 0.125,
+      "errors": 1,
+      "words": 8
+    },
+    {
+      "ref": "their self identity is stronger",
+      "hyp": "they're safe enough it's working out",
+      "wer": 1.2,
+      "errors": 6,
+      "words": 5
+    },
+    {
+      "ref": "it is pretty okay",
+      "hyp": "it is pretty big",
+      "wer": 0.25,
+      "errors": 1,
+      "words": 4
+    },
+    {
+      "ref": "i thought that that was what celery seed was for",
+      "hyp": "i think it is that we watch so much go",
+      "wer": 0.9,
+      "errors": 9,
+      "words": 10
+    },
+    {
+      "ref": "i couldn't get her up",
+      "hyp": "i couldn't get her to sleep",
+      "wer": 0.4,
+      "errors": 2,
+      "words": 5
+    },
+    {
+      "ref": "was it six weeks old",
+      "hyp": "with it takes week after week",
+      "wer": 1.0,
+      "errors": 5,
+      "words": 5
+    },
+    {
+      "ref": "fifteen feet wide",
+      "hyp": "if you can't wait",
+      "wer": 1.3333333333333333,
+      "errors": 4,
+      "words": 3
+    },
+    {
+      "ref": "or a bigger city",
+      "hyp": "do a major study",
+      "wer": 0.75,
+      "errors": 3,
+      "words": 4
+    },
+    {
+      "ref": "fish chunks and dip it in the fondue",
+      "hyp": "we watched and slept it in the studio",
+      "wer": 0.5,
+      "errors": 4,
+      "words": 8
+    },
+    {
+      "ref": "when you found out who it was",
+      "hyp": "when you find out who it is",
+      "wer": 0.2857142857142857,
+      "errors": 2,
+      "words": 7
+    },
+    {
+      "ref": "because they bring guns to school",
+      "hyp": "How do they make going to school",
+      "wer": 0.6666666666666666,
+      "errors": 4,
+      "words": 6
+    },
+    {
+      "ref": "they roll up",
+      "hyp": "they will up",
+      "wer": 0.3333333333333333,
+      "errors": 1,
+      "words": 3
+    },
+    {
+      "ref": "have you ever been drug tested",
+      "hyp": "have you ever been in arabic",
+      "wer": 0.3333333333333333,
+      "errors": 2,
+      "words": 6
+    },
+    {
+      "ref": "he could get hurt",
+      "hyp": "he's going out",
+      "wer": 1.0,
+      "errors": 4,
+      "words": 4
+    },
+    {
+      "ref": "i'm originally a texan",
+      "hyp": "i'm normally a television viewer",
+      "wer": 0.75,
+      "errors": 3,
+      "words": 4
+    },
+    {
+      "ref": "so you've got a lot of traffic noise real close",
+      "hyp": "you have got a lot of reference data",
+      "wer": 0.6,
+      "errors": 6,
+      "words": 10
+    },
+    {
+      "ref": "really enjoyed it quite a bit",
+      "hyp": "really interesting it seems to be",
+      "wer": 0.6666666666666666,
+      "errors": 4,
+      "words": 6
+    },
+    {
+      "ref": "i know a girl",
+      "hyp": "anyhow a duel",
+      "wer": 0.75,
+      "errors": 3,
+      "words": 4
+    },
+    {
+      "ref": "you've got to eat most of the time",
+      "hyp": "have you got to put those in the system",
+      "wer": 0.75,
+      "errors": 6,
+      "words": 8
+    },
+    {
+      "ref": "to the price of what i buy",
+      "hyp": "no the product of what i make",
+      "wer": 0.42857142857142855,
+      "errors": 3,
+      "words": 7
+    },
+    {
+      "ref": "even in my case",
+      "hyp": "even in my city",
+      "wer": 0.25,
+      "errors": 1,
+      "words": 4
+    },
+    {
+      "ref": "can do whatever they want",
+      "hyp": "can you tell me their name",
+      "wer": 1.0,
+      "errors": 5,
+      "words": 5
+    },
+    {
+      "ref": "i heard the opposite",
+      "hyp": "i found the mistake",
+      "wer": 0.5,
+      "errors": 2,
+      "words": 4
+    },
+    {
+      "ref": "we sit around and eat popcorn",
+      "hyp": "we saw someone and ate",
+      "wer": 0.6666666666666666,
+      "errors": 4,
+      "words": 6
+    },
+    {
+      "ref": "i don't have boys",
+      "hyp": "i don't have boys",
+      "wer": 0.0,
+      "errors": 0,
+      "words": 4
+    },
+    {
+      "ref": "that would have been best time to go",
+      "hyp": "that would have been me too",
+      "wer": 0.5,
+      "errors": 4,
+      "words": 8
+    },
+    {
+      "ref": "if they didn't have to",
+      "hyp": "if they didn't have to",
+      "wer": 0.0,
+      "errors": 0,
+      "words": 5
+    },
+    {
+      "ref": "that's certainly true",
+      "hyp": "that's really cool",
+      "wer": 0.6666666666666666,
+      "errors": 2,
+      "words": 3
+    },
+    {
+      "ref": "you're developing your imagination",
+      "hyp": "do you remember your drama",
+      "wer": 1.0,
+      "errors": 4,
+      "words": 4
+    },
+    {
+      "ref": "we have that here",
+      "hyp": "we never that here",
+      "wer": 0.25,
+      "errors": 1,
+      "words": 4
+    },
+    {
+      "ref": "usually busy fighting for survival",
+      "hyp": "really pretty interesting for somebody",
+      "wer": 0.8,
+      "errors": 4,
+      "words": 5
+    },
+    {
+      "ref": "i've had so many people",
+      "hyp": "if i did more people",
+      "wer": 0.8,
+      "errors": 4,
+      "words": 5
+    },
+    {
+      "ref": "i don't even get to see half my paycheck",
+      "hyp": "i don't even get to see him anymore",
+      "wer": 0.3333333333333333,
+      "errors": 3,
+      "words": 9
+    },
+    {
+      "ref": "we put some papers on the floor",
+      "hyp": "i lost some areas on the south side",
+      "wer": 0.7142857142857143,
+      "errors": 5,
+      "words": 7
+    },
+    {
+      "ref": "that's the closest thing",
+      "hyp": "that's the cost thing",
+      "wer": 0.25,
+      "errors": 1,
+      "words": 4
+    },
+    {
+      "ref": "it's kind of rainy actually",
+      "hyp": "kind of funny actually",
+      "wer": 0.4,
+      "errors": 2,
+      "words": 5
+    },
+    {
+      "ref": "it was worth the buck i guess",
+      "hyp": "it's a place where the kids get to go",
+      "wer": 1.1428571428571428,
+      "errors": 8,
+      "words": 7
+    },
+    {
+      "ref": "a pop up trailer",
+      "hyp": "of course up there",
+      "wer": 0.75,
+      "errors": 3,
+      "words": 4
+    },
+    {
+      "ref": "you're with the home office now",
+      "hyp": "you're with the same office now",
+      "wer": 0.16666666666666666,
+      "errors": 1,
+      "words": 6
+    },
+    {
+      "ref": "they seem to be economically driven also",
+      "hyp": "they seem to be extremely eccentric going all around",
+      "wer": 0.7142857142857143,
+      "errors": 5,
+      "words": 7
+    },
+    {
+      "ref": "that would be a really good thing to do",
+      "hyp": "that would be a really good thing to do",
+      "wer": 0.0,
+      "errors": 0,
+      "words": 9
+    },
+    {
+      "ref": "too much business",
+      "hyp": "which much better",
+      "wer": 0.6666666666666666,
+      "errors": 2,
+      "words": 3
+    },
+    {
+      "ref": "he's retired now",
+      "hyp": "this's pretty good now",
+      "wer": 1.0,
+      "errors": 3,
+      "words": 3
+    },
+    {
+      "ref": "i heard this on a christian program",
+      "hyp": "at least this on a creative page",
+      "wer": 0.5714285714285714,
+      "errors": 4,
+      "words": 7
+    },
+    {
+      "ref": "even though they're so close",
+      "hyp": "and then they're too small",
+      "wer": 0.8,
+      "errors": 4,
+      "words": 5
+    },
+    {
+      "ref": "earning his money",
+      "hyp": "run into a monster",
+      "wer": 1.3333333333333333,
+      "errors": 4,
+      "words": 3
+    },
+    {
+      "ref": "i had never seen anything",
+      "hyp": "i don't know if anything else",
+      "wer": 0.8,
+      "errors": 4,
+      "words": 5
+    },
+    {
+      "ref": "these rich people started",
+      "hyp": "this makes people wonder",
+      "wer": 0.75,
+      "errors": 3,
+      "words": 4
+    },
+    {
+      "ref": "used to be six bucks",
+      "hyp": "done to be taken back",
+      "wer": 0.6,
+      "errors": 3,
+      "words": 5
+    },
+    {
+      "ref": "i caught a carp",
+      "hyp": "i caught a job",
+      "wer": 0.25,
+      "errors": 1,
+      "words": 4
+    },
+    {
+      "ref": "i feel so silly",
+      "hyp": "i feel so silly",
+      "wer": 0.0,
+      "errors": 0,
+      "words": 4
+    },
+    {
+      "ref": "are they all here in the area",
+      "hyp": "are they all here in the desert",
+      "wer": 0.14285714285714285,
+      "errors": 1,
+      "words": 7
+    },
+    {
+      "ref": "i kind of look at it this way",
+      "hyp": "i kind of like it it does",
+      "wer": 0.5,
+      "errors": 4,
+      "words": 8
+    },
+    {
+      "ref": "public broadcasting",
+      "hyp": "public security",
+      "wer": 0.5,
+      "errors": 1,
+      "words": 2
+    },
+    {
+      "ref": "sewing and quilting",
+      "hyp": "one's an exception",
+      "wer": 1.0,
+      "errors": 3,
+      "words": 3
+    },
+    {
+      "ref": "good to hear from you",
+      "hyp": "good to hear from you",
+      "wer": 0.0,
+      "errors": 0,
+      "words": 5
+    },
+    {
+      "ref": "through oklahoma city",
+      "hyp": "you're a good mom",
+      "wer": 1.3333333333333333,
+      "errors": 4,
+      "words": 3
+    },
+    {
+      "ref": "i read a lot and then i know people",
+      "hyp": "i read a lot and then i know something",
+      "wer": 0.1111111111111111,
+      "errors": 1,
+      "words": 9
+    },
+    {
+      "ref": "did you pull them",
+      "hyp": "did you find them fun",
+      "wer": 0.5,
+      "errors": 2,
+      "words": 4
+    },
+    {
+      "ref": "that would make me happy though",
+      "hyp": "it would make me happy too",
+      "wer": 0.3333333333333333,
+      "errors": 2,
+      "words": 6
+    },
+    {
+      "ref": "it's nice to get out in the open air",
+      "hyp": "it's nice to get out in the evening here",
+      "wer": 0.2222222222222222,
+      "errors": 2,
+      "words": 9
+    },
+    {
+      "ref": "i think it would do something for it",
+      "hyp": "i think it would be something similar to it",
+      "wer": 0.375,
+      "errors": 3,
+      "words": 8
+    },
+    {
+      "ref": "it has really been nice here",
+      "hyp": "it has just really done her",
+      "wer": 0.6666666666666666,
+      "errors": 4,
+      "words": 6
+    },
+    {
+      "ref": "state land grant colleges",
+      "hyp": "she'd let them run anyway",
+      "wer": 1.25,
+      "errors": 5,
+      "words": 4
+    },
+    {
+      "ref": "it works out real nice",
+      "hyp": "it works out real nice",
+      "wer": 0.0,
+      "errors": 0,
+      "words": 5
+    },
+    {
+      "ref": "we've had lots of them in the past",
+      "hyp": "try to get them into the prison",
+      "wer": 0.75,
+      "errors": 6,
+      "words": 8
+    },
+    {
+      "ref": "it's only been that way in the last five years",
+      "hyp": "it's not been that way in the last five years",
+      "wer": 0.1,
+      "errors": 1,
+      "words": 10
+    },
+    {
+      "ref": "i left right in the middle of it",
+      "hyp": "i guess i don't in the middle of it",
+      "wer": 0.375,
+      "errors": 3,
+      "words": 8
+    },
+    {
+      "ref": "it's depressing too",
+      "hyp": "he's dying now he's dying",
+      "wer": 1.6666666666666667,
+      "errors": 5,
+      "words": 3
+    },
+    {
+      "ref": "i don't own my home",
+      "hyp": "i don't know what's happening",
+      "wer": 0.6,
+      "errors": 3,
+      "words": 5
+    },
+    {
+      "ref": "i've always wondered how he gets around",
+      "hyp": "of course someone else has to get around",
+      "wer": 1.0,
+      "errors": 7,
+      "words": 7
+    },
+    {
+      "ref": "it's just tough",
+      "hyp": "it's just stuff",
+      "wer": 0.3333333333333333,
+      "errors": 1,
+      "words": 3
+    },
+    {
+      "ref": "fiction books that i really like",
+      "hyp": "second hand goods that i really like",
+      "wer": 0.5,
+      "errors": 3,
+      "words": 6
+    },
+    {
+      "ref": "you got any more",
+      "hyp": "you got any movies",
+      "wer": 0.25,
+      "errors": 1,
+      "words": 4
+    },
+    {
+      "ref": "i'm beginning to think it's not",
+      "hyp": "i'm going to think of it next",
+      "wer": 0.6666666666666666,
+      "errors": 4,
+      "words": 6
+    },
+    {
+      "ref": "that's something i miss quite a bit",
+      "hyp": "that's something i miss quite a bit",
+      "wer": 0.0,
+      "errors": 0,
+      "words": 7
+    },
+    {
+      "ref": "they finally came up with evidence",
+      "hyp": "they're funny kind of a genre",
+      "wer": 1.0,
+      "errors": 6,
+      "words": 6
+    },
+    {
+      "ref": "that's true i didn't think about that",
+      "hyp": "that's true i didn't think about it",
+      "wer": 0.14285714285714285,
+      "errors": 1,
+      "words": 7
+    },
+    {
+      "ref": "good together as a team",
+      "hyp": "go to a gym or something",
+      "wer": 1.2,
+      "errors": 6,
+      "words": 5
+    },
+    {
+      "ref": "part of it would probably work out",
+      "hyp": "but if it's not generally liked",
+      "wer": 1.0,
+      "errors": 7,
+      "words": 7
+    },
+    {
+      "ref": "it's necessarily going to involve more taxes",
+      "hyp": "it's not actually a vehicle no it's not",
+      "wer": 1.0,
+      "errors": 7,
+      "words": 7
+    },
+    {
+      "ref": "it's just going to follow",
+      "hyp": "it's just going to fall",
+      "wer": 0.2,
+      "errors": 1,
+      "words": 5
+    },
+    {
+      "ref": "i'm kind of a car buff myself",
+      "hyp": "i'm going to a store every weekend",
+      "wer": 0.7142857142857143,
+      "errors": 5,
+      "words": 7
+    },
+    {
+      "ref": "buying of our fish",
+      "hyp": "putting us all in risk",
+      "wer": 1.25,
+      "errors": 5,
+      "words": 4
+    },
+    {
+      "ref": "sometimes it will skip",
+      "hyp": "mean it will real good",
+      "wer": 0.75,
+      "errors": 3,
+      "words": 4
+    },
+    {
+      "ref": "i just don't like that",
+      "hyp": "i just don't like that",
+      "wer": 0.0,
+      "errors": 0,
+      "words": 5
+    },
+    {
+      "ref": "social changes to talk about",
+      "hyp": "also try to cut down",
+      "wer": 0.8,
+      "errors": 4,
+      "words": 5
+    },
+    {
+      "ref": "i am close to receiving my english degree",
+      "hyp": "i am close to becoming my actual lawyer",
+      "wer": 0.375,
+      "errors": 3,
+      "words": 8
+    },
+    {
+      "ref": "everything's still inches",
+      "hyp": "of course you can't",
+      "wer": 1.3333333333333333,
+      "errors": 4,
+      "words": 3
+    },
+    {
+      "ref": "he made a real big cake himself",
+      "hyp": "he made a real big impact himself",
+      "wer": 0.14285714285714285,
+      "errors": 1,
+      "words": 7
+    },
+    {
+      "ref": "they've actually waited for them",
+      "hyp": "'s that actually started for them",
+      "wer": 0.6,
+      "errors": 3,
+      "words": 5
+    },
+    {
+      "ref": "it was for a murder trial",
+      "hyp": "it was for a morning school",
+      "wer": 0.3333333333333333,
+      "errors": 2,
+      "words": 6
+    },
+    {
+      "ref": "are you a professional musician",
+      "hyp": "are you a politician",
+      "wer": 0.4,
+      "errors": 2,
+      "words": 5
+    },
+    {
+      "ref": "it's far beyond me",
+      "hyp": "it's five million a year",
+      "wer": 1.0,
+      "errors": 4,
+      "words": 4
+    },
+    {
+      "ref": "we've gained an awful lot from the space program",
+      "hyp": "i've managed an office from the south west",
+      "wer": 0.6666666666666666,
+      "errors": 6,
+      "words": 9
+    },
+    {
+      "ref": "two sets of grandparents",
+      "hyp": "who did i commit",
+      "wer": 1.0,
+      "errors": 4,
+      "words": 4
+    },
+    {
+      "ref": "i call and find out",
+      "hyp": "i call in when it's done",
+      "wer": 0.8,
+      "errors": 4,
+      "words": 5
+    },
+    {
+      "ref": "you want salary too plus what",
+      "hyp": "you won't tolerate a bad one",
+      "wer": 0.8333333333333334,
+      "errors": 5,
+      "words": 6
+    },
+    {
+      "ref": "i've heard about him",
+      "hyp": "if you made him know",
+      "wer": 1.0,
+      "errors": 4,
+      "words": 4
+    },
+    {
+      "ref": "you've had more freezing this winter",
+      "hyp": "i have had my son here this winter",
+      "wer": 0.8333333333333334,
+      "errors": 5,
+      "words": 6
+    },
+    {
+      "ref": "if we can't get a handle on that",
+      "hyp": "if we can't get a holiday on that",
+      "wer": 0.125,
+      "errors": 1,
+      "words": 8
+    },
+    {
+      "ref": "they would vote pro choice",
+      "hyp": "they were put by hand",
+      "wer": 0.8,
+      "errors": 4,
+      "words": 5
+    },
+    {
+      "ref": "they were okay",
+      "hyp": "that was interesting",
+      "wer": 1.0,
+      "errors": 3,
+      "words": 3
+    },
+    {
+      "ref": "to find a mountain",
+      "hyp": "save what i saved",
+      "wer": 1.0,
+      "errors": 4,
+      "words": 4
+    },
+    {
+      "ref": "on a working farm",
+      "hyp": "don't you look lame",
+      "wer": 1.0,
+      "errors": 4,
+      "words": 4
+    },
+    {
+      "ref": "after we had them for several years",
+      "hyp": "i've had one for several years",
+      "wer": 0.42857142857142855,
+      "errors": 3,
+      "words": 7
+    },
+    {
+      "ref": "if they work at it a little bit",
+      "hyp": "if they wish it at a little bit",
+      "wer": 0.375,
+      "errors": 3,
+      "words": 8
+    },
+    {
+      "ref": "we don't have enough",
+      "hyp": "don't don't have enough",
+      "wer": 0.25,
+      "errors": 1,
+      "words": 4
+    },
+    {
+      "ref": "what are you making",
+      "hyp": "what do you think",
+      "wer": 0.5,
+      "errors": 2,
+      "words": 4
+    },
+    {
+      "ref": "absolutely nothing",
+      "hyp": "Explore the possibilities",
+      "wer": 1.5,
+      "errors": 3,
+      "words": 2
+    },
+    {
+      "ref": "i had a carpet service call up three times",
+      "hyp": "i had a couple of times all the time",
+      "wer": 0.6666666666666666,
+      "errors": 6,
+      "words": 9
+    },
+    {
+      "ref": "although he's probably better than a lot of them",
+      "hyp": "other way he probably would not have died",
+      "wer": 1.0,
+      "errors": 9,
+      "words": 9
+    },
+    {
+      "ref": "just about any kind of music",
+      "hyp": "yes about six hundred a day",
+      "wer": 0.8333333333333334,
+      "errors": 5,
+      "words": 6
+    },
+    {
+      "ref": "we like mexican food",
+      "hyp": "we like american food",
+      "wer": 0.25,
+      "errors": 1,
+      "words": 4
+    },
+    {
+      "ref": "i know the day care centers are not cheap either",
+      "hyp": "i know the last game was not nice either",
+      "wer": 0.5,
+      "errors": 5,
+      "words": 10
+    },
+    {
+      "ref": "i found it a lot of times",
+      "hyp": "i fondly recollect a lot of that",
+      "wer": 0.42857142857142855,
+      "errors": 3,
+      "words": 7
+    },
+    {
+      "ref": "you've got to find an even line",
+      "hyp": "have you got your plan and even done it",
+      "wer": 1.0,
+      "errors": 7,
+      "words": 7
+    },
+    {
+      "ref": "i think he barely makes it",
+      "hyp": "i think he's pretty much right",
+      "wer": 0.6666666666666666,
+      "errors": 4,
+      "words": 6
+    },
+    {
+      "ref": "where you cut the pie",
+      "hyp": "we do get the party",
+      "wer": 0.8,
+      "errors": 4,
+      "words": 5
+    },
+    {
+      "ref": "it all starts to become similar",
+      "hyp": "it all starts to seem like this",
+      "wer": 0.5,
+      "errors": 3,
+      "words": 6
+    },
+    {
+      "ref": "i could go along with that",
+      "hyp": "i could go hiking with that",
+      "wer": 0.16666666666666666,
+      "errors": 1,
+      "words": 6
+    },
+    {
+      "ref": "it's like one second of recording",
+      "hyp": "it's like running through a shotgun",
+      "wer": 0.6666666666666666,
+      "errors": 4,
+      "words": 6
+    },
+    {
+      "ref": "that's a big thing with me",
+      "hyp": "that's a big thing with me",
+      "wer": 0.0,
+      "errors": 0,
+      "words": 6
+    },
+    {
+      "ref": "i'm the only one",
+      "hyp": "mimic the color of your friend's",
+      "wer": 1.25,
+      "errors": 5,
+      "words": 4
+    },
+    {
+      "ref": "i've been following through on that",
+      "hyp": "if i'm calling you on that",
+      "wer": 0.6666666666666666,
+      "errors": 4,
+      "words": 6
+    },
+    {
+      "ref": "if there starts to be a lot of violence",
+      "hyp": "if you want to be a lot of entertainment",
+      "wer": 0.3333333333333333,
+      "errors": 3,
+      "words": 9
+    },
+    {
+      "ref": "walking seems to be the best",
+      "hyp": "look like you're by the sea",
+      "wer": 0.8333333333333334,
+      "errors": 5,
+      "words": 6
+    },
+    {
+      "ref": "i don't think too many of them are anymore",
+      "hyp": "if not then you'll never have them again",
+      "wer": 0.8888888888888888,
+      "errors": 8,
+      "words": 9
+    },
+    {
+      "ref": "how do you feel about your game",
+      "hyp": "do you use oil or butter",
+      "wer": 0.7142857142857143,
+      "errors": 5,
+      "words": 7
+    },
+    {
+      "ref": "when i lived out in the country",
+      "hyp": "when i lived at the county line",
+      "wer": 0.5714285714285714,
+      "errors": 4,
+      "words": 7
+    },
+    {
+      "ref": "i'm originally from maine",
+      "hyp": "military service",
+      "wer": 1.0,
+      "errors": 4,
+      "words": 4
+    },
+    {
+      "ref": "to grow up and to decide what they want to do",
+      "hyp": "this girl up at idaho state what's that for",
+      "wer": 0.9090909090909091,
+      "errors": 10,
+      "words": 11
+    },
+    {
+      "ref": "we just keep track of it on paper",
+      "hyp": "we used key phrases like it's not an opportunity",
+      "wer": 1.0,
+      "errors": 8,
+      "words": 8
+    },
+    {
+      "ref": "i had friends",
+      "hyp": "i had friends",
+      "wer": 0.0,
+      "errors": 0,
+      "words": 3
+    },
+    {
+      "ref": "i've worked in hotels",
+      "hyp": "i've looked in a hotel",
+      "wer": 0.75,
+      "errors": 3,
+      "words": 4
+    },
+    {
+      "ref": "they can pretty much get everybody there",
+      "hyp": "this can pretty much get everybody into there",
+      "wer": 0.2857142857142857,
+      "errors": 2,
+      "words": 7
+    },
+    {
+      "ref": "you can just say i'm sorry",
+      "hyp": "you can see how i'm doing",
+      "wer": 0.5,
+      "errors": 3,
+      "words": 6
+    },
+    {
+      "ref": "the engine blew up in it",
+      "hyp": "the squid pool up in it",
+      "wer": 0.3333333333333333,
+      "errors": 2,
+      "words": 6
+    },
+    {
+      "ref": "the armed forces did so much",
+      "hyp": "the job offers at least",
+      "wer": 0.8333333333333334,
+      "errors": 5,
+      "words": 6
+    },
+    {
+      "ref": "i don't have a lot of time",
+      "hyp": "i don't have a lot of time",
+      "wer": 0.0,
+      "errors": 0,
+      "words": 7
+    },
+    {
+      "ref": "i know they will",
+      "hyp": "i know they're well",
+      "wer": 0.5,
+      "errors": 2,
+      "words": 4
+    },
+    {
+      "ref": "sometimes they're not very open",
+      "hyp": "time you're not very happy",
+      "wer": 0.6,
+      "errors": 3,
+      "words": 5
+    }
+  ]
+}

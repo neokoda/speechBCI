@@ -1,6 +1,6 @@
 # Speech BCI: Thesis Progress Handoff
 
-**Last Updated:** 2026-04-27 (Session 15 — E2E training run 1+2, diagnostics)
+**Last Updated:** 2026-04-28 (Session 17 — RTX 5090, E2E comprehensive experiments, label smoothing)
 
 ---
 
@@ -21,16 +21,17 @@ Replace GRU phoneme decoder with Transformer/Conformer; integrate with LM pipeli
 
 ## 2. Environment Setup
 
-Runs on **vast.ai** GPU (RTX 4090). On every new instance:
+Runs on **vast.ai** GPU (RTX 5090 as of Session 16). On every new instance:
 
 ```bash
 bash setup_runpod.sh && source /workspace/venv311/bin/activate
 ```
 
 **Key compatibility:**
-- TF 2.15 + Python 3.11, cuDNN 8.9.7.29 (pinned after PyTorch)
-- `lm_decoder` (C++) links libtorch 1.13.1 — cannot coexist with torch 2.5.1. Fixed via subprocess separation.
-- `sympy` must be 1.13.1 — `pip install sympy==1.13.1` if broken
+- TF 2.15 + Python 3.11
+- **PyTorch 2.11.0+cu128** (upgraded from 2.5.1 for RTX 5090 sm_120 support) — `pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128`
+- `lm_decoder` (C++) links libtorch 1.13.1 — cannot coexist with torch in same process. Fixed via subprocess separation (unaffected by torch upgrade).
+- `sympy` — 1.14.0 works fine with torch 2.11. Old 1.13.1 pin no longer needed.
 - **Thread exhaustion fix:** Always run eval with `ulimit -s unlimited` prefix (24 sessions × AUTOTUNE threadpools hits pthread limit without it). Also patched `speechDataset.py` to set `private_threadpool_size=2`.
 
 ---
@@ -162,88 +163,161 @@ bash -c 'ulimit -s unlimited; python AnalysisExamples/eval_wfst_lm.py \
 ## 8. Known Issues
 
 - **Thread exhaustion:** `ulimit -s unlimited` required before any eval with 24-sess models. Fixed in `speechDataset.py` too (`private_threadpool_size=2`).
-- **lm_decoder/torch ABI conflict:** lm_decoder links libtorch 1.13.1; torch 2.5.1 in same process = crash. Fixed via subprocess.
+- **lm_decoder/torch ABI conflict:** lm_decoder links libtorch 1.13.1; torch 2.5.1 in same process = crash. Fixed via subprocess separation.
 - **5-gram lattice rescoring OOM:** ~122 GB RAM needed. Use 128+ GB instance.
-- **sympy version:** Must be 1.13.1 — newer versions break torch imports.
-- **3-gram LM deleted** — re-download from Dryad if needed.
-- **scipy < 1.13**, **numpy < 2.0** required.
+- **sympy:** 1.14.0 works fine with PyTorch 2.11+.
+- **scipy < 1.13**, **numpy < 2.0** — required for older venv311.
+- **E2E overfitting:** train loss collapses to ~0 while val WER plateaus at 0.64. Root cause is insufficient data (~6.6k utterances), not architecture.
+- **Phase 1→2 resume:** optimizer has 1 param group in Phase 1, 3 in Phase 2. Always use `--reset-optimizer` when launching Phase 2 after Phase 1.
 
 ---
 
-## 9. Session 14 — E2E Architecture (in progress)
+## 9. Session 14-17 — E2E Architecture
 
-**Goal:** Build an end-to-end model that maps ECoG directly to text via a foundation model (no phoneme intermediate), eliminating the error-propagation ceiling of the two-stage pipeline.
+**Goal:** Build an end-to-end model that maps ECoG directly to text via a foundation model (no phoneme intermediate).
 
 **Architecture A (LLaVA-style, decoder-only):**
 ```
 ECoG (B,T,256) → Conformer Encoder (PyTorch, 4L 512d, 4× subsample)
-              → MLP Projector (512 → llm_dim, 2-layer GELU)
-              → [ECoG tokens | BOS | text tokens] → Qwen3.5-Base (LoRA)
-Loss: CE on text positions only
+              → MLP Projector (512 → llm_dim, 2-layer GELU, zero-init output)
+              → [ECoG tokens | BOS | text tokens] → Qwen3.5-Base (LoRA r=16)
+Loss: CE on text positions only (label_smoothing=0.1 added in Session 17)
 ```
 
-**Files created:** `AnalysisExamples/e2e/`
+**Files:** `AnalysisExamples/e2e/`
 | File | Purpose |
 |---|---|
-| `conformer_pt.py` | PyTorch Conformer (spatial attn, conv stem 4× subsample) |
-| `model.py` | `E2EBCIModel`: encoder + MLP projector + LLM + LoRA |
-| `dataset.py` | TFRecord → PyTorch Dataset; reads `transcription` ASCII field |
-| `train.py` | Phase 1 (projector warmup) + Phase 2 (joint fine-tuning) |
-| `eval.py` | Greedy/beam decode → WER/CER vs two-stage baseline |
+| `conformer_pt.py` | PyTorch Conformer (MHSA + ConvModule + spatial SE + SpecAugment) |
+| `model.py` | `E2EBCIModel`: encoder + projector + LLM + LoRA + repetition_penalty=1.2 in generate |
+| `dataset.py` | TFRecord → PyTorch Dataset; z-score per-session normalization |
+| `train.py` | Phase 1 (projector warmup) + Phase 2 (joint fine-tuning); cosine LR; mixed precision |
+| `eval.py` | Greedy/beam decode → WER/CER |
 
-**LLM choice:** `Qwen/Qwen3.5-0.8B-Base` (validate) → `Qwen/Qwen3.5-2B-Base` (main). Base (not chat) model. 2–7B is the sweet spot — data (~5k utterances) is the bottleneck, not model size.
+**Datasets:** 19 sessions by default, 24 sessions available (5 additional found but excluded from best runs).
 
-**Training history:**
-- Phase 1 (300 steps, projector warmup only): loss 7.56 → 4.42 ✓
-- Phase 2 run 1 (steps 300→10000, early stopped): best val WER=0.8877 at step 7500
-- Phase 2 run 2 (steps 10000→10700, killed for machine switch): loss ~1.2, WER regressing to 1.0 at step 10500
+---
 
-**Checkpoints saved in `experiments/e2e_0.8b/`:**
-- `checkpoint.pt` — step 10000 (latest, use to resume)
-- `best/checkpoint.pt` — step 7500, WER=0.8877
+### E2E Training Results
 
-**Diagnostic results:**
-- Zeroed ECoG WER=2.53 vs real ECoG WER=0.99 → model IS using brain signal (+1.53 delta)
-- WER regressing (0.8877→1.0) while loss decreasing → LoRA LR too high, LLM finding language-prior shortcut
+**Best achieved:** WER=0.6417 on test split (Qwen3.5-0.8B-Base, 19 sessions, step ~4500)
 
-**Root cause analysis:**
-1. Cold-start encoder (biggest issue) — Conformer trains from random weights with only 5k utterances
-2. LoRA LR 2e-4 too aggressive — LLM adapts away from ECoG signal as training progresses
-3. Data size — 5k utterances is small for end-to-end learning
+**vs. thesis baselines:**
+| System | WER |
+|---|---|
+| **E2E 0.8B (Session 17)** | **0.64** |
+| GRU two-stage | 0.19 |
+| Conformer two-stage | 0.22 |
 
-**Next step — resume Phase 2 with corrected hyperparameters:**
+E2E significantly underperforms two-stage pipeline. Root cause: overfitting — train loss collapses to ~0 while val WER plateaus at 0.64. Only 6640 training utterances; encoder + LoRA memorize instead of generalizing.
+
+**Full model comparison:**
+| Model | Sessions | Pretrained Encoder | Regularization | Best val WER |
+|---|---|---|---|---|
+| **0.8B + label smoothing** | **19** | **No** | **ls=0.1** | **TBD (~0.64)** |
+| 0.8B (run 3) | 19 | No | ls=0.0 | 0.64 |
+| 0.8B (run 2, buggy LR) | 19 | No | ls=0.0 | 0.89 (final) |
+| 0.8B + pretrained enc | 19 | Yes (step 7500) | ls=0.0 | 2.43 (failed) |
+| 0.8B | 24 | No | ls=0.0 | 1.60+ (failed) |
+| 2B + pretrained enc, lora_r=4 | 19 | Yes | wd=0.2 | 1.27 (failed) |
+| 2B cold start, lora_r=4 | 19 | No | wd=0.2 | 1.96 (failed) |
+| 2B cold start, lora_r=8 | 19 | No | wd=0.1 | 2.26 (failed) |
+
+**Key findings:**
+- 0.8B is the right model for this data size; 2B always overfits regardless of regularization
+- Pretrained encoder hurts when combined with fresh LoRA (mismatched output distributions)
+- 24 sessions = harder, not easier (5 new sessions are out-of-distribution for 19-sess model)
+- Beam search (beam=5) hurts vs greedy (beam=1) — model too imperfect for beam exploration
+- `repetition_penalty=1.2` added to generation; no retraining needed
+
+---
+
+### Bugs Fixed (Session 16-17)
+
+| Bug | Symptom | Fix |
+|---|---|---|
+| Cosine LR never decayed | LR flat at peak entire run | Restructured loop: `global_step` now counts optimizer steps (was micro-steps). Scheduler stepped per micro-batch → now per optimizer step. |
+| LR override ignored on resume | `--lr-lora 5e-5` silently never applied | After `optimizer.load_state_dict()`, explicitly override `pg["lr"]` for all groups. |
+| SpecAugment in-place on autograd tensor | Corrupts backward graph | Replace `x[:, f:f+w] = 0` with separate mask tensor + `x * mask`. |
+| LR log showed only encoder LR | LoRA LR hidden | Now logs all param groups. |
+| Loss formula wrong with grad_accum | `accum_loss * grad_accum / log_every` double-counted | Fixed: `accum_loss` is now accumulated as `loss.item()/grad_accum` per micro-step; logged as `accum_loss/log_every`. |
+| Phase 1→2 optimizer incompatibility | Phase 1 has 1 param group, Phase 2 has 3 → crash | Added `--reset-optimizer` for Phase 2 launches after Phase 1. |
+| Duplicate `--num-workers` arg | argparse conflict | Removed duplicate. |
+
+**New CLI flags added:**
+- `--reset-optimizer` — load weights only, fresh optimizer state
+- `--init-weights-from <dir>` — load model weights from different checkpoint
+- `--init-encoder-from <dir>` — load only encoder+projector weights (for LLM swaps)
+- `--freeze-encoder` — lock encoder during Phase 2 (not recommended; hurts generalization)
+- `--label-smoothing <float>` — default 0.1
+- `--num-workers` default 4 (was 0)
+
+**Performance improvements:**
+- `torch.backends.cudnn.benchmark = True` — ~10-20% speedup on fixed shapes
+- `torch.set_float32_matmul_precision("high")` — bfloat16 matmuls on Blackwell
+- Default batch_size 32, grad_accum 2 (effective batch 64)
+
+---
+
+### Experiments Not Yet Run
+
+- **0.8B with label smoothing** — IN PROGRESS (`experiments/e2e_0.8b_smooth/`). Key change: `--label-smoothing 0.1` in loss. Label smoothing is the single highest-impact regularization for small-dataset LLM fine-tuning.
+- **24 sessions with fresh training** — The 5 extra sessions need a full retraining run from scratch, not a checkpoint swap.
+- **Architecture B** — Whisper-style cross-attention. More principled for transduction. Deferred until Architecture A is validated at WER < 0.50.
+
+---
+
+### Current Run Commands
+
+**Best existing run (0.8B, no label smoothing, 19 sessions):**
 ```bash
-source /workspace/venv311/bin/activate
+# Phase 1 → Phase 2
+source /workspace/venv312/bin/activate  # or: source /workspace/venv311/bin/activate
 python AnalysisExamples/e2e/train.py \
   --data-dir data/derived/tfRecords \
   --lm Qwen/Qwen3.5-0.8B-Base \
-  --output-dir experiments/e2e_0.8b \
-  --phase 2 --max-steps 20000 \
-  --batch-size 8 --grad-accum 2 \
+  --output-dir experiments/e2e_0.8b_v2 \
+  --phase 1 --phase1-steps 300 --batch-size 8 \
+  --warmup-steps 50 --log-every 50 --save-every 300 --num-workers 4
+
+# Then Phase 2 (after Phase 1 finishes):
+python AnalysisExamples/e2e/train.py \
+  --data-dir data/derived/tfRecords \
+  --lm Qwen/Qwen3.5-0.8B-Base \
+  --output-dir experiments/e2e_0.8b_v2 \
+  --reset-optimizer \
+  --phase 2 --max-steps 15000 \
+  --batch-size 32 --grad-accum 2 \
+  --num-workers 4 \
   --lr-encoder 2e-4 --lr-projector 2e-4 --lr-lora 5e-5 \
-  --patience 0 --eval-every 500 --save-every 2000 --log-every 100
-```
+  --lora-r 16 --weight-decay 0.05 --lora-dropout 0.1 \
+  --warmup-steps 200 \
+  --patience 0 --eval-every 500 --save-every 1000 --log-every 50
 
-Key changes vs previous run:
-- `--lr-encoder 2e-4` (was 5e-5) — encoder needs stronger signal, it's training from scratch
-- `--lr-lora 5e-5` (was 2e-4) — constrain LLM drift, force reliance on ECoG
-- `--batch-size 8 --grad-accum 2` (was 4/4) — ~40% faster, VRAM is only 8GB/24GB used
-- `--patience 0` — no early stopping, run full 20k steps
-
-**Evaluate:**
-```bash
+# Evaluate best checkpoint:
 python AnalysisExamples/e2e/eval.py \
-  --data-dir data/derived/tfRecords --ckpt experiments/e2e_0.8b/best \
-  --lm Qwen/Qwen3.5-0.8B-Base --beam 1 \
-  --output experiments/e2e_0.8b/eval_best.json
+  --data-dir data/derived/tfRecords \
+  --ckpt experiments/e2e_0.8b_v2/best \
+  --lm Qwen/Qwen3.5-0.8B-Base \
+  --beam 1 --batch-size 8 \
+  --output experiments/e2e_0.8b_v2/eval_best.json
 ```
 
-**Architecture B (Whisper-style encoder-decoder):** Deferred until A is validated. Cross-attention from LLM decoder to Conformer encoder — more principled for the transduction task.
+**New run with label smoothing:**
+```bash
+# Same as above but add --label-smoothing 0.1 to Phase 2
+# Output dir: experiments/e2e_0.8b_smooth/
+```
 
-**Status:** Training in progress. Best WER so far 0.8877 (target: beat two-stage baseline 0.1895).
+**Environment:** Python 3.12 venv at `/workspace/venv312` has PyTorch 2.12 nightly (sm_120 support for RTX 5090). Python 3.11 venv at `/workspace/venv311` has TF 2.15 (for WFST pipeline only).
 
 ---
 
 ## 10. Hardware
 
-RTX 4090 (24 GB VRAM). Recommend 256 GB disk, 64 GB RAM (128+ for lattice rescoring).
+RTX 5090 (32 GB VRAM). 256 GB disk, 64 GB RAM (128+ for lattice rescoring).
+
+**PyTorch:** 2.12.0.dev20260408+cu128 (nightly) for RTX 5090 sm_120 support.
+Install: `pip install torch --index-url https://download.pytorch.org/whl/nightly/cu126`
+The older `/workspace/venv311` has PyTorch 2.11.0+cu128 — works on RTX 4090 but NOT RTX 5090.
+
+**TF:** 2.21.0 in venv312; 2.15 in venv311. Both work with RTX 5090.

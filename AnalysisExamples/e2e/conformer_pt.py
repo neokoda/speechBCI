@@ -75,15 +75,17 @@ class SpecAugment(nn.Module):
         if not self.training:
             return x
         B, T, F = x.shape
+        # Build mask separately to avoid in-place ops on autograd tensors.
+        mask = torch.ones(B, T, F, dtype=x.dtype, device=x.device)
         for _ in range(self.nf):
             f  = torch.randint(0, min(self.fmp, F), (1,)).item()
-            f0 = torch.randint(0, max(F - f, 1), (1,)).item()
-            x[:, :, f0:f0 + f] = 0
+            f0 = torch.randint(0, max(F - f, 1), (1,)).item().claude
+            mask[:, :, f0:f0 + f] = 0
         for _ in range(self.nt):
             t  = torch.randint(0, min(self.tmp, T), (1,)).item()
             t0 = torch.randint(0, max(T - t, 1), (1,)).item()
-            x[:, t0:t0 + t, :] = 0
-        return x
+            mask[:, t0:t0 + t, :] = 0
+        return x * mask
 
 
 # ---------------------------------------------------------------------------

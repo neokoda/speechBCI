@@ -86,6 +86,7 @@ class E2EBCIModel(nn.Module):
         # Misc
         freeze_llm: bool      = False,   # set True for Phase-1 warmup
         freeze_encoder: bool  = False,   # set True for Phase-1 warmup
+        label_smoothing: float = 0.0,   # 0.1 = standard label smoothing
         torch_dtype           = torch.bfloat16,
     ):
         super().__init__()
@@ -106,6 +107,7 @@ class E2EBCIModel(nn.Module):
         )
 
         # ── Load LLM ──────────────────────────────────────────────────────
+        self.label_smoothing = label_smoothing
         llm_config = AutoConfig.from_pretrained(llm_name_or_path, trust_remote_code=True)
         # VL models (e.g. Qwen3.5) wrap text config inside .text_config
         self.llm_dim = getattr(llm_config, "hidden_size", None) or llm_config.text_config.hidden_size
@@ -181,6 +183,7 @@ class E2EBCIModel(nn.Module):
             text_logits.reshape(-1, text_logits.size(-1)),
             text_labels.reshape(-1),
             ignore_index=-100,
+            label_smoothing=self.label_smoothing,
         )
         return loss
 
@@ -227,6 +230,7 @@ class E2EBCIModel(nn.Module):
             eos_token_id=tokenizer.eos_token_id,
             pad_token_id=tokenizer.pad_token_id or tokenizer.eos_token_id,
             do_sample=False,
+            repetition_penalty=1.2,
         )
         # generated contains only the new tokens (past the prompt)
         texts = tokenizer.batch_decode(generated, skip_special_tokens=True)
