@@ -5,9 +5,65 @@ Output: (B, T', d_model) — contextual embeddings, T' = (T-31)//4 + 1 ≈ T/4
 """
 
 import math
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+
+
+# ---------------------------------------------------------------------------
+# Per-session normalization
+# ---------------------------------------------------------------------------
+
+class PerSessionNorm(nn.Module):
+    """Per-session z-score normalization.
+
+    Stores mean/std for each session as registered buffers (precomputed from
+    training data). During forward, applies: y = (x - mean[s]) / (std[s] + eps).
+
+    This matches the two-stage pipeline's per-session Normalization layers,
+    handling cross-day non-stationarity in ECoG signals.
+    """
+
+    def __init__(self, n_sessions: int, n_channels: int = 256, eps: float = 1e-6):
+        super().__init__()
+        self.n_sessions = n_sessions
+        self.n_channels = n_channels
+        self.eps = eps
+        # Allocate buffers; will be populated via register_buffers or _load_stats
+        self.register_buffer(
+            "mean", torch.zeros(n_sessions, 1, n_channels), persistent=True
+        )
+        self.register_buffer(
+            "std", torch.ones(n_sessions, 1, n_channels), persistent=True
+        )
+
+    def _load_stats(self, stats: dict):
+        """Load per-session mean/std from a dict mapping session_idx → (mean, std).
+
+        Args:
+            stats: dict mapping session index (0..n_sessions-1) to (mean, std) tensors
+                   or numpy arrays, each of shape (1, 256).
+        """
+        for s_idx, (m, s) in stats.items():
+            if isinstance(m, np.ndarray):
+                m = torch.from_numpy(m)
+                s = torch.from_numpy(s)
+            self.mean[s_idx] = m.view(1, -1)
+            self.std[s_idx] = s.view(1, -1)
+
+    def forward(self, x: torch.Tensor, session_ids: torch.Tensor) -> torch.Tensor:
+        """Apply per-session normalization.
+
+        Args:
+            x: (B, T, 256) raw ECoG features
+            session_ids: (B,) long tensor of session indices (0..n_sessions-1)
+        Returns:
+            (B, T, 256) z-scored features
+        """
+        mean = self.mean[session_ids]   # (B, 1, 256)
+        std = self.std[session_ids]    # (B, 1, 256)
+        return (x - mean) / (std + self.eps)
 
 
 # ---------------------------------------------------------------------------
@@ -79,7 +135,7 @@ class SpecAugment(nn.Module):
         mask = torch.ones(B, T, F, dtype=x.dtype, device=x.device)
         for _ in range(self.nf):
             f  = torch.randint(0, min(self.fmp, F), (1,)).item()
-            f0 = torch.randint(0, max(F - f, 1), (1,)).item().claude
+            f0 = torch.randint(0, max(F - f, 1), (1,)).item()
             mask[:, :, f0:f0 + f] = 0
         for _ in range(self.nt):
             t  = torch.randint(0, min(self.tmp, T), (1,)).item()
@@ -209,8 +265,8 @@ class ConformerEncoder(nn.Module):
     E2E model wrapper.
 
     Architecture:
-        [SpatialAttention] → ConvStem → scale → pos_enc → [SpecAugment]
-            → N × ConformerBlock → LayerNorm
+        [PerSessionNorm] → [SpatialAttention] → ConvStem → scale → pos_enc
+            → [SpecAugment] → N × ConformerBlock → LayerNorm
     """
 
     def __init__(
@@ -232,9 +288,12 @@ class ConformerEncoder(nn.Module):
         spec_augment: bool  = False,
         freq_mask_param: int = 27,
         time_mask_param: int = 10,
+        n_sessions: int    = 24,
     ):
         super().__init__()
         self.d_model = d_model
+
+        self.session_norm = PerSessionNorm(n_sessions, n_input)
 
         self.spatial_attn = (
             SpatialAttention(n_input, spatial_attn_dim, spatial_attn_heads, dropout)
@@ -258,19 +317,34 @@ class ConformerEncoder(nn.Module):
         ])
         self.norm = nn.LayerNorm(d_model)
 
+    def build_per_session_norm(self, stats: dict[int, tuple]):
+        """Load per-session normalization stats.
+
+        Args:
+            stats: dict mapping session index (0..n_sessions-1) to (mean, std) tensors
+                   each of shape (1, 256).
+        """
+        self.session_norm._load_stats(stats)
+
     def forward(
         self,
         x: torch.Tensor,
         lengths: torch.Tensor | None = None,
+        session_ids: torch.Tensor | None = None,
     ) -> tuple[torch.Tensor, torch.Tensor | None]:
         """
         Args:
-            x:       (B, T, 256)
-            lengths: (B,) original time-step counts before padding (optional)
+            x:         (B, T, 256)
+            lengths:   (B,) original time-step counts before padding (optional)
+            session_ids: (B,) session indices (0..n_sessions-1) for per-session norm
         Returns:
             out:     (B, T', d_model)
             out_len: (B,) subsampled lengths, or None if lengths was None
         """
+        # Per-session normalization
+        if session_ids is not None:
+            x = self.session_norm(x, session_ids)
+
         if self.spatial_attn is not None:
             x = self.spatial_attn(x)
 

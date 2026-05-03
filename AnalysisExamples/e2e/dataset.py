@@ -127,7 +127,7 @@ class BCIDataset(Dataset):
         tokenizer: Optional[PreTrainedTokenizerBase] = None,
         max_text_len: int                  = 64,
         augment: bool                      = True,
-        white_noise_sd: float              = 1.0,
+        white_noise_sd: float              = 0.2,
         offset_sd: float                   = 0.2,
         n_input: int                       = 256,
         max_seq_elements: int              = 500,
@@ -138,10 +138,34 @@ class BCIDataset(Dataset):
         self.augment        = augment and (split == "train")
         self.white_noise_sd = white_noise_sd
         self.offset_sd      = offset_sd
+        self.sessions       = sessions
+        self.n_input        = n_input
+
+        # Precompute prefix and EOS tensors once so __getitem__ is fast.
+        # Qwen3.5 uses an empty think block as the "no thinking" seed:
+        #   input_ids_full = [<think>, \n, </think>, \n, text_tokens..., <|im_end|>]
+        #   labels         = input_ids_full[1:]  (causal shift)
+        # This matches the generation seed in model.generate().
+        if tokenizer is not None:
+            think_id     = tokenizer.convert_tokens_to_ids("<think>")
+            end_think_id = tokenizer.convert_tokens_to_ids("</think>")
+            im_end_id    = tokenizer.convert_tokens_to_ids("<|im_end|>")
+            nl_ids       = tokenizer.encode("\n", add_special_tokens=False)
+            unk_id       = getattr(tokenizer, "unk_token_id", None)
+            if think_id != unk_id and think_id is not None:
+                self._prefix_ids = [think_id] + nl_ids + [end_think_id] + nl_ids
+                self._eos_id     = im_end_id
+            else:
+                bos = tokenizer.bos_token_id or tokenizer.eos_token_id
+                self._prefix_ids = [bos]
+                self._eos_id     = tokenizer.eos_token_id
+
+        # Build session name → index mapping
+        self._session_to_idx = {s: i for i, s in enumerate(sessions)}
 
         # Load all sessions
         all_examples: list[dict] = []
-        session_stats: dict[str, tuple] = {}
+        session_stats: dict[int, tuple] = {}
 
         stats_path = stats_cache or os.path.join(data_dir, "_norm_stats.pkl")
 
@@ -167,6 +191,7 @@ class BCIDataset(Dataset):
             examples = _load_tfrecords_to_numpy(files, n_input, max_seq_elements)
 
             # Compute / retrieve normalization stats from train split
+            sess_idx = self._session_to_idx[sess]
             if sess in cached_stats:
                 mean, std = cached_stats[sess]
             else:
@@ -175,14 +200,15 @@ class BCIDataset(Dataset):
                     cached_stats[sess] = (mean, std)
                     stats_updated = True
                 else:
-                    # Fall back: compute on test examples (suboptimal but functional)
-                    mean, std = _compute_session_stats(examples)
-                    print(f"[BCIDataset] Warning: no cached train stats for {sess}, "
-                          f"normalizing with test stats.")
+                    raise RuntimeError(
+                        f"No cached train normalization stats for session '{sess}'. "
+                        f"Initialize a BCIDataset with split='train' first so stats "
+                        f"are computed and cached at {stats_path}."
+                    )
 
-            session_stats[sess] = (mean, std)
+            session_stats[sess_idx] = (mean, std)
             for ex in examples:
-                ex["session"] = sess
+                ex["session_idx"] = sess_idx
             all_examples.extend(examples)
 
         if stats_updated and split == "train":
@@ -192,27 +218,39 @@ class BCIDataset(Dataset):
 
         self.examples      = all_examples
         self.session_stats = session_stats
+        self.n_sessions    = len(sessions)
         print(f"[BCIDataset] Loaded {len(self.examples)} examples from "
               f"{len(sessions)} sessions ({split})")
+
+    def get_session_stats_for_model(self) -> dict[int, tuple]:
+        """Return per-session stats as (mean, std) tensors, keyed by session index.
+        Call this after dataset init and pass the result to model.build_per_session_norm()."""
+        return self.session_stats
 
     def __len__(self) -> int:
         return len(self.examples)
 
     def __getitem__(self, idx: int) -> dict:
         ex   = self.examples[idx]
-        sess = ex["session"]
-        mean, std = self.session_stats[sess]
+        sess_idx = ex["session_idx"]
+        mean, std = self.session_stats[sess_idx]
 
         ecog = ex["ecog"].copy().astype(np.float32)  # (T, 256)
-        ecog = (ecog - mean) / std                   # z-score
 
-        # Data augmentation
+        # Normalization is handled by PerSessionNorm inside ConformerEncoder using
+        # the same mean/std. Do NOT z-score here — applying (x-μ)/σ in the dataset
+        # and again in PerSessionNorm with the same stats produces ((x-μ)/σ - μ)/σ,
+        # which is incorrect. Raw data goes to the model; PerSessionNorm normalizes.
+
+        # Data augmentation (noise scaled by per-channel std so magnitude is relative
+        # to signal variance regardless of raw units)
         if self.augment:
             if self.white_noise_sd > 0:
-                ecog = ecog + np.random.randn(*ecog.shape).astype(np.float32) * self.white_noise_sd
+                noise = np.random.randn(*ecog.shape).astype(np.float32)
+                ecog = ecog + noise * (std * self.white_noise_sd)
             if self.offset_sd > 0:
-                offset = (np.random.randn(1, ecog.shape[1]) * self.offset_sd).astype(np.float32)
-                ecog = ecog + offset
+                offset = np.random.randn(1, ecog.shape[1]).astype(np.float32)
+                ecog = ecog + offset * (std * self.offset_sd)
 
         text = ex["text"]
 
@@ -225,30 +263,22 @@ class BCIDataset(Dataset):
                 return_tensors="pt",
             )
             input_ids = enc["input_ids"][0]                   # (L,)
-            # Labels: shift left by 1, last token predicts EOS
-            labels = input_ids.clone()
-            # Prepend BOS if not already there
-            bos_id = self.tokenizer.bos_token_id
-            if bos_id is not None and (len(input_ids) == 0 or input_ids[0] != bos_id):
-                bos = torch.tensor([bos_id], dtype=torch.long)
-                input_ids = torch.cat([bos, input_ids])
-                labels    = torch.cat([bos, labels])           # will be right-shifted in model
-            # Append EOS
-            eos_id = self.tokenizer.eos_token_id
-            if eos_id is not None:
-                eos = torch.tensor([eos_id], dtype=torch.long)
-                input_ids = torch.cat([input_ids, eos])
-                labels    = torch.cat([labels,    eos])
+            prefix = torch.tensor(self._prefix_ids, dtype=torch.long)
+            eos    = torch.tensor([self._eos_id],   dtype=torch.long)
+            # [<think>, \n, </think>, \n, text_tokens..., <|im_end|>]
+            input_ids_full = torch.cat([prefix, input_ids, eos])
+            labels = input_ids_full[1:]  # causal shift
         else:
-            input_ids = None
-            labels    = None
+            input_ids_full = None
+            labels         = None
 
         return {
             "ecog":      torch.from_numpy(ecog),   # (T, 256) float32
             "ecog_len":  ex["n"],
-            "input_ids": input_ids,                # (L+1,) or None
-            "labels":    labels,                   # (L+1,) or None
+            "input_ids": input_ids_full,          # (L+2,) [BOS | text | EOS] or None
+            "labels":    labels,                   # (L+2,) — causal shift handled by model
             "text":      text,
+            "session_idx": sess_idx,              # int — for per-session norm in model
         }
 
 
@@ -270,17 +300,19 @@ def bci_collate_fn(batch: list[dict]) -> dict:
 
     ecog_lens_t = torch.tensor(ecog_lens, dtype=torch.long)
 
-    # Text: pad with -100 for labels, 0 for input_ids
+    # Text: input_ids = [BOS | text | EOS] (L+2), labels = [text | EOS] (L+1)
     if batch[0]["input_ids"] is not None:
-        max_l = max(b["input_ids"].shape[0] for b in batch)
-        ids_padded = torch.zeros(len(batch), max_l, dtype=torch.long)
-        lbl_padded = torch.full((len(batch), max_l), -100, dtype=torch.long)
-        attn_padded = torch.zeros(len(batch), max_l, dtype=torch.long)
+        max_l_ids = max(b["input_ids"].shape[0] for b in batch)
+        max_l_lbl = max(b["labels"].shape[0] for b in batch)
+
+        ids_padded = torch.zeros(len(batch), max_l_ids, dtype=torch.long)
+        lbl_padded = torch.full((len(batch), max_l_lbl), -100, dtype=torch.long)
+        attn_padded = torch.zeros(len(batch), max_l_ids, dtype=torch.long)
+
         for i, b in enumerate(batch):
-            L = b["input_ids"].shape[0]
-            ids_padded[i, :L] = b["input_ids"]
-            lbl_padded[i, :L] = b["labels"]
-            attn_padded[i, :L] = 1
+            ids_padded[i, :b["input_ids"].shape[0]] = b["input_ids"]
+            lbl_padded[i, :b["labels"].shape[0]] = b["labels"]
+            attn_padded[i, :b["input_ids"].shape[0]] = 1
     else:
         ids_padded = lbl_padded = attn_padded = None
 
@@ -291,6 +323,7 @@ def bci_collate_fn(batch: list[dict]) -> dict:
         "labels":        lbl_padded,      # (B, L_max) or None
         "attention_mask": attn_padded,    # (B, L_max) or None
         "texts":         [b["text"] for b in batch],
+        "session_idx":    torch.tensor([b["session_idx"] for b in batch], dtype=torch.long),
     }
 
 
@@ -305,7 +338,7 @@ def make_dataloaders(
     batch_size: int       = 8,
     max_text_len: int     = 64,
     num_workers: int      = 0,
-    white_noise_sd: float = 1.0,
+    white_noise_sd: float = 0.2,
     offset_sd: float      = 0.2,
 ) -> tuple[DataLoader, DataLoader]:
     """Return (train_loader, val_loader)."""
@@ -322,11 +355,11 @@ def make_dataloaders(
     train_loader = DataLoader(
         train_ds, batch_size=batch_size, shuffle=True,
         collate_fn=bci_collate_fn, num_workers=num_workers,
-        pin_memory=True,
+        pin_memory=True, persistent_workers=False,
     )
     val_loader = DataLoader(
         val_ds, batch_size=batch_size, shuffle=False,
         collate_fn=bci_collate_fn, num_workers=num_workers,
-        pin_memory=True,
+        pin_memory=True, persistent_workers=False,
     )
     return train_loader, val_loader

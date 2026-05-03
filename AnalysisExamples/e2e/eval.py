@@ -35,9 +35,10 @@ from e2e.dataset import BCIDataset, bci_collate_fn
 ALL_SESSIONS = [
     "t12.2022.04.28", "t12.2022.05.05", "t12.2022.05.17", "t12.2022.05.19",
     "t12.2022.05.24", "t12.2022.05.26", "t12.2022.06.02", "t12.2022.06.07",
-    "t12.2022.06.14", "t12.2022.06.16", "t12.2022.06.21", "t12.2022.06.28",
-    "t12.2022.07.05", "t12.2022.07.14", "t12.2022.07.21", "t12.2022.07.27",
-    "t12.2022.08.02", "t12.2022.08.11", "t12.2022.08.13",
+    "t12.2022.06.14", "t12.2022.06.16", "t12.2022.06.21", "t12.2022.06.23",
+    "t12.2022.06.28", "t12.2022.07.05", "t12.2022.07.14", "t12.2022.07.21",
+    "t12.2022.07.27", "t12.2022.07.29", "t12.2022.08.02", "t12.2022.08.11",
+    "t12.2022.08.13", "t12.2022.08.18", "t12.2022.08.23", "t12.2022.08.25",
 ]
 
 
@@ -95,9 +96,19 @@ def evaluate(args):
     )
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
+    # Qwen3.5 tokenizer bug: bos_token_id=None, eos_token_id=248044 (<|endoftext|>).
+    # Use 248046 (<|im_end|>) as the real text EOS and block 248044 during generation.
+    tokenizer.eos_token_id = 248046
 
     # ── Dataset ───────────────────────────────────────────────────────────
     sessions = ALL_SESSIONS
+    # Load train dataset to get per-session normalization stats
+    train_ds = BCIDataset(
+        args.data_dir, sessions, split="train",
+        tokenizer=tokenizer, max_text_len=args.max_text_len, augment=False,
+    )
+    session_stats = train_ds.get_session_stats_for_model()
+
     ds = BCIDataset(
         args.data_dir, sessions, split="test",
         tokenizer=tokenizer, max_text_len=args.max_text_len, augment=False,
@@ -114,7 +125,10 @@ def evaluate(args):
         args.lm,
         lora_r=args.lora_r,
         lora_alpha=args.lora_alpha,
+        n_sessions=len(sessions),
     )
+    model.build_per_session_norm(session_stats)
+
     ckpt_file = os.path.join(args.ckpt, "checkpoint.pt")
     ckpt = torch.load(ckpt_file, map_location="cpu", weights_only=False)
     model.load_state_dict(ckpt["model"], strict=False)
@@ -127,11 +141,13 @@ def evaluate(args):
     for i, batch in enumerate(loader):
         ecog     = batch["ecog"].to(device)
         ecog_len = batch["ecog_lengths"].to(device)
+        session_ids = batch["session_idx"].to(device)
 
         texts = model.generate(
             ecog, ecog_len, tokenizer,
             max_new_tokens=args.max_new_tokens,
             num_beams=args.beam,
+            session_ids=session_ids,
         )
         all_hyps.extend(texts)
         all_refs.extend(batch["texts"])

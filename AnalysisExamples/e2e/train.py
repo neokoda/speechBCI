@@ -64,22 +64,36 @@ def get_cosine_schedule(optimizer, warmup_steps, total_steps, min_lr_ratio=0.1):
     return LambdaLR(optimizer, lr_lambda)
 
 
+def _trainable_state_dict(model):
+    """Return only trainable params as a state dict. Avoids iterating all 783M frozen
+    LLM params (which causes hangs on PEFT-wrapped large models)."""
+    return {k: v for k, v in model.state_dict().items()
+            if k.startswith("encoder.") or k.startswith("projector.") or "lora" in k.lower()}
+
+
 def save_checkpoint(path, model, optimizer, scheduler, step, best_wer, args):
     os.makedirs(path, exist_ok=True)
+    import time
+    t0 = time.time()
+    # Only save trainable params — avoids PEFT state_dict() hanging on 783M frozen LLM
+    model_sd = _trainable_state_dict(model)
+    print(f"[step {step}] Saving {len(model_sd)} trainable keys "
+          f"({sum(v.numel() for v in model_sd.values()):,} params)...")
     ckpt = {
         "step":       step,
         "best_wer":   best_wer,
         "args":       vars(args),
-        "model":      model.state_dict(),
+        "model":      model_sd,
         "optimizer":  optimizer.state_dict(),
         "scheduler":  scheduler.state_dict(),
     }
     torch.save(ckpt, os.path.join(path, "checkpoint.pt"))
-    print(f"[step {step}] Saved checkpoint to {path}/checkpoint.pt")
+    print(f"[step {step}] Saved checkpoint to {path}/checkpoint.pt ({time.time()-t0:.1f}s)")
 
 
 def load_checkpoint(path, model, optimizer, scheduler, reset_optimizer=False,
-                    init_weights_from=None, init_encoder_from=None, phase2_lrs=None):
+                    init_weights_from=None, init_encoder_from=None, phase2_lrs=None,
+                    reset_llm_weights=False):
     """Load checkpoint.
 
     If init_encoder_from is set, only the encoder and projector weights are loaded
@@ -87,28 +101,32 @@ def load_checkpoint(path, model, optimizer, scheduler, reset_optimizer=False,
     If init_weights_from is set, model weights are loaded from that directory
     (useful for starting from best/ with a fresh optimizer).
     If reset_optimizer is True, optimizer/scheduler state are NOT restored.
+    If reset_llm_weights is True, skip loading LLM weights — useful when the LLM
+    dtype in the checkpoint differs from the current model dtype.
     phase2_lrs: list of (lr,) values matching optimizer.param_groups order;
                 applied after loading optimizer state to ensure new LRs take effect.
     """
-    # Determine which file to load model weights from
+    # Determine the primary checkpoint file to load.
+    # init_encoder_from: load only encoder+projector (for warm-starting a new LLM).
+    # init_weights_from: load full model state (for resuming or transferring).
+    # path/checkpoint.pt: resume from current experiment.
+    resume_file = os.path.join(path, "checkpoint.pt")
     weights_file = os.path.join(init_weights_from or path, "checkpoint.pt")
-    resume_file  = os.path.join(path, "checkpoint.pt")
 
-    if not os.path.exists(weights_file):
-        print(f"No checkpoint found at {weights_file}, starting from scratch.")
-        return 0, float("inf")
-
-    weights_ckpt = torch.load(weights_file, map_location="cpu", weights_only=False)
-
+    # If init_encoder_from is set, use it for encoder+projector (doesn't need weights_file).
     if init_encoder_from is not None:
-        # Load only encoder + projector weights from a separate checkpoint
-        enc_file = os.path.join(init_encoder_from, "checkpoint.pt")
+        if init_encoder_from.endswith(".pt"):
+            enc_file = init_encoder_from
+        else:
+            enc_file = os.path.join(init_encoder_from, "checkpoint.pt")
+        if not os.path.exists(enc_file):
+            print(f"No encoder checkpoint found at {enc_file}, starting from scratch.")
+            return 0, float("inf")
         print(f"Loading encoder+projector from {enc_file}")
         enc_ckpt = torch.load(enc_file, map_location="cpu", weights_only=False)
         enc_state = {k: v for k, v in enc_ckpt["model"].items()
                      if k.startswith("encoder.") or k.startswith("projector.")}
         model_state = model.state_dict()
-        # Match shapes — if encoder config differs (different d_model), skip mismatched keys
         compatible = {}
         for k, v in enc_state.items():
             if k in model_state and model_state[k].shape == v.shape:
@@ -116,13 +134,44 @@ def load_checkpoint(path, model, optimizer, scheduler, reset_optimizer=False,
             else:
                 print(f"  [encoder] skipping {k}: shape mismatch or missing")
         model.load_state_dict(compatible, strict=False)
-        # Also load main weights if init_weights_from is set
-        if init_weights_from is not None:
+        # Also load full weights if init_weights_from is set
+        if init_weights_from is not None and os.path.exists(weights_file):
             print(f"Loading full model weights from {weights_file}")
+            weights_ckpt = torch.load(weights_file, map_location="cpu", weights_only=False)
             model.load_state_dict(weights_ckpt["model"], strict=False)
+            # Resume from this checkpoint for optimizer state
+            weights_file = weights_file
+        else:
+            # No resume checkpoint — encoder loaded, everything else random init
+            return 0, float("inf")
+    elif not os.path.exists(weights_file):
+        print(f"No checkpoint found at {weights_file}, starting from scratch.")
+        return 0, float("inf")
     else:
         print(f"Loading model weights from {weights_file}")
-        model.load_state_dict(weights_ckpt["model"], strict=False)
+        weights_ckpt = torch.load(weights_file, map_location="cpu", weights_only=False)
+        if reset_llm_weights:
+            # Skip LLM weights — the checkpoint has them in bf16 but the current
+            # model may have them in fp32 (or vice versa), causing dtype mismatches.
+            # LoRA weights are random anyway so this is fine.
+            # Direct tensor copy avoids PEFT's slow load_state_dict machinery
+            # (which iterates all model keys on every call and hangs on large models).
+            model_state = model.state_dict()
+            loaded_keys, skipped = [], []
+            for k in model_state:
+                if k in weights_ckpt["model"]:
+                    src = weights_ckpt["model"][k]
+                    if src.shape == model_state[k].shape:
+                        model_state[k].copy_(src)
+                        loaded_keys.append(k)
+                    else:
+                        skipped.append(f"{k} (shape mismatch)")
+                else:
+                    skipped.append(k)
+            print(f"  Loaded {len(loaded_keys)} keys; skipped {len(skipped)} "
+                  f"(LLM dtype mismatch or shape mismatch).")
+        else:
+            model.load_state_dict(weights_ckpt["model"], strict=False)
 
     if reset_optimizer:
         print("--reset-optimizer: skipping optimizer/scheduler restore; step counter reset to 0.")
@@ -179,34 +228,37 @@ def compute_wer(hyps: list[str], refs: list[str]) -> float:
 # ---------------------------------------------------------------------------
 
 @torch.no_grad()
-def validate(model, val_loader, tokenizer, device, max_batches=50):
+def validate(model, val_loader, tokenizer, device, max_batches=None):
+    was_training = model.training
     model.eval()
     total_loss = 0.0
     n_loss     = 0
     hyps, refs = [], []
 
     for i, batch in enumerate(val_loader):
-        if i >= max_batches:
+        if max_batches is not None and i >= max_batches:
             break
-        ecog     = batch["ecog"].to(device)
-        ecog_len = batch["ecog_lengths"].to(device)
-        ids      = batch["input_ids"].to(device)
-        attn     = batch["attention_mask"].to(device)
-        labels   = batch["labels"].to(device)
+        ecog        = batch["ecog"].to(device)
+        ecog_len    = batch["ecog_lengths"].to(device)
+        ids         = batch["input_ids"].to(device)
+        attn        = batch["attention_mask"].to(device)
+        labels      = batch["labels"].to(device)
+        session_ids = batch["session_idx"].to(device)
 
         with torch.autocast("cuda", dtype=torch.bfloat16):
-            loss = model(ecog, ecog_len, ids, attn, labels)
+            loss = model(ecog, ecog_len, ids, attn, labels, session_ids)
         total_loss += loss.item()
         n_loss     += 1
 
         # Greedy decode for WER
-        texts = model.generate(ecog, ecog_len, tokenizer, max_new_tokens=64, num_beams=1)
+        texts = model.generate(ecog, ecog_len, tokenizer, max_new_tokens=64, num_beams=1,
+                              session_ids=session_ids)
         hyps.extend(texts)
         refs.extend(batch["texts"])
 
     avg_loss = total_loss / max(1, n_loss)
     wer      = compute_wer(hyps, refs)
-    model.train()
+    model.train(was_training)
     return avg_loss, wer
 
 
@@ -234,6 +286,7 @@ def train(args):
 
     # ── Data ──────────────────────────────────────────────────────────────
     sessions = ALL_SESSIONS
+    n_sessions = len(sessions)
     train_loader, val_loader = make_dataloaders(
         args.data_dir, sessions, tokenizer,
         batch_size=args.batch_size,
@@ -259,14 +312,25 @@ def train(args):
         spec_augment=args.spec_augment,
         spatial_attention=not args.no_spatial_attn,
         label_smoothing=args.label_smoothing,
+        n_sessions=n_sessions,
     )
+
+    # Load per-session normalization stats from train dataset into model
+    train_session_stats = train_loader.dataset.get_session_stats_for_model()
+    model.build_per_session_norm(train_session_stats)
+    print(f"Loaded per-session normalization for {len(train_session_stats)} sessions.")
+
     model.to(device)
     model.print_trainable_params()
 
     # ── Optimizer (separate param groups with different LRs) ──────────────
-    enc_params  = list(model.encoder.parameters())
-    proj_params = list(model.projector.parameters())
-    lora_params = [p for n, p in model.llm.named_parameters() if "lora" in n.lower()]
+    # Only include trainable params — AdamW state is proportional to param count.
+    # In Phase 2 all params are technically trainable but we only need optimizer
+    # state for params that will actually receive gradients (enc + proj + LoRA).
+    enc_params  = [p for p in model.encoder.parameters() if p.requires_grad]
+    proj_params = [p for p in model.projector.parameters() if p.requires_grad]
+    lora_params = [p for n, p in model.llm.named_parameters()
+                   if "lora" in n.lower() and p.requires_grad]
 
     if args.phase == 1:
         # Projector only
@@ -278,20 +342,32 @@ def train(args):
             {"params": lora_params, "lr": args.lr_lora},
         ]
 
+    import time
+    t0 = time.time()
     optimizer = AdamW(opt_groups, weight_decay=args.weight_decay)
+    print(f"[TIMING] AdamW init: {time.time()-t0:.1f}s")
+    t0 = time.time()
     max_steps = args.phase1_steps if args.phase == 1 else args.max_steps
     scheduler = get_cosine_schedule(optimizer, args.warmup_steps, max_steps)
+    print(f"[TIMING] Scheduler init: {time.time()-t0:.1f}s")
 
     # ── Resume ────────────────────────────────────────────────────────────
     phase2_lrs = [args.lr_encoder, args.lr_projector, args.lr_lora] \
                  if args.phase == 2 else [args.lr_projector]
+
+    # Phase 2 convenience: load from a stripped checkpoint (no LLM keys) to avoid
+    # PEFT state_dict hang on large models. Falls back to init_weights_from.
+    weights_src = getattr(args, "phase2_no_llm_ckpt", None) or args.init_weights_from
+    t0 = time.time()
     start_step, best_wer = load_checkpoint(
         args.output_dir, model, optimizer, scheduler,
         reset_optimizer=args.reset_optimizer,
-        init_weights_from=args.init_weights_from,
+        init_weights_from=weights_src,
         init_encoder_from=getattr(args, "init_encoder_from", None),
         phase2_lrs=phase2_lrs,
+        reset_llm_weights=False,  # stripped checkpoint has no LLM keys; load directly
     )
+    print(f"[TIMING] load_checkpoint: {time.time()-t0:.1f}s")
     global_step = start_step
 
     # ── Training loop ─────────────────────────────────────────────────────
@@ -303,7 +379,13 @@ def train(args):
     save_every   = args.save_every
     patience_cnt = 0
 
-    model.train()
+    # Phase 1: only the projector is trainable; keep frozen LLM/encoder in eval mode
+    # so dropout is inactive and batch norm stays deterministic.
+    if args.phase == 1:
+        model.eval()
+    else:
+        model.train()
+
     accum_loss = 0.0
     t0 = time.time()
 
@@ -319,14 +401,15 @@ def train(args):
                 train_iter = iter(train_loader)
                 batch = next(train_iter)
 
-            ecog     = batch["ecog"].to(device)
-            ecog_len = batch["ecog_lengths"].to(device)
-            ids      = batch["input_ids"].to(device)
-            attn     = batch["attention_mask"].to(device)
-            labels   = batch["labels"].to(device)
+            ecog        = batch["ecog"].to(device)
+            ecog_len    = batch["ecog_lengths"].to(device)
+            ids         = batch["input_ids"].to(device)
+            attn        = batch["attention_mask"].to(device)
+            labels      = batch["labels"].to(device)
+            session_ids = batch["session_idx"].to(device)
 
             with torch.autocast("cuda", dtype=torch.bfloat16):
-                loss = model(ecog, ecog_len, ids, attn, labels)
+                loss = model(ecog, ecog_len, ids, attn, labels, session_ids)
             (loss / grad_accum).backward()
             accum_loss += loss.item() / grad_accum
 
@@ -349,10 +432,21 @@ def train(args):
             accum_loss = 0.0
             t0 = time.time()
 
-        # --- validation ---
-        if global_step % eval_every == 0:
+        # --- smoke-test eval (forced early eval to catch generation bugs) ---
+        if args.eval_at is not None and global_step == args.eval_at:
             val_loss, val_wer = validate(model, val_loader, tokenizer, device,
                                           max_batches=args.val_batches)
+            torch.cuda.empty_cache()
+            print(f"[SMOKE TEST step {global_step}] val_loss={val_loss:.4f}  "
+                  f"val_WER={val_wer:.4f}")
+
+        # --- validation ---
+        # Skip eval at step 0 — val dataloader with num_workers>0 can deadlock when
+        # spawned concurrently with train workers.
+        if global_step > 0 and global_step % eval_every == 0:
+            val_loss, val_wer = validate(model, val_loader, tokenizer, device,
+                                          max_batches=args.val_batches)
+            torch.cuda.empty_cache()  # free fragmented memory from generation
             print(f"[EVAL step {global_step}] val_loss={val_loss:.4f}  "
                   f"val_WER={val_wer:.4f}  best_WER={best_wer:.4f}")
 
@@ -402,6 +496,10 @@ def parse_args():
     p.add_argument("--reset-optimizer", action="store_true",
                    help="Load only model weights from checkpoint; reset optimizer, "
                         "scheduler, and step counter to 0. Use when changing LRs significantly.")
+    p.add_argument("--reset-llm-weights", action="store_true",
+                   help="Skip loading LLM weights from checkpoint. Useful when the checkpoint's "
+                        "LLM dtype (e.g. bf16) differs from the current dtype (e.g. fp32). "
+                        "LoRA weights are random anyway so they are reinitialized.")
     p.add_argument("--init-encoder-from", default=None,
                    help="Load only encoder+projector weights from this checkpoint dir. "
                         "Useful when swapping the LLM but keeping a pretrained encoder.")
@@ -433,12 +531,21 @@ def parse_args():
     p.add_argument("--lora-r",       type=int, default=16)
     p.add_argument("--lora-alpha",   type=int, default=32)
     p.add_argument("--lora-dropout", type=float, default=0.05)
+    # Convenience: for Phase 2 after Phase 1, use stripped checkpoint to avoid
+    # PEFT state_dict hang on large LLMs. Set automatically via PHASE2_NO_LLM_CKPT env.
+    p.add_argument("--phase2-no-llm-ckpt", default=None,
+                   help="Path to a checkpoint file (without LLM keys) to load via "
+                        "init_weights_from in Phase 2. If set, init_weights_from is ignored.")
     # Eval / logging
     p.add_argument("--log-every",    type=int, default=50)
     p.add_argument("--eval-every",   type=int, default=500)
-    p.add_argument("--save-every",   type=int, default=2000)
-    p.add_argument("--val-batches",  type=int, default=50,
-                   help="Max validation batches per eval (greedy decode is slow)")
+    p.add_argument("--save-every",   type=int, default=5000)
+    p.add_argument("--eval-at",       type=int, default=None,
+                   help="Force an early eval at this specific step (smoke test). "
+                        "Useful to catch generation bugs before a long run.")
+    p.add_argument("--val-batches",  type=int, default=None,
+                   help="Max validation batches per eval (None=full set, default). "
+                        "Set to a small int for fast/noisy eval during quick runs.")
     p.add_argument("--patience",     type=int, default=5,
                    help="Early stopping patience in eval cycles (0=disabled)")
     # Data

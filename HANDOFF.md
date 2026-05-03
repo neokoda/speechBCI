@@ -1,6 +1,6 @@
 # Speech BCI: Thesis Progress Handoff
 
-**Last Updated:** 2026-04-28 (Session 17 — RTX 5090, E2E comprehensive experiments, label smoothing)
+**Last Updated:** 2026-05-03 (Session 18 — E2E v4/v5 audit, LR finder, encoder swap test, cross-attention decision)
 
 ---
 
@@ -260,9 +260,7 @@ E2E significantly underperforms two-stage pipeline. Root cause: overfitting — 
 
 ### Experiments Not Yet Run
 
-- **0.8B with label smoothing** — IN PROGRESS (`experiments/e2e_0.8b_smooth/`). Key change: `--label-smoothing 0.1` in loss. Label smoothing is the single highest-impact regularization for small-dataset LLM fine-tuning.
-- **24 sessions with fresh training** — The 5 extra sessions need a full retraining run from scratch, not a checkpoint swap.
-- **Architecture B** — Whisper-style cross-attention. More principled for transduction. Deferred until Architecture A is validated at WER < 0.50.
+- **Cross-attention decoder (Architecture B)** — Whisper-style: text self-attention cannot see ECoG positions; text only reaches ECoG via cross-attention. Structural fix for the text shortcut. Now the priority next step (see Session 18).
 
 ---
 
@@ -309,6 +307,118 @@ python AnalysisExamples/e2e/eval.py \
 ```
 
 **Environment:** Python 3.12 venv at `/workspace/venv312` has PyTorch 2.12 nightly (sm_120 support for RTX 5090). Python 3.11 venv at `/workspace/venv311` has TF 2.15 (for WFST pipeline only).
+
+---
+
+## 9b. Session 18 (2026-05-03) — E2E v4/v5 audit + cross-attention decision
+
+**Two clean runs completed on the working pipeline** (post dtype fixes, LayerNorm projector, empty-think seed, GatedDeltaNet bf16 hook):
+
+| Run | Steps | Best partial val_WER | **Full-set WER** | CER | Notes |
+|---|---|---|---|---|---|
+| `e2e_v4` | 15000 (CTC encoder init) | 0.3626 | **0.3068** | 0.2862 | Best published-pipeline result |
+| `e2e_v5` | 5000 (continuation from v4) | 0.3585 | **0.3043** | 0.2867 | Corrected LRs + stronger reg (see config below) |
+
+**Key finding:** the v5 improvement over v4 is just **0.25% absolute on full test set** (0.3068 → 0.3043). Optimization-side levers are exhausted.
+
+### Audit tests on v4/best (artifacts in `experiments/e2e_v4/tests/`)
+
+| Test | Result | Conclusion |
+|---|---|---|
+| `check_encoder.py` | within-sim=1.00, between-sim=0.79 (gap=0.21); WER_real=0.53 vs WER_zero=0.98 (ratio 1.84×) | Encoder is functional, uses ECoG. The PIPELINE.md `cosine sim 0.90–0.97` figure was from broken pre-fix runs and **does not apply** to current pipeline. |
+| `encoder_swap_test.py` (pretrained CTC encoder) | mean train loss 0.74 over 200 steps | Pretrained features usable but require projector re-fit |
+| `encoder_swap_test.py` (v4 encoder) | train loss → 0.002 in 20 steps | Massive memorization capacity → bottleneck is **generalization**, not encoder/projector capacity |
+| `lr_range_test.py` (encoder, Smith 2017) | min loss at lr=6.89e-4 → suggested 6.89e-5 | v4's 2e-4 was 3× too high |
+| `lr_range_test.py` (lora) | min loss at lr=7.56e-5 → suggested 7.56e-6 | v4's 5e-5 was 7× too high |
+| `rep_penalty_sweep.py` | full-set spread 0.0009 across {1.0..1.3} | rep_penalty is irrelevant for this model — the `1.2` default is harmless but not helpful |
+
+### Two non-issues confirmed (do not waste time on these)
+
+- **`white_noise_sd=1.0`** matches the original Willett 2023 baseline (`speech_release_baseline.yaml:47`). Our application scales by per-channel std before normalization, mathematically equivalent to noise std=1.0 in normalized space. Earlier PIPELINE.md TODO suggesting 0.1–0.3 was wrong; removed.
+- **Repetition penalty** (set to 1.2 in `model.generate`) does not measurably affect WER. Leave it or set to 1.0; doesn't matter.
+
+### Why optimization tuning has hit the wall
+
+- v4 train loss plateaued at 1.66 with `label_smoothing=0.1`. The smoothing floor for V≈152k, eps=0.1 is ~1.53 → effective excess is **0.13 unsmoothed CE**. Train predictions are essentially perfect.
+- v4 full-set val_WER=0.31 → the model fits train data near-perfectly but doesn't generalize.
+- v5 added stronger reg (LoRA dropout 0.2, weight decay 0.1) and lower LRs. Best result at step 2000/5000; later steps drifted slightly up.
+- This pattern is the classic signature of a **structural bottleneck**, not an optimization one.
+
+### Decision: cross-attention is next
+
+The text self-attention shortcut (LLM predicting next text from preceding text, bypassing ECoG via concat) is the most likely remaining bottleneck. Even though our encoder is now demonstrably functional, the LLM has direct access to text tokens during teacher forcing — the gradient signal that should flow through ECoG can be partially short-circuited.
+
+A Whisper-style decoder fixes this **structurally**: text self-attention only sees text; cross-attention is the only path from text to ECoG. Cannot reuse v4's LoRA weights (different attention modules); can reuse the CTC encoder via `--init-encoder-from`.
+
+### Session 18 v4 / v5 commands (for reproducibility)
+
+**v4 — fresh from CTC encoder, the run that achieved WER 0.3068:**
+```bash
+source /workspace/venv/bin/activate
+cd /workspace/speechBCI
+
+python -u AnalysisExamples/e2e/train.py \
+  --data-dir data/derived/tfRecords \
+  --lm Qwen/Qwen3.5-0.8B-Base \
+  --output-dir experiments/e2e_v4 \
+  --init-encoder-from experiments/ctc_4l/best \
+  --reset-optimizer --phase 2 --max-steps 15000 \
+  --batch-size 8 --grad-accum 4 --num-workers 4 \
+  --lr-encoder 2e-4 --lr-projector 2e-4 --lr-lora 5e-5 \
+  --lora-r 16 --weight-decay 0.05 --lora-dropout 0.1 \
+  --warmup-steps 200 --patience 0 \
+  --eval-every 500 --save-every 1000 --log-every 50 \
+  --label-smoothing 0.1 --max-text-len 64
+```
+
+**v5 — continuation from v4/best with corrected LRs (the marginal +0.25% improvement):**
+```bash
+python -u AnalysisExamples/e2e/train.py \
+  --data-dir data/derived/tfRecords \
+  --lm Qwen/Qwen3.5-0.8B-Base \
+  --output-dir experiments/e2e_v5 \
+  --init-weights-from experiments/e2e_v4/best \
+  --reset-optimizer --phase 2 --max-steps 5000 \
+  --batch-size 8 --grad-accum 4 --num-workers 4 \
+  --lr-encoder 5e-5 --lr-projector 1e-4 --lr-lora 1e-5 \
+  --lora-r 16 --weight-decay 0.1 --lora-dropout 0.2 \
+  --warmup-steps 100 --patience 0 \
+  --eval-every 500 --save-every 1000 --log-every 50 \
+  --label-smoothing 0.1 --max-text-len 64
+```
+
+**Full-set eval (use this, not partial):**
+```bash
+python AnalysisExamples/e2e/eval.py \
+  --data-dir data/derived/tfRecords \
+  --ckpt experiments/e2e_v5/best \
+  --lm Qwen/Qwen3.5-0.8B-Base \
+  --beam 1 --batch-size 8 \
+  --output experiments/e2e_v5/eval_full.json
+```
+
+### What's next (priority for next session)
+
+1. **Implement cross-attention decoder** (`AnalysisExamples/e2e/cross_attention_model.py`):
+   - Encoder + projector reused from v4/best or ctc_4l/best
+   - Decoder is a Whisper-style stack: each block has self-attention (text-only, causal) + cross-attention to ECoG embeddings + FFN
+   - Initialize decoder from Qwen3.5 weights where shapes match; new cross-attention layers from scratch (or with Xavier init)
+   - LoRA on q/k/v/o of the new cross-attention only, full-train cross-attn projection matrices
+   - Train loss: same CE over text tokens
+2. **Train a fresh cross-attention run** for ~15k steps with lr_encoder=1e-4, lr_lora=2e-5 (using LR-finder findings).
+3. **Decision gate after first cross-attention run:**
+   - WER < 0.27 → cross-attention worked; refine.
+   - WER ≥ 0.30 → text shortcut isn't the dominant issue; revisit data-side levers (LibriSpeech encoder pretraining, two-stage Conformer as feature extractor).
+
+**Environment used in Session 18:** `/workspace/venv` (python via `/usr/bin/python` in current shell — venv symlinks were stale but packages resolve correctly: torch 2.4.1+cu124, peft 0.19.1, transformers 5.6.2). All training and audit scripts use `python -u` for unbuffered output.
+
+**Audit script files** (created in Session 18):
+- `AnalysisExamples/e2e/lr_range_test.py` — Smith 2017 LR finder
+- `AnalysisExamples/e2e/encoder_swap_test.py` — encoder isolation test
+- `AnalysisExamples/e2e/rep_penalty_sweep.py` — sweep generation penalty values
+- `AnalysisExamples/e2e/check_encoder.py` (already existed) — discriminability + zeroed-ECoG WER
+
+**Train.py edits in Session 18:** `--val-batches` default changed from 50 → None (full eval). Pass an int to keep partial val for quick iteration.
 
 ---
 

@@ -11,10 +11,11 @@
 #   docs/             ~5  MB  — PDFs + HANDOFF.md
 #
 # Usage:
-#   bash backup_to_drive.sh               # full backup
-#   bash backup_to_drive.sh --dry-run     # preview without uploading
-#   bash backup_to_drive.sh --skip-lm     # skip the 122 GB speech_5gram/
-#   bash backup_to_drive.sh --restore     # download from Drive back to local
+#   bash backup_to_drive.sh                  # full backup
+#   bash backup_to_drive.sh --dry-run        # preview without uploading
+#   bash backup_to_drive.sh --skip-lm        # skip the 122 GB speech_5gram/
+#   bash backup_to_drive.sh --restore        # download from Drive back to local
+#   bash backup_to_drive.sh --data-only --restore  # restore only data/derived (no 5-gram, no experiments)
 # =============================================================================
 
 set -euo pipefail
@@ -28,6 +29,7 @@ LOG="/tmp/backup_$(date +%Y%m%d_%H%M%S).log"
 DRY_RUN=false
 SKIP_LM=false
 RESTORE=false
+DATA_ONLY=false
 
 # ── Parse flags ───────────────────────────────────────────────────────────────
 for arg in "$@"; do
@@ -35,6 +37,7 @@ for arg in "$@"; do
         --dry-run) DRY_RUN=true ;;
         --skip-lm) SKIP_LM=true ;;
         --restore) RESTORE=true ;;
+        --data-only) DATA_ONLY=true ;;
         *) echo "Unknown argument: $arg" >&2; exit 1 ;;
     esac
 done
@@ -178,6 +181,37 @@ run_backup() {
     fi
     echo ""
 }
+
+# ── DATA_ONLY: restore only data/derived + e2e experiment dirs ─────────────────
+if $DATA_ONLY; then
+    echo "============================================================"
+    echo "  DATA-ONLY MODE: restoring only data/derived + recent e2e runs"
+    echo "  $(date '+%Y-%m-%d %H:%M:%S')"
+    echo "============================================================"
+    echo ""
+
+    # 1. data/derived (TFRecords + baseline RNN)
+    run_backup \
+        "data/derived/ (TFRecords)" \
+        "$REPO/data/derived" \
+        "$REMOTE/data/derived"
+
+    # 2. Recent e2e experiment dirs (lightweight — pull if they exist)
+    for exp_dir in e2e_0.8b_v2 e2e_0.8b e2e_2b_v2 e2e_0.8b_fixed; do
+        if [[ -d "$REPO/experiments/$exp_dir" ]]; then
+            run_backup \
+                "experiments/$exp_dir/ (e2e checkpoint)" \
+                "$REPO/experiments/$exp_dir" \
+                "$REMOTE/experiments/$exp_dir"
+        fi
+    done
+
+    echo "============================================================"
+    echo "  Data-only restore complete: $(date '+%Y-%m-%d %H:%M:%S')"
+    echo "  Log: $LOG"
+    echo "============================================================"
+    exit 0
+fi
 
 # ── Backup targets ────────────────────────────────────────────────────────────
 
