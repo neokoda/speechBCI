@@ -4,18 +4,22 @@
 Computes WER and CER on the test split and optionally writes per-utterance
 predictions to a JSON file for error analysis.
 
-Usage:
+Usage (LLaVA / Qwen model — v4/v5):
     python AnalysisExamples/e2e/eval.py \\
         --data-dir data/derived/tfRecords \\
-        --ckpt experiments/e2e_0.8b/best \\
+        --ckpt experiments/e2e_v5/best \\
         --lm Qwen/Qwen3.5-0.8B-Base \\
-        --output experiments/e2e_0.8b/eval_results.json \\
+        --output experiments/e2e_v5/eval_results.json \\
         --beam 1
 
-    # Compare multiple checkpoints quickly
-    for ckpt in experiments/e2e_0.8b/best experiments/e2e_2b/best; do
-        python AnalysisExamples/e2e/eval.py --ckpt $ckpt --data-dir ...
-    done
+Usage (Whisper cross-attention model — v6):
+    python AnalysisExamples/e2e/eval.py \\
+        --data-dir data/derived/tfRecords \\
+        --ckpt experiments/e2e_v6/best \\
+        --model-type whisper \\
+        --whisper-model openai/whisper-medium.en \\
+        --output experiments/e2e_v6/eval_results.json \\
+        --beam 1
 """
 
 import argparse
@@ -29,7 +33,6 @@ from transformers import AutoTokenizer
 from torch.utils.data import DataLoader
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from e2e.model import E2EBCIModel
 from e2e.dataset import BCIDataset, bci_collate_fn
 
 ALL_SESSIONS = [
@@ -90,45 +93,111 @@ def evaluate(args):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Device: {device}")
 
-    # ── Tokenizer ─────────────────────────────────────────────────────────
-    tokenizer = AutoTokenizer.from_pretrained(
-        args.lm, trust_remote_code=True, use_fast=True
-    )
-    if tokenizer.pad_token is None:
-        tokenizer.pad_token = tokenizer.eos_token
-    # Qwen3.5 tokenizer bug: bos_token_id=None, eos_token_id=248044 (<|endoftext|>).
-    # Use 248046 (<|im_end|>) as the real text EOS and block 248044 during generation.
-    tokenizer.eos_token_id = 248046
+    # ── Tokenizer & model ─────────────────────────────────────────────────
+    if args.model_type == "whisper":
+        from e2e.whisper_model import WhisperBCIModel
 
-    # ── Dataset ───────────────────────────────────────────────────────────
-    sessions = ALL_SESSIONS
-    # Load train dataset to get per-session normalization stats
-    train_ds = BCIDataset(
-        args.data_dir, sessions, split="train",
-        tokenizer=tokenizer, max_text_len=args.max_text_len, augment=False,
-    )
-    session_stats = train_ds.get_session_stats_for_model()
+        tokenizer = AutoTokenizer.from_pretrained(args.whisper_model, use_fast=True)
 
-    ds = BCIDataset(
-        args.data_dir, sessions, split="test",
-        tokenizer=tokenizer, max_text_len=args.max_text_len, augment=False,
-    )
-    loader = DataLoader(
-        ds, batch_size=args.batch_size, shuffle=False,
-        collate_fn=bci_collate_fn, num_workers=0,
-    )
-    print(f"Test examples: {len(ds)}")
+        sessions = ALL_SESSIONS
+        train_ds = BCIDataset(
+            args.data_dir, sessions, split="train",
+            tokenizer=tokenizer, max_text_len=args.max_text_len, augment=False,
+        )
+        session_stats = train_ds.get_session_stats_for_model()
 
-    # ── Model ─────────────────────────────────────────────────────────────
-    print(f"Loading model from {args.ckpt}")
-    model = E2EBCIModel.from_pretrained(
-        args.lm,
-        lora_r=args.lora_r,
-        lora_alpha=args.lora_alpha,
-        n_sessions=len(sessions),
-    )
-    model.build_per_session_norm(session_stats)
+        ds = BCIDataset(
+            args.data_dir, sessions, split="test",
+            tokenizer=tokenizer, max_text_len=args.max_text_len, augment=False,
+        )
+        loader = DataLoader(
+            ds, batch_size=args.batch_size, shuffle=False,
+            collate_fn=bci_collate_fn, num_workers=0,
+        )
+        print(f"Test examples: {len(ds)}")
 
+        print(f"Loading WhisperBCIModel from {args.ckpt}")
+        model = WhisperBCIModel(
+            whisper_name=args.whisper_model,
+            lora_r=args.lora_r,
+            lora_alpha=args.lora_alpha,
+            cross_attn_only=args.cross_attn_only,
+            n_sessions=len(sessions),
+        )
+        model.build_per_session_norm(session_stats)
+
+    elif args.model_type == "canary":
+        from e2e.canary_model import CanaryBCIModel
+
+        qwen_name = args.lm or "Qwen/Qwen3-1.7B"
+        tokenizer = AutoTokenizer.from_pretrained(qwen_name, trust_remote_code=True, use_fast=True)
+        if tokenizer.pad_token is None:
+            tokenizer.pad_token = tokenizer.eos_token
+        tokenizer.eos_token_id = 248046  # <|im_end|> for Qwen3
+
+        sessions = ALL_SESSIONS
+        train_ds = BCIDataset(
+            args.data_dir, sessions, split="train",
+            tokenizer=tokenizer, max_text_len=args.max_text_len, augment=False,
+        )
+        session_stats = train_ds.get_session_stats_for_model()
+
+        ds = BCIDataset(
+            args.data_dir, sessions, split="test",
+            tokenizer=tokenizer, max_text_len=args.max_text_len, augment=False,
+        )
+        loader = DataLoader(
+            ds, batch_size=args.batch_size, shuffle=False,
+            collate_fn=bci_collate_fn, num_workers=0,
+        )
+        print(f"Test examples: {len(ds)}")
+
+        print(f"Loading CanaryBCIModel from {args.ckpt}")
+        model = CanaryBCIModel(
+            qwen_name=qwen_name,
+            lora_r=args.lora_r,
+            lora_alpha=args.lora_alpha,
+            n_sessions=len(sessions),
+        )
+        model.build_per_session_norm(session_stats)
+
+    else:
+        from e2e.model import E2EBCIModel
+
+        tokenizer = AutoTokenizer.from_pretrained(
+            args.lm, trust_remote_code=True, use_fast=True
+        )
+        if tokenizer.pad_token is None:
+            tokenizer.pad_token = tokenizer.eos_token
+        tokenizer.eos_token_id = 248046  # <|im_end|> for Qwen3.5
+
+        sessions = ALL_SESSIONS
+        train_ds = BCIDataset(
+            args.data_dir, sessions, split="train",
+            tokenizer=tokenizer, max_text_len=args.max_text_len, augment=False,
+        )
+        session_stats = train_ds.get_session_stats_for_model()
+
+        ds = BCIDataset(
+            args.data_dir, sessions, split="test",
+            tokenizer=tokenizer, max_text_len=args.max_text_len, augment=False,
+        )
+        loader = DataLoader(
+            ds, batch_size=args.batch_size, shuffle=False,
+            collate_fn=bci_collate_fn, num_workers=0,
+        )
+        print(f"Test examples: {len(ds)}")
+
+        print(f"Loading E2EBCIModel from {args.ckpt}")
+        model = E2EBCIModel.from_pretrained(
+            args.lm,
+            lora_r=args.lora_r,
+            lora_alpha=args.lora_alpha,
+            n_sessions=len(sessions),
+        )
+        model.build_per_session_norm(session_stats)
+
+    # ── Load checkpoint weights ────────────────────────────────────────────
     ckpt_file = os.path.join(args.ckpt, "checkpoint.pt")
     ckpt = torch.load(ckpt_file, map_location="cpu", weights_only=False)
     model.load_state_dict(ckpt["model"], strict=False)
@@ -139,8 +208,8 @@ def evaluate(args):
     # ── Decode all batches ─────────────────────────────────────────────────
     all_hyps, all_refs = [], []
     for i, batch in enumerate(loader):
-        ecog     = batch["ecog"].to(device)
-        ecog_len = batch["ecog_lengths"].to(device)
+        ecog        = batch["ecog"].to(device)
+        ecog_len    = batch["ecog_lengths"].to(device)
         session_ids = batch["session_idx"].to(device)
 
         texts = model.generate(
@@ -165,7 +234,6 @@ def evaluate(args):
     print(f"  (baseline two-stage: WER=0.1895 / CER=0.1362)")
     print(f"{'='*60}\n")
 
-    # ── Sample outputs ────────────────────────────────────────────────────
     print("Sample predictions:")
     for d in details[:5]:
         print(f"  REF: {d['ref']}")
@@ -177,15 +245,15 @@ def evaluate(args):
     if args.output:
         os.makedirs(os.path.dirname(args.output) or ".", exist_ok=True)
         results = {
-            "checkpoint": args.ckpt,
-            "lm":         args.lm,
-            "beam":       args.beam,
-            "wer":        wer,
-            "cer":        cer,
-            "n_examples": len(all_hyps),
+            "checkpoint":   args.ckpt,
+            "model_type":   args.model_type,
+            "beam":         args.beam,
+            "wer":          wer,
+            "cer":          cer,
+            "n_examples":   len(all_hyps),
             "baseline_wer": 0.1895,
             "baseline_cer": 0.1362,
-            "details":    details,
+            "details":      details,
         }
         with open(args.output, "w") as f:
             json.dump(results, f, indent=2)
@@ -200,26 +268,34 @@ def evaluate(args):
 
 def parse_args():
     p = argparse.ArgumentParser(description="Evaluate E2E BCI model")
-    p.add_argument("--data-dir",      required=True)
-    p.add_argument("--ckpt",          required=True,
+    p.add_argument("--data-dir",       required=True)
+    p.add_argument("--ckpt",           required=True,
                    help="Checkpoint directory (contains checkpoint.pt)")
-    p.add_argument("--lm",            required=True,
-                   help="Same HF model id used during training")
-    p.add_argument("--output",        default=None,
-                   help="Path to write JSON results (optional)")
-    p.add_argument("--batch-size",    type=int, default=4)
-    p.add_argument("--beam",          type=int, default=1,
-                   help="Beam width (1=greedy)")
+    p.add_argument("--model-type",     default="llava", choices=["llava", "whisper", "canary"],
+                   help="llava=E2EBCIModel (Qwen), whisper=WhisperBCIModel, canary=CanaryBCIModel")
+    # LLaVA model args
+    p.add_argument("--lm",             default=None,
+                   help="HuggingFace LM id (required for --model-type llava)")
+    # Whisper model args
+    p.add_argument("--whisper-model",  default="openai/whisper-medium.en")
+    p.add_argument("--output",         default=None)
+    p.add_argument("--batch-size",     type=int, default=4)
+    p.add_argument("--beam",           type=int, default=1)
     p.add_argument("--max-new-tokens", type=int, default=64)
-    p.add_argument("--max-text-len",  type=int, default=64)
-    p.add_argument("--lora-r",        type=int, default=16)
-    p.add_argument("--lora-alpha",    type=int, default=32)
-    p.add_argument("--hf-token",      default=None)
+    p.add_argument("--max-text-len",   type=int, default=64)
+    p.add_argument("--lora-r",         type=int, default=16,
+                   help="default 16, use 128 for canary")
+    p.add_argument("--lora-alpha",     type=int, default=32,
+                   help="default 32, use 256 for canary")
+    p.add_argument("--cross-attn-only", action="store_true")
+    p.add_argument("--hf-token",       default=None)
     return p.parse_args()
 
 
 if __name__ == "__main__":
     args = parse_args()
+    if args.model_type not in ("llava", "canary") and args.lm is None:
+        raise ValueError("--lm is required for --model-type llava")
     if args.hf_token:
         from huggingface_hub import login
         login(token=args.hf_token)

@@ -142,23 +142,46 @@ class BCIDataset(Dataset):
         self.n_input        = n_input
 
         # Precompute prefix and EOS tensors once so __getitem__ is fast.
-        # Qwen3.5 uses an empty think block as the "no thinking" seed:
-        #   input_ids_full = [<think>, \n, </think>, \n, text_tokens..., <|im_end|>]
-        #   labels         = input_ids_full[1:]  (causal shift)
-        # This matches the generation seed in model.generate().
+        #
+        # Whisper: decoder_input_ids = [SOS, transcribe, notimestamps, tok0, ...]
+        #          labels            = [-100, -100, tok0, ..., EOS]
+        #   (same length; HuggingFace Whisper computes CE loss over full sequence)
+        #
+        # Qwen3.5: input_ids_full = [<think>, \n, </think>, \n, text_tokens..., <|im_end|>]
+        #          labels         = input_ids_full[1:]  (causal shift)
         if tokenizer is not None:
-            think_id     = tokenizer.convert_tokens_to_ids("<think>")
-            end_think_id = tokenizer.convert_tokens_to_ids("</think>")
-            im_end_id    = tokenizer.convert_tokens_to_ids("<|im_end|>")
-            nl_ids       = tokenizer.encode("\n", add_special_tokens=False)
-            unk_id       = getattr(tokenizer, "unk_token_id", None)
-            if think_id != unk_id and think_id is not None:
-                self._prefix_ids = [think_id] + nl_ids + [end_think_id] + nl_ids
-                self._eos_id     = im_end_id
+            unk_id = getattr(tokenizer, "unk_token_id", None)
+            sos_id = tokenizer.convert_tokens_to_ids("<|startoftranscript|>")
+
+            if sos_id is not None and sos_id != unk_id:
+                # Whisper tokenizer detected
+                transcribe_id   = tokenizer.convert_tokens_to_ids("<|transcribe|>")
+                notimestamps_id = tokenizer.convert_tokens_to_ids("<|notimestamps|>")
+                en_id           = tokenizer.convert_tokens_to_ids("<|en|>")
+                self._is_whisper = True
+                # Multilingual models need the language token; English-only models do not.
+                if en_id is not None and en_id != unk_id:
+                    self._prefix_ids = [sos_id, en_id, transcribe_id, notimestamps_id]
+                else:
+                    self._prefix_ids = [sos_id, transcribe_id, notimestamps_id]
+                self._eos_id     = tokenizer.eos_token_id  # 50256 <|endoftext|>
             else:
-                bos = tokenizer.bos_token_id or tokenizer.eos_token_id
-                self._prefix_ids = [bos]
-                self._eos_id     = tokenizer.eos_token_id
+                # Qwen3.5 or other causal LM tokenizer
+                self._is_whisper = False
+                think_id     = tokenizer.convert_tokens_to_ids("<think>")
+                end_think_id = tokenizer.convert_tokens_to_ids("</think>")
+                im_end_id    = tokenizer.convert_tokens_to_ids("<|im_end|>")
+                nl_ids       = tokenizer.encode("\n", add_special_tokens=False)
+                # Qwen3.5 has both <think> and <|im_end|>; Granite has <think> but
+                # not <|im_end|>, so guard on both to avoid misidentification.
+                if (think_id != unk_id and think_id is not None and
+                        im_end_id != unk_id and im_end_id is not None):
+                    self._prefix_ids = [think_id] + nl_ids + [end_think_id] + nl_ids
+                    self._eos_id     = im_end_id
+                else:
+                    bos = tokenizer.bos_token_id or tokenizer.eos_token_id
+                    self._prefix_ids = [bos]
+                    self._eos_id     = tokenizer.eos_token_id
 
         # Build session name → index mapping
         self._session_to_idx = {s: i for i, s in enumerate(sessions)}
@@ -256,18 +279,41 @@ class BCIDataset(Dataset):
 
         # Tokenize text if tokenizer is available
         if self.tokenizer is not None:
-            enc = self.tokenizer(
-                text,
-                max_length=self.max_text_len,
-                truncation=True,
-                return_tensors="pt",
-            )
-            input_ids = enc["input_ids"][0]                   # (L,)
-            prefix = torch.tensor(self._prefix_ids, dtype=torch.long)
-            eos    = torch.tensor([self._eos_id],   dtype=torch.long)
-            # [<think>, \n, </think>, \n, text_tokens..., <|im_end|>]
-            input_ids_full = torch.cat([prefix, input_ids, eos])
-            labels = input_ids_full[1:]  # causal shift
+            if getattr(self, "_is_whisper", False):
+                # Whisper: no special tokens added by tokenizer (we add them manually).
+                enc = self.tokenizer(
+                    text,
+                    max_length=self.max_text_len,
+                    truncation=True,
+                    add_special_tokens=False,
+                    return_tensors="pt",
+                )
+                text_ids = enc["input_ids"][0]                           # (N,)
+                prefix = torch.tensor(self._prefix_ids, dtype=torch.long)  # [SOS, task, notimestamps]
+                eos    = torch.tensor([self._eos_id],   dtype=torch.long)
+                # decoder_input_ids: [SOS, task, notimestamps, tok0, ..., tokN]
+                input_ids_full = torch.cat([prefix, text_ids])
+                # labels: [-100, -100, tok0, ..., tokN, EOS]
+                # Mask first 2 positions: logit[0] (from SOS) predicts task (forced → mask),
+                # logit[1] (from task) predicts notimestamps (forced → mask).
+                # logit[2] (from notimestamps) predicts tok0 → keep.
+                n_masked = len(self._prefix_ids) - 1   # = 2
+                masked   = torch.full((n_masked,), -100, dtype=torch.long)
+                labels   = torch.cat([masked, text_ids, eos])
+            else:
+                # Qwen3.5 or other causal LM tokenizer
+                enc = self.tokenizer(
+                    text,
+                    max_length=self.max_text_len,
+                    truncation=True,
+                    return_tensors="pt",
+                )
+                input_ids = enc["input_ids"][0]                   # (L,)
+                prefix = torch.tensor(self._prefix_ids, dtype=torch.long)
+                eos    = torch.tensor([self._eos_id],   dtype=torch.long)
+                # [<think>, \n, </think>, \n, text_tokens..., <|im_end|>]
+                input_ids_full = torch.cat([prefix, input_ids, eos])
+                labels = input_ids_full[1:]  # causal shift
         else:
             input_ids_full = None
             labels         = None
