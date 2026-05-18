@@ -1,23 +1,23 @@
 {
-  "checkpoint": "experiments/e2e_v5/best",
+  "checkpoint": "experiments/e2e_v4/best",
   "model_type": "llava",
   "beam": 1,
-  "wer": 0.30447435431065845,
-  "cer": 0.2863937860010473,
+  "wer": 0.3055656602400873,
+  "cer": 0.28587013440390996,
   "slices": {
     "all_24": {
-      "wer": 0.30447435431065845,
-      "cer": 0.2863937860010473,
+      "wer": 0.3055656602400873,
+      "cer": 0.28587013440390996,
       "n": 880
     },
     "willett_19": {
-      "wer": 0.3054520037278658,
-      "cer": 0.29010806317539484,
+      "wer": 0.3103448275862069,
+      "cer": 0.2919368246051538,
       "n": 680
     },
     "willett_4_18": {
-      "wer": 0.2536664856056491,
-      "cer": 0.24125132555673381,
+      "wer": 0.25665399239543724,
+      "cer": 0.24231177094379638,
       "n": 600
     }
   },
@@ -35,7 +35,7 @@
     },
     {
       "ref": "rich purchased several signed lithographs",
-      "hyp": "raleigh sacrifices every god's eternal oath",
+      "hyp": "eat parsley every day unless allergic",
       "wer": 1.2,
       "errors": 6,
       "words": 5,
@@ -43,7 +43,7 @@
     },
     {
       "ref": "so rules we made in unabashed collusion",
-      "hyp": "the result we made in inconvenience",
+      "hyp": "the route we made in inconvenience",
       "wer": 0.5714285714285714,
       "errors": 4,
       "words": 7,
@@ -51,39 +51,39 @@
     },
     {
       "ref": "lori's costume needed black gloves to be completely elegant",
-      "hyp": "trophy systems needed backlinks to become popular",
-      "wer": 0.7777777777777778,
-      "errors": 7,
+      "hyp": "trophy systems needed backlinks to be completely effective",
+      "wer": 0.5555555555555556,
+      "errors": 5,
       "words": 9,
       "session_idx": 0
     },
     {
       "ref": "the tooth fairy forgot to come when roger's tooth fell out",
-      "hyp": "the wealthy family celebrated to come from forth country",
-      "wer": 0.7272727272727273,
-      "errors": 8,
+      "hyp": "the wealthy family celebrated to come from either field out",
+      "wer": 0.6363636363636364,
+      "errors": 7,
       "words": 11,
       "session_idx": 0
     },
     {
       "ref": "that stinging vapor was caused by chloride vaporization",
-      "hyp": "that singing song has lost our admiration for purifier lozenges",
-      "wer": 1.125,
-      "errors": 9,
+      "hyp": "that singing song has become our daily reference music",
+      "wer": 1.0,
+      "errors": 8,
       "words": 8,
       "session_idx": 0
     },
     {
       "ref": "before thursday's exam review every formula",
-      "hyp": "parse few paragraphs at every turn",
-      "wer": 0.8333333333333334,
-      "errors": 5,
+      "hyp": "prepare food thoroughly as every item should be",
+      "wer": 1.1666666666666667,
+      "errors": 7,
       "words": 6,
       "session_idx": 0
     },
     {
       "ref": "wildfire near sunshine forces park closures",
-      "hyp": "roadowners do usually bank oil",
+      "hyp": "advised do what of bark top",
       "wer": 1.0,
       "errors": 6,
       "words": 6,
@@ -91,23 +91,23 @@
     },
     {
       "ref": "the word means it won't boil away easily nothing else",
-      "hyp": "the wood made it won't bend easily nylon cases",
-      "wer": 0.6,
-      "errors": 6,
+      "hyp": "the wood made it not be easily nailed ninety percent",
+      "wer": 0.8,
+      "errors": 8,
       "words": 10,
       "session_idx": 0
     },
     {
       "ref": "would a blue feather in a man's hat make him happy all day",
-      "hyp": "would a boil fitter in a machine make him appear odd",
-      "wer": 0.5384615384615384,
-      "errors": 7,
+      "hyp": "would a boil father in a monster hot ape oven",
+      "wer": 0.6923076923076923,
+      "errors": 9,
       "words": 13,
       "session_idx": 0
     },
     {
       "ref": "he talked about unauthentic storylines too",
-      "hyp": "he spoke about an antique garden fountain",
+      "hyp": "he spoke about an ancient gargoyle cursor",
       "wer": 0.8333333333333334,
       "errors": 5,
       "words": 6,
@@ -115,23 +115,23 @@
     },
     {
       "ref": "most young rise early every morning",
-      "hyp": "fish grimaces willy shortening",
-      "wer": 1.0,
-      "errors": 6,
+      "hyp": "fish young swim rarely every morning",
+      "wer": 0.5,
+      "errors": 3,
       "words": 6,
       "session_idx": 0
     },
     {
       "ref": "with this no loyal citizen can quarrel",
-      "hyp": "with this novel literary style",
-      "wer": 0.7142857142857143,
-      "errors": 5,
+      "hyp": "with this no longer diet can meal",
+      "wer": 0.42857142857142855,
+      "errors": 3,
       "words": 7,
       "session_idx": 0
     },
     {
       "ref": "primitive tribes have an upbeat attitude",
-      "hyp": "maybe forms have an ametopic",
+      "hyp": "some forms have an open edital",
       "wer": 0.6666666666666666,
       "errors": 4,
       "words": 6,
@@ -139,31 +139,31 @@
     },
     {
       "ref": "and it was not a judge but a justice of the peace who made the decision",
-      "hyp": "and it was a judgment by a decision of the court of the united states",
-      "wer": 0.5625,
-      "errors": 9,
+      "hyp": "and it was a judgment by a decision of the court of the division",
+      "wer": 0.5,
+      "errors": 8,
       "words": 16,
       "session_idx": 0
     },
     {
       "ref": "we seemed to be witnessing the population explosion right in our own backyards",
-      "hyp": "we seemed to be advancing the procedure in our research group backwards",
-      "wer": 0.5384615384615384,
-      "errors": 7,
+      "hyp": "we seems to be continuing the burgeoning lifestyle in our own backyard",
+      "wer": 0.46153846153846156,
+      "errors": 6,
       "words": 13,
       "session_idx": 0
     },
     {
       "ref": "sometimes desperate measures can also turn into solid moves for the future",
-      "hyp": "someone's desparate measure can also turn into their freedom",
-      "wer": 0.6666666666666666,
-      "errors": 8,
+      "hyp": "someone's desparate and also almost always in the late morning for the queue",
+      "wer": 0.9166666666666666,
+      "errors": 11,
       "words": 12,
       "session_idx": 0
     },
     {
       "ref": "those answers will be straightforward if you think them through carefully first",
-      "hyp": "the administration will be strong\u540e\u76fe if you are thin enough early in life",
+      "hyp": "the administration will be strong enough to think some further travel airline",
       "wer": 0.75,
       "errors": 9,
       "words": 12,
@@ -171,7 +171,7 @@
     },
     {
       "ref": "she gets dressed faster and spends less energy making clothing decisions",
-      "hyp": "he got rugged fists and passionate language matching imaginative vision",
+      "hyp": "he got rugged fists and spent years learning language vocabulary",
       "wer": 0.9090909090909091,
       "errors": 10,
       "words": 11,
@@ -179,7 +179,7 @@
     },
     {
       "ref": "academic aptitude guarantees your diploma",
-      "hyp": "architects endorse your displacement",
+      "hyp": "architect is instructed your demolition",
       "wer": 0.8,
       "errors": 4,
       "words": 5,
@@ -187,15 +187,15 @@
     },
     {
       "ref": "to some extent predispositions are shaped by exposure to group environments",
-      "hyp": "to campaign initiatives or steps are kept by group organizations",
-      "wer": 0.7272727272727273,
-      "errors": 8,
+      "hyp": "to compact prospects or keep them trapped to drop investments",
+      "wer": 0.8181818181818182,
+      "errors": 9,
       "words": 11,
       "session_idx": 1
     },
     {
       "ref": "an adult male baboon's teeth are not suitable for eating shellfish",
-      "hyp": "an example of non-applied biological agents for eye injuries",
+      "hyp": "an ideal mail box should contain things for eating and drinking",
       "wer": 0.8181818181818182,
       "errors": 9,
       "words": 11,
@@ -203,23 +203,23 @@
     },
     {
       "ref": "in this context it would do well for us to bear in mind the vision of peace",
-      "hyp": "in the long time it would be a welter of words in mine of division",
-      "wer": 0.7647058823529411,
-      "errors": 13,
+      "hyp": "in this short time he should be a well-known in mine of the division",
+      "wer": 0.8235294117647058,
+      "errors": 14,
       "words": 17,
       "session_idx": 1
     },
     {
       "ref": "you're boiling milk ain't you",
-      "hyp": "you're bopping milk entree",
-      "wer": 0.6,
-      "errors": 3,
+      "hyp": "you're boston middle school",
+      "wer": 0.8,
+      "errors": 4,
       "words": 5,
       "session_idx": 1
     },
     {
       "ref": "rich looked for spotted hyenas and jaguars on the safari",
-      "hyp": "which looks for mustard haryana and garzu in the typhoon",
+      "hyp": "which looks for\u00e2yirianian and jaguar on the display",
       "wer": 0.7,
       "errors": 7,
       "words": 10,
@@ -227,23 +227,23 @@
     },
     {
       "ref": "traffic frequently has failed to measure up to engineers' rosy estimates",
-      "hyp": "caffein is popular to manage up to adult dietary water requirements",
-      "wer": 0.8181818181818182,
-      "errors": 9,
+      "hyp": "cafeteria has placed to manage to english talk to any royalty anthem",
+      "wer": 0.9090909090909091,
+      "errors": 10,
       "words": 11,
       "session_idx": 1
     },
     {
       "ref": "ralph prepared red snapper with fresh lemon sauce for dinner",
-      "hyp": "twelfer painted white limousine with silver stars for near water",
-      "wer": 0.9,
-      "errors": 9,
+      "hyp": "wolf ferret would zip liner crate for dinner for second time",
+      "wer": 1.0,
+      "errors": 10,
       "words": 10,
       "session_idx": 1
     },
     {
       "ref": "did you buy any corduroy overalls",
-      "hyp": "add you by any choreball",
+      "hyp": "add you by any choreollo",
       "wer": 0.6666666666666666,
       "errors": 4,
       "words": 6,
@@ -267,7 +267,7 @@
     },
     {
       "ref": "who authorized the unlimited expense account",
-      "hyp": "who author the army's existence is",
+      "hyp": "who author the army exponent is",
       "wer": 0.6666666666666666,
       "errors": 4,
       "words": 6,
@@ -275,7 +275,7 @@
     },
     {
       "ref": "the family requests that flowers be omitted",
-      "hyp": "the family vision that suggests be independent",
+      "hyp": "the family vision that suggests be autonomous",
       "wer": 0.42857142857142855,
       "errors": 3,
       "words": 7,
@@ -283,17 +283,17 @@
     },
     {
       "ref": "the museum hires musicians every evening",
-      "hyp": "the medical house prescription every evening",
-      "wer": 0.5,
-      "errors": 3,
+      "hyp": "the mustard hairs miscast every time",
+      "wer": 0.6666666666666666,
+      "errors": 4,
       "words": 6,
       "session_idx": 1
     },
     {
       "ref": "we'll serve rhubarb pie after rachel's talk",
-      "hyp": "we'll save superb by final after luck",
-      "wer": 0.8571428571428571,
-      "errors": 6,
+      "hyp": "we'll save superb boy after several lucks",
+      "wer": 0.7142857142857143,
+      "errors": 5,
       "words": 7,
       "session_idx": 1
     },
@@ -307,7 +307,7 @@
     },
     {
       "ref": "the avocado should have a give to it as you hold it when it is ripe",
-      "hyp": "the cavalry should have a shield for you as you walk when it is wet",
+      "hyp": "the buffalo should have a shield to hold it off when it is wet",
       "wer": 0.4375,
       "errors": 7,
       "words": 16,
@@ -315,23 +315,23 @@
     },
     {
       "ref": "energy suppliers usually deal with this by conducting regular inspections and trimming",
-      "hyp": "energy plosors usually release by cyanogenic polymerization and trypsin",
-      "wer": 0.6666666666666666,
-      "errors": 8,
+      "hyp": "energy plosors usually use triphasic cyclic enzymes and intermediate steps",
+      "wer": 0.8333333333333334,
+      "errors": 10,
       "words": 12,
       "session_idx": 1
     },
     {
       "ref": "the saw is broken so chop the wood instead",
-      "hyp": "the saw i book so stop the word in essence",
-      "wer": 0.6666666666666666,
-      "errors": 6,
+      "hyp": "the saw is bookworm so stop the word in it",
+      "wer": 0.5555555555555556,
+      "errors": 5,
       "words": 9,
       "session_idx": 1
     },
     {
       "ref": "the cleaned version is given below",
-      "hyp": "the chlorine version is similar",
+      "hyp": "the language version is different",
       "wer": 0.5,
       "errors": 3,
       "words": 6,
@@ -339,9 +339,9 @@
     },
     {
       "ref": "they seem darned proud of it",
-      "hyp": "they seem carnal proud of it",
-      "wer": 0.16666666666666666,
-      "errors": 1,
+      "hyp": "they seem commoner of it",
+      "wer": 0.3333333333333333,
+      "errors": 2,
       "words": 6,
       "session_idx": 1
     },
@@ -355,9 +355,9 @@
     },
     {
       "ref": "boy you ain't fooling nobody but yourself",
-      "hyp": "boy you aren't willing anybody but yourself",
-      "wer": 0.42857142857142855,
-      "errors": 3,
+      "hyp": "boy she didn't wanting anybody but yourself",
+      "wer": 0.5714285714285714,
+      "errors": 4,
       "words": 7,
       "session_idx": 2
     },
@@ -379,15 +379,15 @@
     },
     {
       "ref": "this kid's froze bad",
-      "hyp": "this kid's fawns bad",
-      "wer": 0.25,
-      "errors": 1,
+      "hyp": "this is dead fowl",
+      "wer": 0.75,
+      "errors": 3,
       "words": 4,
       "session_idx": 2
     },
     {
       "ref": "she radiated warmth and good fellowship",
-      "hyp": "they ratted mice and good fertilizer",
+      "hyp": "they ratted mothers and good farmers",
       "wer": 0.6666666666666666,
       "errors": 4,
       "words": 6,
@@ -395,9 +395,9 @@
     },
     {
       "ref": "do you know where it might have gone",
-      "hyp": "do you know where it may have gone",
-      "wer": 0.125,
-      "errors": 1,
+      "hyp": "do you know where it might have gone",
+      "wer": 0.0,
+      "errors": 0,
       "words": 8,
       "session_idx": 2
     },
@@ -443,7 +443,7 @@
     },
     {
       "ref": "a third shot doused the light",
-      "hyp": "a third cut gashed the lot",
+      "hyp": "a third hot gas the lot",
       "wer": 0.5,
       "errors": 3,
       "words": 6,
@@ -451,7 +451,7 @@
     },
     {
       "ref": "the guttural language from the ghetto stopped",
-      "hyp": "the grandparent from the little town",
+      "hyp": "the ghostly gang from the little town",
       "wer": 0.5714285714285714,
       "errors": 4,
       "words": 7,
@@ -459,9 +459,9 @@
     },
     {
       "ref": "like as if it were built of books",
-      "hyp": "that as if it was quite good of us",
-      "wer": 0.625,
-      "errors": 5,
+      "hyp": "that as if it was pretty of course",
+      "wer": 0.5,
+      "errors": 4,
       "words": 8,
       "session_idx": 2
     },
@@ -483,7 +483,7 @@
     },
     {
       "ref": "blockade is one answer offered by experts",
-      "hyp": "blacheading is one over by by experts",
+      "hyp": "bludgeon is one answer by the experts",
       "wer": 0.42857142857142855,
       "errors": 3,
       "words": 7,
@@ -491,7 +491,7 @@
     },
     {
       "ref": "those musicians harmonize marvelously",
-      "hyp": "alcoholism humanities mysticism",
+      "hyp": "aluminum aluminum molybdenum",
       "wer": 1.0,
       "errors": 4,
       "words": 4,
@@ -499,9 +499,9 @@
     },
     {
       "ref": "it all did look very efficient and shipshape",
-      "hyp": "it all does look very confusing and absurd",
-      "wer": 0.375,
-      "errors": 3,
+      "hyp": "it all goes well away Robinson and superficially",
+      "wer": 0.625,
+      "errors": 5,
       "words": 8,
       "session_idx": 2
     },
@@ -515,7 +515,7 @@
     },
     {
       "ref": "inflammatory cells were strikingly absent",
-      "hyp": "in comparison as we were quickly emptied",
+      "hyp": "in chemistry as well were quickly emptied",
       "wer": 1.2,
       "errors": 6,
       "words": 5,
@@ -523,9 +523,9 @@
     },
     {
       "ref": "it can project long-range goals for itself",
-      "hyp": "it can pick long ways for itself",
-      "wer": 0.42857142857142855,
-      "errors": 3,
+      "hyp": "it can be expensive long terms for itself",
+      "wer": 0.5714285714285714,
+      "errors": 4,
       "words": 7,
       "session_idx": 3
     },
@@ -539,7 +539,7 @@
     },
     {
       "ref": "do you hear the sleigh bells ringing",
-      "hyp": "do you hear the shovel bellowing",
+      "hyp": "do you hear the shovel bling range",
       "wer": 0.42857142857142855,
       "errors": 3,
       "words": 7,
@@ -547,7 +547,7 @@
     },
     {
       "ref": "there was much embracing much exclaiming",
-      "hyp": "there was much emphasis made toward calcium",
+      "hyp": "there was much emphasis on military calm",
       "wer": 0.6666666666666666,
       "errors": 4,
       "words": 6,
@@ -555,15 +555,15 @@
     },
     {
       "ref": "below is a specific guide keyed to the calendar",
-      "hyp": "well is a specific bid directed to the climber",
-      "wer": 0.4444444444444444,
-      "errors": 4,
+      "hyp": "well is a specific side pad taped to the ground",
+      "wer": 0.5555555555555556,
+      "errors": 5,
       "words": 9,
       "session_idx": 3
     },
     {
       "ref": "finally he asked do you object to petting",
-      "hyp": "families he has to object to",
+      "hyp": "family he has to object to",
       "wer": 0.625,
       "errors": 5,
       "words": 8,
@@ -571,15 +571,15 @@
     },
     {
       "ref": "we'll pay you back if you'll let us",
-      "hyp": "we 'll pay you back of all way",
-      "wer": 0.75,
-      "errors": 6,
+      "hyp": "we 'll pay you back if all the way",
+      "wer": 0.625,
+      "errors": 5,
       "words": 8,
       "session_idx": 3
     },
     {
       "ref": "they close sometime after eight",
-      "hyp": "they coat sometimes after it",
+      "hyp": "they clothe sometimes after it",
       "wer": 0.6,
       "errors": 3,
       "words": 5,
@@ -587,9 +587,9 @@
     },
     {
       "ref": "then we were off again",
-      "hyp": "then we are off again",
-      "wer": 0.2,
-      "errors": 1,
+      "hyp": "and we are off again",
+      "wer": 0.4,
+      "errors": 2,
       "words": 5,
       "session_idx": 3
     },
@@ -603,7 +603,7 @@
     },
     {
       "ref": "for a man of his mass he was curiously short",
-      "hyp": "for a man of his messaged is a foolish word",
+      "hyp": "for a man of his messaged is a clothes shirt",
       "wer": 0.5,
       "errors": 5,
       "words": 10,
@@ -611,15 +611,15 @@
     },
     {
       "ref": "pam gives driving lessons on thursdays",
-      "hyp": "mom is driving lights on earth",
-      "wer": 0.6666666666666666,
-      "errors": 4,
+      "hyp": "main he drives lights on today",
+      "wer": 0.8333333333333334,
+      "errors": 5,
       "words": 6,
       "session_idx": 3
     },
     {
       "ref": "read the decision below",
-      "hyp": "read the instructions before",
+      "hyp": "read the message before",
       "wer": 0.5,
       "errors": 2,
       "words": 4,
@@ -627,17 +627,17 @@
     },
     {
       "ref": "receiving no answer they set the fire",
-      "hyp": "wisdom no answer they said the far",
-      "wer": 0.42857142857142855,
-      "errors": 3,
+      "hyp": "unless you ignore they have the power",
+      "wer": 0.7142857142857143,
+      "errors": 5,
       "words": 7,
       "session_idx": 3
     },
     {
       "ref": "where is your usual upbeat personality",
-      "hyp": "whereby a usual appetite for",
-      "wer": 0.8333333333333334,
-      "errors": 5,
+      "hyp": "whereby is a usual aspect",
+      "wer": 0.6666666666666666,
+      "errors": 4,
       "words": 6,
       "session_idx": 3
     },
@@ -651,17 +651,17 @@
     },
     {
       "ref": "with a whirling jump it could get into gear",
-      "hyp": "with a rolling luggage it could go into snow",
-      "wer": 0.4444444444444444,
-      "errors": 4,
+      "hyp": "with a rolling luggage it could get into snow",
+      "wer": 0.3333333333333333,
+      "errors": 3,
       "words": 9,
       "session_idx": 3
     },
     {
       "ref": "marksmanship example",
-      "hyp": "much monthly income",
-      "wer": 1.5,
-      "errors": 3,
+      "hyp": "much\u8425\u4e1a\u7a0e\u6536\u53d6",
+      "wer": 1.0,
+      "errors": 2,
       "words": 2,
       "session_idx": 3
     },
@@ -675,9 +675,9 @@
     },
     {
       "ref": "and i loved ths shining",
-      "hyp": "and i lived the religion",
-      "wer": 0.6,
-      "errors": 3,
+      "hyp": "and i loved the painting",
+      "wer": 0.4,
+      "errors": 2,
       "words": 5,
       "session_idx": 4
     },
@@ -707,7 +707,7 @@
     },
     {
       "ref": "assure the government that he was employed",
-      "hyp": "i so the government that he was employed",
+      "hyp": "oh so the government that he was employed",
       "wer": 0.2857142857142857,
       "errors": 2,
       "words": 7,
@@ -715,7 +715,7 @@
     },
     {
       "ref": "they feel good about what they're doing",
-      "hyp": "they still went about what they're doing",
+      "hyp": "they still go about what they're doing",
       "wer": 0.2857142857142857,
       "errors": 2,
       "words": 7,
@@ -739,7 +739,7 @@
     },
     {
       "ref": "so we're going to wait",
-      "hyp": "those were going to beat",
+      "hyp": "those were going to eat",
       "wer": 0.6,
       "errors": 3,
       "words": 5,
@@ -747,9 +747,9 @@
     },
     {
       "ref": "any kind of a good environment to live in",
-      "hyp": "any kind of a good environment to live in",
-      "wer": 0.0,
-      "errors": 0,
+      "hyp": "any kind of good environment to live in",
+      "wer": 0.1111111111111111,
+      "errors": 1,
       "words": 9,
       "session_idx": 4
     },
@@ -787,7 +787,7 @@
     },
     {
       "ref": "android tv box",
-      "hyp": "henze every book",
+      "hyp": "entire very book",
       "wer": 1.0,
       "errors": 3,
       "words": 3,
@@ -811,9 +811,9 @@
     },
     {
       "ref": "which i use as a reference and has been real handy",
-      "hyp": "what do you as a referee and have we been changed",
-      "wer": 0.7272727272727273,
-      "errors": 8,
+      "hyp": "what do you as a referee and have been real crazy",
+      "wer": 0.5454545454545454,
+      "errors": 6,
       "words": 11,
       "session_idx": 4
     },
@@ -827,7 +827,7 @@
     },
     {
       "ref": "it's a package deal",
-      "hyp": "it's a bike deal",
+      "hyp": "it's a breaking deal",
       "wer": 0.25,
       "errors": 1,
       "words": 4,
@@ -843,9 +843,9 @@
     },
     {
       "ref": "the measures already passed a senate committee",
-      "hyp": "the measure already passed a senate committee",
-      "wer": 0.14285714285714285,
-      "errors": 1,
+      "hyp": "the measure always passed a second time",
+      "wer": 0.5714285714285714,
+      "errors": 4,
       "words": 7,
       "session_idx": 4
     },
@@ -859,23 +859,23 @@
     },
     {
       "ref": "in the red square or wherever said",
-      "hyp": "in the red soil are every single field",
-      "wer": 0.7142857142857143,
-      "errors": 5,
+      "hyp": "in the red coal areas are wherever",
+      "wer": 0.5714285714285714,
+      "errors": 4,
       "words": 7,
       "session_idx": 4
     },
     {
       "ref": "they did a lot of play work and stuff",
-      "hyp": "they did a lot of play and stuff",
-      "wer": 0.1111111111111111,
-      "errors": 1,
+      "hyp": "they did a lot of play work and stuff",
+      "wer": 0.0,
+      "errors": 0,
       "words": 9,
       "session_idx": 4
     },
     {
       "ref": "you can gain too much weight",
-      "hyp": "you can see too much right",
+      "hyp": "you can find too much right",
       "wer": 0.3333333333333333,
       "errors": 2,
       "words": 6,
@@ -891,31 +891,31 @@
     },
     {
       "ref": "i'm a car buff too",
-      "hyp": "i'm a car buff",
-      "wer": 0.2,
-      "errors": 1,
+      "hyp": "i'm a gun buff",
+      "wer": 0.4,
+      "errors": 2,
       "words": 5,
       "session_idx": 4
     },
     {
       "ref": "joy springs from a grateful heart",
-      "hyp": "gurdy string from a mechanical heart",
-      "wer": 0.5,
-      "errors": 3,
+      "hyp": "usually finds from a dental hat",
+      "wer": 0.6666666666666666,
+      "errors": 4,
       "words": 6,
       "session_idx": 4
     },
     {
       "ref": "char onion over grill never allow oil to smoke",
-      "hyp": "loren's own chemical never ever all to milk",
-      "wer": 0.7777777777777778,
-      "errors": 7,
+      "hyp": "loaf pans every chemical now all all to milk",
+      "wer": 0.8888888888888888,
+      "errors": 8,
       "words": 9,
       "session_idx": 4
     },
     {
       "ref": "noise causes air pollution",
-      "hyp": "noga charges their pollution",
+      "hyp": "noga juju's gas pollution",
       "wer": 0.75,
       "errors": 3,
       "words": 4,
@@ -939,17 +939,17 @@
     },
     {
       "ref": "factors that affect earnings of an employee",
-      "hyp": "vaccines that effective gains of an entire",
-      "wer": 0.5714285714285714,
-      "errors": 4,
+      "hyp": "vaccards that effect gains of an entire industry",
+      "wer": 0.7142857142857143,
+      "errors": 5,
       "words": 7,
       "session_idx": 4
     },
     {
       "ref": "if you drink a lot of caffeine you'll stay awake",
-      "hyp": "if you drink a lot of coffee i'll see why",
-      "wer": 0.4,
-      "errors": 4,
+      "hyp": "if you drink a lot of coffee you'll see around",
+      "wer": 0.3,
+      "errors": 3,
       "words": 10,
       "session_idx": 4
     },
@@ -963,9 +963,9 @@
     },
     {
       "ref": "visionary leaders",
-      "hyp": "voluntary leaders",
-      "wer": 0.5,
-      "errors": 1,
+      "hyp": "burgundy slattern",
+      "wer": 1.0,
+      "errors": 2,
       "words": 2,
       "session_idx": 4
     },
@@ -1035,9 +1035,9 @@
     },
     {
       "ref": "it's all ready quit playing",
-      "hyp": "it's all body cutpling",
-      "wer": 0.6,
-      "errors": 3,
+      "hyp": "it's all ready quit playing",
+      "wer": 0.0,
+      "errors": 0,
       "words": 5,
       "session_idx": 5
     },
@@ -1051,23 +1051,23 @@
     },
     {
       "ref": "i am not even aware that i could have seen it",
-      "hyp": "i am not even aware that i could have seen it",
-      "wer": 0.0,
-      "errors": 0,
+      "hyp": "i am not even aware that i have seen it",
+      "wer": 0.09090909090909091,
+      "errors": 1,
       "words": 11,
       "session_idx": 5
     },
     {
       "ref": "the ranks of asian riders are swelling too",
-      "hyp": "the ranks of asian women are filling up too",
-      "wer": 0.375,
-      "errors": 3,
+      "hyp": "the rain of seasons are filling up too fast",
+      "wer": 0.75,
+      "errors": 6,
       "words": 8,
       "session_idx": 5
     },
     {
       "ref": "einstein equation",
-      "hyp": "environmental equation",
+      "hyp": "environment equation",
       "wer": 0.5,
       "errors": 1,
       "words": 2,
@@ -1083,9 +1083,9 @@
     },
     {
       "ref": "i think it's one hundred and eighty miles",
-      "hyp": "i think it's one hundred and sixty miles",
-      "wer": 0.125,
-      "errors": 1,
+      "hyp": "i think it's one corner and easy mail",
+      "wer": 0.375,
+      "errors": 3,
       "words": 8,
       "session_idx": 5
     },
@@ -1115,7 +1115,7 @@
     },
     {
       "ref": "i don't buy the newspaper",
-      "hyp": "i don't buy the wheat",
+      "hyp": "i don't buy the wheatpaper",
       "wer": 0.2,
       "errors": 1,
       "words": 5,
@@ -1123,7 +1123,7 @@
     },
     {
       "ref": "bringing something for a potluck picnic",
-      "hyp": "racing things for a popular ticket",
+      "hyp": "racing sometimes for a popular ticket",
       "wer": 0.6666666666666666,
       "errors": 4,
       "words": 6,
@@ -1139,7 +1139,7 @@
     },
     {
       "ref": "improved evasion does not work",
-      "hyp": "employee divisions do not work",
+      "hyp": "employee decisions do not work",
       "wer": 0.6,
       "errors": 3,
       "words": 5,
@@ -1171,9 +1171,9 @@
     },
     {
       "ref": "cause they all grew up in new york city",
-      "hyp": "guess they all grew up in new york",
-      "wer": 0.2222222222222222,
-      "errors": 2,
+      "hyp": "guess they all grew up in new york city",
+      "wer": 0.1111111111111111,
+      "errors": 1,
       "words": 9,
       "session_idx": 5
     },
@@ -1195,9 +1195,9 @@
     },
     {
       "ref": "a good positive direction",
-      "hyp": "a good positive direction",
-      "wer": 0.0,
-      "errors": 0,
+      "hyp": "a good positive approach",
+      "wer": 0.25,
+      "errors": 1,
       "words": 4,
       "session_idx": 5
     },
@@ -1211,7 +1211,7 @@
     },
     {
       "ref": "i turned mine in about twelve hours early at noon",
-      "hyp": "i tom red in about twelve hours at least",
+      "hyp": "i tromed in about twelve hours usually at night",
       "wer": 0.4,
       "errors": 4,
       "words": 10,
@@ -1219,7 +1219,7 @@
     },
     {
       "ref": "it's a telecommunications type of company",
-      "hyp": "it's a collectivization type of company",
+      "hyp": "it's a characterization type of company",
       "wer": 0.16666666666666666,
       "errors": 1,
       "words": 6,
@@ -1243,7 +1243,7 @@
     },
     {
       "ref": "it doesn't have an air conditioner",
-      "hyp": "it doesn't have an area consideration",
+      "hyp": "it doesn't have an easy conclusion",
       "wer": 0.3333333333333333,
       "errors": 2,
       "words": 6,
@@ -1259,7 +1259,7 @@
     },
     {
       "ref": "solving the variables in the equation",
-      "hyp": "hugging the valley in the equation",
+      "hyp": "helping the valley in the equation",
       "wer": 0.3333333333333333,
       "errors": 2,
       "words": 6,
@@ -1275,7 +1275,7 @@
     },
     {
       "ref": "i'm in the speech processing business",
-      "hyp": "i'm in the sportcasting department",
+      "hyp": "i'm in the sports package program",
       "wer": 0.5,
       "errors": 3,
       "words": 6,
@@ -1299,7 +1299,7 @@
     },
     {
       "ref": "twelve men tried and true",
-      "hyp": "helmets and hats and two",
+      "hyp": "helmets for kids and two",
       "wer": 0.8,
       "errors": 4,
       "words": 5,
@@ -1339,7 +1339,7 @@
     },
     {
       "ref": "it was nice talking to you dudley",
-      "hyp": "it was just talked to you strangely",
+      "hyp": "it was just talked to you lightly",
       "wer": 0.42857142857142855,
       "errors": 3,
       "words": 7,
@@ -1355,9 +1355,9 @@
     },
     {
       "ref": "kind of goes along with what you were saying",
-      "hyp": "kind of going along with what you were saying",
-      "wer": 0.1111111111111111,
-      "errors": 1,
+      "hyp": "and if those guys along with what you were saying",
+      "wer": 0.4444444444444444,
+      "errors": 4,
       "words": 9,
       "session_idx": 6
     },
@@ -1371,7 +1371,7 @@
     },
     {
       "ref": "reader's choice award",
-      "hyp": "creations choice alone",
+      "hyp": "creations choice afternoon",
       "wer": 0.6666666666666666,
       "errors": 2,
       "words": 3,
@@ -1379,9 +1379,9 @@
     },
     {
       "ref": "they are the detroit delegates",
-      "hyp": "they are the detroit delegates",
-      "wer": 0.0,
-      "errors": 0,
+      "hyp": "they are the detroit colleges",
+      "wer": 0.2,
+      "errors": 1,
       "words": 5,
       "session_idx": 6
     },
@@ -1395,7 +1395,7 @@
     },
     {
       "ref": "as any city grows up",
-      "hyp": "has any city covered up",
+      "hyp": "has any city grew up",
       "wer": 0.4,
       "errors": 2,
       "words": 5,
@@ -1403,7 +1403,7 @@
     },
     {
       "ref": "so you did buy a pattern",
-      "hyp": "so you did buy a person",
+      "hyp": "so you did buy a pistol",
       "wer": 0.16666666666666666,
       "errors": 1,
       "words": 6,
@@ -1435,7 +1435,7 @@
     },
     {
       "ref": "not too much soy sauce",
-      "hyp": "not too much joy charge",
+      "hyp": "not too much room choice",
       "wer": 0.4,
       "errors": 2,
       "words": 5,
@@ -1451,7 +1451,7 @@
     },
     {
       "ref": "who sponsors you",
-      "hyp": "who teaches you",
+      "hyp": "who promotes you",
       "wer": 0.3333333333333333,
       "errors": 1,
       "words": 3,
@@ -1499,7 +1499,7 @@
     },
     {
       "ref": "it really is worth while to sew",
-      "hyp": "it really is worth value to see",
+      "hyp": "it really is worth effort to do",
       "wer": 0.2857142857142857,
       "errors": 2,
       "words": 7,
@@ -1515,7 +1515,7 @@
     },
     {
       "ref": "public transportation",
-      "hyp": "public opinion",
+      "hyp": "public terminology",
       "wer": 0.5,
       "errors": 1,
       "words": 2,
@@ -1531,7 +1531,7 @@
     },
     {
       "ref": "i tried one on and was disappointed",
-      "hyp": "i died one and two detectives",
+      "hyp": "i died one in and one thereafter",
       "wer": 0.5714285714285714,
       "errors": 4,
       "words": 7,
@@ -1555,9 +1555,9 @@
     },
     {
       "ref": "you know it was just in jest",
-      "hyp": "you knew it was just in mass",
-      "wer": 0.2857142857142857,
-      "errors": 2,
+      "hyp": "you know it was just in mass",
+      "wer": 0.14285714285714285,
+      "errors": 1,
       "words": 7,
       "session_idx": 6
     },
@@ -1619,7 +1619,7 @@
     },
     {
       "ref": "i do want to have a raised bed",
-      "hyp": "i do want to have a ruby band",
+      "hyp": "i do want to have a voice ban",
       "wer": 0.25,
       "errors": 2,
       "words": 8,
@@ -1635,7 +1635,7 @@
     },
     {
       "ref": "it wasn't organized enough for me",
-      "hyp": "it wasn't outrageous enough for me",
+      "hyp": "it wasn't okay enough for me",
       "wer": 0.16666666666666666,
       "errors": 1,
       "words": 6,
@@ -1659,17 +1659,17 @@
     },
     {
       "ref": "your spam my treasure",
-      "hyp": "you name my favorite",
-      "wer": 0.75,
-      "errors": 3,
+      "hyp": "you name my treasure",
+      "wer": 0.5,
+      "errors": 2,
       "words": 4,
       "session_idx": 7
     },
     {
       "ref": "he had choices to make the counselor told him",
-      "hyp": "i had choices to make a general all him",
-      "wer": 0.4444444444444444,
-      "errors": 4,
+      "hyp": "he had choices to make a general all him",
+      "wer": 0.3333333333333333,
+      "errors": 3,
       "words": 9,
       "session_idx": 7
     },
@@ -1699,9 +1699,9 @@
     },
     {
       "ref": "have little material luxury but want a lot more",
-      "hyp": "i've little medical lectures but once a lot more me",
-      "wer": 0.5555555555555556,
-      "errors": 5,
+      "hyp": "i have little personal luxury but one a lot more",
+      "wer": 0.3333333333333333,
+      "errors": 3,
       "words": 9,
       "session_idx": 7
     },
@@ -1715,7 +1715,7 @@
     },
     {
       "ref": "we've got a stone from austin",
-      "hyp": "we've got a shot from north",
+      "hyp": "we've got a home from north",
       "wer": 0.3333333333333333,
       "errors": 2,
       "words": 6,
@@ -1723,7 +1723,7 @@
     },
     {
       "ref": "competition with japan",
-      "hyp": "supposition with dependency",
+      "hyp": "supposition with depressed",
       "wer": 0.6666666666666666,
       "errors": 2,
       "words": 3,
@@ -1747,7 +1747,7 @@
     },
     {
       "ref": "have a good evening",
-      "hyp": "i've a good evening",
+      "hyp": "i have a good evening",
       "wer": 0.25,
       "errors": 1,
       "words": 4,
@@ -1763,17 +1763,17 @@
     },
     {
       "ref": "he didn't eat flies",
-      "hyp": "i didn't eat flesh",
-      "wer": 0.5,
-      "errors": 2,
+      "hyp": "he didn't eat flesh",
+      "wer": 0.25,
+      "errors": 1,
       "words": 4,
       "session_idx": 7
     },
     {
       "ref": "most of the time they don't bother with it",
-      "hyp": "most of the time they don't worry with it",
-      "wer": 0.1111111111111111,
-      "errors": 1,
+      "hyp": "most of the time they don't bother with it",
+      "wer": 0.0,
+      "errors": 0,
       "words": 9,
       "session_idx": 7
     },
@@ -1803,7 +1803,7 @@
     },
     {
       "ref": "a lot of the industry's moving southward",
-      "hyp": "a lot of the interesting movie stars",
+      "hyp": "a lot of the interesting movie started",
       "wer": 0.42857142857142855,
       "errors": 3,
       "words": 7,
@@ -1843,17 +1843,17 @@
     },
     {
       "ref": "they fell out because of the drug issue",
-      "hyp": "they fell aside because of the long issue",
-      "wer": 0.25,
-      "errors": 2,
+      "hyp": "they fill light box of the long time",
+      "wer": 0.625,
+      "errors": 5,
       "words": 8,
       "session_idx": 7
     },
     {
       "ref": "these are done with a flour tortilla",
-      "hyp": "there are done with a flower tour",
-      "wer": 0.42857142857142855,
-      "errors": 3,
+      "hyp": "these are done with a fair toller",
+      "wer": 0.2857142857142857,
+      "errors": 2,
       "words": 7,
       "session_idx": 7
     },
@@ -1891,7 +1891,7 @@
     },
     {
       "ref": "i take it she was an accountant",
-      "hyp": "i take it there was an incident",
+      "hyp": "i take it there was an exception",
       "wer": 0.2857142857142857,
       "errors": 2,
       "words": 7,
@@ -1899,7 +1899,7 @@
     },
     {
       "ref": "go to a trip through the indonesian",
-      "hyp": "go to a clipper through the invitation",
+      "hyp": "go to a stack through the invitation",
       "wer": 0.2857142857142857,
       "errors": 2,
       "words": 7,
@@ -1923,7 +1923,7 @@
     },
     {
       "ref": "pass me that joint bank account statement",
-      "hyp": "give me that movie back upstairs",
+      "hyp": "give me that quiet back upstairs bedroom",
       "wer": 0.7142857142857143,
       "errors": 5,
       "words": 7,
@@ -1931,9 +1931,9 @@
     },
     {
       "ref": "filters for air filtration for hospitals",
-      "hyp": "wells for very luxurious for houston",
-      "wer": 0.6666666666666666,
-      "errors": 4,
+      "hyp": "further for any justification for hospitals",
+      "wer": 0.5,
+      "errors": 3,
       "words": 6,
       "session_idx": 7
     },
@@ -1971,7 +1971,7 @@
     },
     {
       "ref": "as soon as we get this house finished",
-      "hyp": "as soon as we get they house visitors",
+      "hyp": "as soon as we get these house visitors",
       "wer": 0.25,
       "errors": 2,
       "words": 8,
@@ -1995,15 +1995,15 @@
     },
     {
       "ref": "my husband has a tool shed out back",
-      "hyp": "my husband has a co kid out back",
-      "wer": 0.25,
-      "errors": 2,
+      "hyp": "my husband has a co kid at back back",
+      "wer": 0.5,
+      "errors": 4,
       "words": 8,
       "session_idx": 8
     },
     {
       "ref": "certain kinds of sin",
-      "hyp": "regular kind of seen",
+      "hyp": "regular kind of fun",
       "wer": 0.75,
       "errors": 3,
       "words": 4,
@@ -2011,7 +2011,7 @@
     },
     {
       "ref": "i always threaten my daughters with time-out",
-      "hyp": "i always sitting my daughter with time out",
+      "hyp": "i always sitting my daughter with some out",
       "wer": 0.5714285714285714,
       "errors": 4,
       "words": 7,
@@ -2019,15 +2019,15 @@
     },
     {
       "ref": "north korea is still allowed to receive oil",
-      "hyp": "no crisis center is still allowed to sell oil",
-      "wer": 0.5,
-      "errors": 4,
+      "hyp": "no crisis center is still allowed to operate",
+      "wer": 0.625,
+      "errors": 5,
       "words": 8,
       "session_idx": 8
     },
     {
       "ref": "let's see about getting parents more involved",
-      "hyp": "that's so about sitting appointments more involved",
+      "hyp": "that's so about sitting pensions more involved",
       "wer": 0.5714285714285714,
       "errors": 4,
       "words": 7,
@@ -2035,9 +2035,9 @@
     },
     {
       "ref": "pass me that joint bank account statement",
-      "hyp": "yes me that court makes big courtroom statements",
-      "wer": 0.8571428571428571,
-      "errors": 6,
+      "hyp": "yes me that court brings out anguish",
+      "wer": 0.7142857142857143,
+      "errors": 5,
       "words": 7,
       "session_idx": 8
     },
@@ -2051,15 +2051,15 @@
     },
     {
       "ref": "so it was really too late to do much",
-      "hyp": "so it was really too hard to do much",
-      "wer": 0.1111111111111111,
-      "errors": 1,
+      "hyp": "so it was really two years to do much",
+      "wer": 0.2222222222222222,
+      "errors": 2,
       "words": 9,
       "session_idx": 8
     },
     {
       "ref": "i wanted to go to that golf course down south",
-      "hyp": "i wanted to go to that's gone far down south",
+      "hyp": "i wanted to go to that's going down down south",
       "wer": 0.3,
       "errors": 3,
       "words": 10,
@@ -2067,25 +2067,25 @@
     },
     {
       "ref": "you get a little taste of it and you say no",
-      "hyp": "you get a little case of it and you say no",
-      "wer": 0.09090909090909091,
-      "errors": 1,
+      "hyp": "you get a little chance of it and you see no know",
+      "wer": 0.2727272727272727,
+      "errors": 3,
       "words": 11,
       "session_idx": 8
     },
     {
       "ref": "they don't even check my social security number",
-      "hyp": "they don't even check my strict quarterly nokia phone",
-      "wer": 0.5,
-      "errors": 4,
+      "hyp": "they don't even check my health quarterly norm",
+      "wer": 0.375,
+      "errors": 3,
       "words": 8,
       "session_idx": 8
     },
     {
       "ref": "chicago and philadelphia",
-      "hyp": "chicago and california",
-      "wer": 0.3333333333333333,
-      "errors": 1,
+      "hyp": "chicago and philadelphia",
+      "wer": 0.0,
+      "errors": 0,
       "words": 3,
       "session_idx": 8
     },
@@ -2099,7 +2099,7 @@
     },
     {
       "ref": "social arbitrage",
-      "hyp": "specialist surgeons",
+      "hyp": "specialist overhead",
       "wer": 1.0,
       "errors": 2,
       "words": 2,
@@ -2131,7 +2131,7 @@
     },
     {
       "ref": "the ranks of asian riders are swelling too",
-      "hyp": "the ranks of aviation pilots are selling too",
+      "hyp": "the ranks of aviation pilots are coming too",
       "wer": 0.375,
       "errors": 3,
       "words": 8,
@@ -2139,25 +2139,25 @@
     },
     {
       "ref": "the mission will draw the corresponding conclusions",
-      "hyp": "the measures will all the curfew configurations",
-      "wer": 0.5714285714285714,
-      "errors": 4,
+      "hyp": "the measure will all the federal consumers confuse",
+      "wer": 0.7142857142857143,
+      "errors": 5,
       "words": 7,
       "session_idx": 8
     },
     {
       "ref": "burials usually happen during the morning",
-      "hyp": "royal really depended doing the moving",
-      "wer": 0.8333333333333334,
-      "errors": 5,
+      "hyp": "resourceful really depended on the morning",
+      "wer": 0.6666666666666666,
+      "errors": 4,
       "words": 6,
       "session_idx": 8
     },
     {
       "ref": "be kind to your whole self",
-      "hyp": "my choice to you whole stuff",
-      "wer": 0.6666666666666666,
-      "errors": 4,
+      "hyp": "my son to your whole stuff",
+      "wer": 0.5,
+      "errors": 3,
       "words": 6,
       "session_idx": 8
     },
@@ -2179,7 +2179,7 @@
     },
     {
       "ref": "you can fake sex love explosions special effects horror",
-      "hyp": "you can make food close to geographical origin",
+      "hyp": "you can make tealoe employment rehabilitation center",
       "wer": 0.7777777777777778,
       "errors": 7,
       "words": 9,
@@ -2203,7 +2203,7 @@
     },
     {
       "ref": "increasingly democratically oriented",
-      "hyp": "intrinsic simplicity remarkably",
+      "hyp": "intrinsic thermal conductivity",
       "wer": 1.0,
       "errors": 3,
       "words": 3,
@@ -2227,7 +2227,7 @@
     },
     {
       "ref": "killer bee instinct",
-      "hyp": "certain be automatic",
+      "hyp": "colder be colder",
       "wer": 1.0,
       "errors": 3,
       "words": 3,
@@ -2243,9 +2243,9 @@
     },
     {
       "ref": "the ability of people to access healthcare",
-      "hyp": "the majority of people to avoid health",
-      "wer": 0.42857142857142855,
-      "errors": 3,
+      "hyp": "the majority of people to access health",
+      "wer": 0.2857142857142857,
+      "errors": 2,
       "words": 7,
       "session_idx": 8
     },
@@ -2275,7 +2275,7 @@
     },
     {
       "ref": "i'm north of that actually",
-      "hyp": "i'm only of that age",
+      "hyp": "i'm only of that ethnicity",
       "wer": 0.4,
       "errors": 2,
       "words": 5,
@@ -2283,7 +2283,7 @@
     },
     {
       "ref": "a commercial project on hair conditioner",
-      "hyp": "a curious focus on herecenrzy",
+      "hyp": "a critical focus on herecenumber",
       "wer": 0.6666666666666666,
       "errors": 4,
       "words": 6,
@@ -2299,9 +2299,9 @@
     },
     {
       "ref": "i think that's why a lot of people go to west virginia",
-      "hyp": "i think we're a lot of people go to west florida",
-      "wer": 0.25,
-      "errors": 3,
+      "hyp": "i think we're a lot of people go to west virginia",
+      "wer": 0.16666666666666666,
+      "errors": 2,
       "words": 12,
       "session_idx": 9
     },
@@ -2339,9 +2339,9 @@
     },
     {
       "ref": "it's all money now",
-      "hyp": "what all money now",
-      "wer": 0.25,
-      "errors": 1,
+      "hyp": "what all my mom now",
+      "wer": 0.75,
+      "errors": 3,
       "words": 4,
       "session_idx": 9
     },
@@ -2371,7 +2371,7 @@
     },
     {
       "ref": "that is good that they're like that",
-      "hyp": "you see seats is gone that's like the look",
+      "hyp": "you see state is gone that's like the way",
       "wer": 1.1428571428571428,
       "errors": 8,
       "words": 7,
@@ -2387,15 +2387,15 @@
     },
     {
       "ref": "i remember difficult times in school being behind on work",
-      "hyp": "i remember daughter's time in calling on work",
-      "wer": 0.5,
-      "errors": 5,
+      "hyp": "i maybe daughter time in calling but paid on work",
+      "wer": 0.6,
+      "errors": 6,
       "words": 10,
       "session_idx": 9
     },
     {
       "ref": "the new york catholic conference blasted the measure",
-      "hyp": "the new york county government rents the mail",
+      "hyp": "the new york county government supports the may",
       "wer": 0.5,
       "errors": 4,
       "words": 8,
@@ -2427,23 +2427,23 @@
     },
     {
       "ref": "i'm sure there are some",
-      "hyp": "i'm sure they are time",
-      "wer": 0.4,
-      "errors": 2,
+      "hyp": "i'm sure they are some",
+      "wer": 0.2,
+      "errors": 1,
       "words": 5,
       "session_idx": 9
     },
     {
       "ref": "that's kind of like what we'd like to do",
-      "hyp": "that kind of like what we'd like to do",
-      "wer": 0.1111111111111111,
-      "errors": 1,
+      "hyp": "that's kind of like what we'd like to do",
+      "wer": 0.0,
+      "errors": 0,
       "words": 9,
       "session_idx": 9
     },
     {
       "ref": "quite a lot of variety",
-      "hyp": "quite a lot of projects",
+      "hyp": "quite a lot of prizes",
       "wer": 0.2,
       "errors": 1,
       "words": 5,
@@ -2467,7 +2467,7 @@
     },
     {
       "ref": "a dressing of oil and vinegar",
-      "hyp": "a taste of oil and butter",
+      "hyp": "a touch of oil and butter",
       "wer": 0.3333333333333333,
       "errors": 2,
       "words": 6,
@@ -2475,7 +2475,7 @@
     },
     {
       "ref": "it just kind of dragged on forever",
-      "hyp": "it just kind of exact on behalf",
+      "hyp": "it just kind of sucks on offer",
       "wer": 0.2857142857142857,
       "errors": 2,
       "words": 7,
@@ -2483,15 +2483,15 @@
     },
     {
       "ref": "that's the only way you can get to canada from here",
-      "hyp": "that's the only way you can get to handle him",
-      "wer": 0.2727272727272727,
-      "errors": 3,
+      "hyp": "that's the only way you can get to here from there",
+      "wer": 0.18181818181818182,
+      "errors": 2,
       "words": 11,
       "session_idx": 9
     },
     {
       "ref": "he shot a career low",
-      "hyp": "she started a crisis",
+      "hyp": "she started a crisis line",
       "wer": 0.8,
       "errors": 4,
       "words": 5,
@@ -2515,9 +2515,9 @@
     },
     {
       "ref": "i was really kind of excited to start reading",
-      "hyp": "i was really kind of excited to start reading",
-      "wer": 0.0,
-      "errors": 0,
+      "hyp": "he was really kind of excited to start reading",
+      "wer": 0.1111111111111111,
+      "errors": 1,
       "words": 9,
       "session_idx": 9
     },
@@ -2531,7 +2531,7 @@
     },
     {
       "ref": "that's very interesting",
-      "hyp": "your interest",
+      "hyp": "you're interested",
       "wer": 1.0,
       "errors": 3,
       "words": 3,
@@ -2555,9 +2555,9 @@
     },
     {
       "ref": "an earlier version of this article",
-      "hyp": "and early version of this article",
-      "wer": 0.3333333333333333,
-      "errors": 2,
+      "hyp": "and early versions of this article",
+      "wer": 0.5,
+      "errors": 3,
       "words": 6,
       "session_idx": 9
     },
@@ -2579,9 +2579,9 @@
     },
     {
       "ref": "we came to a fork in the road at night",
-      "hyp": "we came to a walk in the word at night",
-      "wer": 0.2,
-      "errors": 2,
+      "hyp": "we came to a fork in the road at night",
+      "wer": 0.0,
+      "errors": 0,
       "words": 10,
       "session_idx": 9
     },
@@ -2611,7 +2611,7 @@
     },
     {
       "ref": "just go someplace for the day",
-      "hyp": "i goROSSed for the day",
+      "hyp": "you go\u966a\u540c\u4e0b for the day",
       "wer": 0.5,
       "errors": 3,
       "words": 6,
@@ -2643,7 +2643,7 @@
     },
     {
       "ref": "every six months i have to pay my taxes",
-      "hyp": "every key month i have to pay my taxes",
+      "hyp": "every kick month i have to pay my taxes",
       "wer": 0.2222222222222222,
       "errors": 2,
       "words": 9,
@@ -2683,15 +2683,15 @@
     },
     {
       "ref": "not lately though",
-      "hyp": "not thirty though",
-      "wer": 0.3333333333333333,
-      "errors": 1,
+      "hyp": "not thinking too",
+      "wer": 0.6666666666666666,
+      "errors": 2,
       "words": 3,
       "session_idx": 10
     },
     {
       "ref": "too many serious problems for the longer term",
-      "hyp": "you many cheese problems for the long term",
+      "hyp": "you many free problems for the long term",
       "wer": 0.375,
       "errors": 3,
       "words": 8,
@@ -2699,7 +2699,7 @@
     },
     {
       "ref": "are there any other genres or sounds you're interested in exploring",
-      "hyp": "are they any other drinks or foods you recommend in exploiting",
+      "hyp": "are they any other countries or places you understand in exploiting",
       "wer": 0.5454545454545454,
       "errors": 6,
       "words": 11,
@@ -2739,7 +2739,7 @@
     },
     {
       "ref": "he recommends the honda to a lot of people",
-      "hyp": "he records the conds to a lot of people",
+      "hyp": "he records the hdons to a lot of people",
       "wer": 0.2222222222222222,
       "errors": 2,
       "words": 9,
@@ -2747,7 +2747,7 @@
     },
     {
       "ref": "do you have a computer for yourself at home",
-      "hyp": "do you have a instrument for yourself at home",
+      "hyp": "do you have a semester for yourself at home",
       "wer": 0.1111111111111111,
       "errors": 1,
       "words": 9,
@@ -2771,7 +2771,7 @@
     },
     {
       "ref": "more choice more cccountability",
-      "hyp": "more choices for taxpayers",
+      "hyp": "more choices for consumers",
       "wer": 0.75,
       "errors": 3,
       "words": 4,
@@ -2795,15 +2795,15 @@
     },
     {
       "ref": "i hate to dust and clean",
-      "hyp": "i heard to dust and things",
-      "wer": 0.3333333333333333,
-      "errors": 2,
+      "hyp": "i heard to dust and clean",
+      "wer": 0.16666666666666666,
+      "errors": 1,
       "words": 6,
       "session_idx": 10
     },
     {
       "ref": "football is an exciting sport",
-      "hyp": "but in an extreme sport",
+      "hyp": "but in an existing sport",
       "wer": 0.6,
       "errors": 3,
       "words": 5,
@@ -2819,7 +2819,7 @@
     },
     {
       "ref": "i don't know the details",
-      "hyp": "i don't know the data",
+      "hyp": "i don't know the statistic",
       "wer": 0.2,
       "errors": 1,
       "words": 5,
@@ -2827,7 +2827,7 @@
     },
     {
       "ref": "can you speak more about this system of treasury decentralization",
-      "hyp": "then you pick more of the end of luxury allocation",
+      "hyp": "then you pick more of the end of industry's attention",
       "wer": 0.7,
       "errors": 7,
       "words": 10,
@@ -2835,31 +2835,31 @@
     },
     {
       "ref": "too many horror stories out there",
-      "hyp": "so many cars drive out there",
-      "wer": 0.5,
-      "errors": 3,
+      "hyp": "too many cars stop out there",
+      "wer": 0.3333333333333333,
+      "errors": 2,
       "words": 6,
       "session_idx": 10
     },
     {
       "ref": "every major city has a theater",
-      "hyp": "ferry engine stations have a there",
-      "wer": 0.8333333333333334,
-      "errors": 5,
+      "hyp": "fear range state has a tree",
+      "wer": 0.6666666666666666,
+      "errors": 4,
       "words": 6,
       "session_idx": 10
     },
     {
       "ref": "go to the zoo and see elephants and tigers and things like that",
-      "hyp": "go to the show and say hello and things like that",
-      "wer": 0.38461538461538464,
-      "errors": 5,
+      "hyp": "go to the show and see\u9500\u552e\u53ca\u92b7\u552e things like that",
+      "wer": 0.46153846153846156,
+      "errors": 6,
       "words": 13,
       "session_idx": 10
     },
     {
       "ref": "it'd be kind of fun",
-      "hyp": "it's like kind of fun",
+      "hyp": "it's about kind of fun",
       "wer": 0.4,
       "errors": 2,
       "words": 5,
@@ -2883,9 +2883,9 @@
     },
     {
       "ref": "i do not read everything in the paper",
-      "hyp": "i do not read everything in the paper",
-      "wer": 0.0,
-      "errors": 0,
+      "hyp": "i do not hate everything in the people",
+      "wer": 0.25,
+      "errors": 2,
       "words": 8,
       "session_idx": 10
     },
@@ -2899,23 +2899,23 @@
     },
     {
       "ref": "not everybody shows up",
-      "hyp": "not everybody grew up",
-      "wer": 0.25,
-      "errors": 1,
+      "hyp": "got everybody set up",
+      "wer": 0.5,
+      "errors": 2,
       "words": 4,
       "session_idx": 10
     },
     {
       "ref": "americans have pushed them out of their native land",
-      "hyp": "libraries have put them out of their dietary lists",
-      "wer": 0.4444444444444444,
-      "errors": 4,
+      "hyp": "according to put them out of their ministry",
+      "wer": 0.5555555555555556,
+      "errors": 5,
       "words": 9,
       "session_idx": 11
     },
     {
       "ref": "it was just based on the facts",
-      "hyp": "it was just be between the facts",
+      "hyp": "it was just becuase on the fact",
       "wer": 0.2857142857142857,
       "errors": 2,
       "words": 7,
@@ -2931,9 +2931,9 @@
     },
     {
       "ref": "did you actually use drugs at all",
-      "hyp": "did you actually use your shoes",
-      "wer": 0.42857142857142855,
-      "errors": 3,
+      "hyp": "did you actually use drug at all",
+      "wer": 0.14285714285714285,
+      "errors": 1,
       "words": 7,
       "session_idx": 11
     },
@@ -2963,7 +2963,7 @@
     },
     {
       "ref": "little jam box",
-      "hyp": "royal jambs",
+      "hyp": "tool aid books",
       "wer": 1.0,
       "errors": 3,
       "words": 3,
@@ -2971,7 +2971,7 @@
     },
     {
       "ref": "the tree were so poignant",
-      "hyp": "the district for your jurisdiction",
+      "hyp": "let deer for so long",
       "wer": 0.8,
       "errors": 4,
       "words": 5,
@@ -2979,9 +2979,9 @@
     },
     {
       "ref": "i'm wearing shorts",
-      "hyp": "i'm living sports",
-      "wer": 0.6666666666666666,
-      "errors": 2,
+      "hyp": "i'm wearing shorts",
+      "wer": 0.0,
+      "errors": 0,
       "words": 3,
       "session_idx": 11
     },
@@ -3003,9 +3003,9 @@
     },
     {
       "ref": "vision in the cave of evil",
-      "hyp": "within in the state of hell",
-      "wer": 0.5,
-      "errors": 3,
+      "hyp": "below in the valley of evil",
+      "wer": 0.3333333333333333,
+      "errors": 2,
       "words": 6,
       "session_idx": 11
     },
@@ -3019,9 +3019,9 @@
     },
     {
       "ref": "i'll try that next week",
-      "hyp": "i'll say that's next week",
-      "wer": 0.4,
-      "errors": 2,
+      "hyp": "i'll see that next week",
+      "wer": 0.2,
+      "errors": 1,
       "words": 5,
       "session_idx": 11
     },
@@ -3075,15 +3075,15 @@
     },
     {
       "ref": "he did not want to be in it any more than i did",
-      "hyp": "he did not want to be in it more than we did",
-      "wer": 0.15384615384615385,
-      "errors": 2,
+      "hyp": "he did not want to be in it more than then i said",
+      "wer": 0.23076923076923078,
+      "errors": 3,
       "words": 13,
       "session_idx": 11
     },
     {
       "ref": "the teacher had eleven kids",
-      "hyp": "the czech had eleven kids",
+      "hyp": "the teachers had eleven kids",
       "wer": 0.2,
       "errors": 1,
       "words": 5,
@@ -3099,7 +3099,7 @@
     },
     {
       "ref": "click here to join freelancer",
-      "hyp": "cuckoo here to die proudly",
+      "hyp": "cuckold here to line up",
       "wer": 0.6,
       "errors": 3,
       "words": 5,
@@ -3107,7 +3107,7 @@
     },
     {
       "ref": "knowledge or insight into politics",
-      "hyp": "lady or singer in policy",
+      "hyp": "lads or fans in policy",
       "wer": 0.8,
       "errors": 4,
       "words": 5,
@@ -3115,7 +3115,7 @@
     },
     {
       "ref": "don't let them see violence at home",
-      "hyp": "don't let them see you foul at home",
+      "hyp": "don't let them see you volunteer at home",
       "wer": 0.2857142857142857,
       "errors": 2,
       "words": 7,
@@ -3123,9 +3123,9 @@
     },
     {
       "ref": "the issue is that your employer is going under",
-      "hyp": "the school is that to a employer is going to",
-      "wer": 0.4444444444444444,
-      "errors": 4,
+      "hyp": "the issue is that to the employer is going to",
+      "wer": 0.3333333333333333,
+      "errors": 3,
       "words": 9,
       "session_idx": 11
     },
@@ -3139,31 +3139,31 @@
     },
     {
       "ref": "our point of view",
-      "hyp": "all points up down",
-      "wer": 1.0,
-      "errors": 4,
+      "hyp": "our point up too",
+      "wer": 0.5,
+      "errors": 2,
       "words": 4,
       "session_idx": 11
     },
     {
       "ref": "the lot we lived on is now a ranch",
-      "hyp": "i that time we've lived in a house",
-      "wer": 0.8888888888888888,
-      "errors": 8,
-      "words": 9,
-      "session_idx": 11
-    },
-    {
-      "ref": "for your next vehicle do you want a truck",
-      "hyp": "were you nexticular do you want a tweak",
+      "hyp": "now that we've lived on in now a bunch",
       "wer": 0.5555555555555556,
       "errors": 5,
       "words": 9,
       "session_idx": 11
     },
     {
+      "ref": "for your next vehicle do you want a truck",
+      "hyp": "were you next day do you want a check",
+      "wer": 0.4444444444444444,
+      "errors": 4,
+      "words": 9,
+      "session_idx": 11
+    },
+    {
       "ref": "it's all traditional cooking",
-      "hyp": "it's all eventual cooking",
+      "hyp": "it's all personal cooking",
       "wer": 0.25,
       "errors": 1,
       "words": 4,
@@ -3179,23 +3179,23 @@
     },
     {
       "ref": "they had sixty four of them",
-      "hyp": "they had taken half of them",
-      "wer": 0.3333333333333333,
-      "errors": 2,
+      "hyp": "they had twice as much of them",
+      "wer": 0.5,
+      "errors": 3,
       "words": 6,
       "session_idx": 11
     },
     {
       "ref": "well i liked the seventies",
-      "hyp": "we're like the society",
-      "wer": 0.8,
-      "errors": 4,
+      "hyp": "well i like the society",
+      "wer": 0.4,
+      "errors": 2,
       "words": 5,
       "session_idx": 11
     },
     {
       "ref": "this is fusion as liberation",
-      "hyp": "this is fascinating as liquid",
+      "hyp": "this is building as liquid",
       "wer": 0.4,
       "errors": 2,
       "words": 5,
@@ -3203,9 +3203,9 @@
     },
     {
       "ref": "it's probably going to be a very old used one",
-      "hyp": "it's probably going to be a very old used one",
-      "wer": 0.0,
-      "errors": 0,
+      "hyp": "it's probably going to be a very old use",
+      "wer": 0.2,
+      "errors": 2,
       "words": 10,
       "session_idx": 11
     },
@@ -3219,15 +3219,15 @@
     },
     {
       "ref": "the mental capacity to raise them",
-      "hyp": "the financial impact to raise them",
-      "wer": 0.3333333333333333,
-      "errors": 2,
+      "hyp": "the penalty app to use for raising",
+      "wer": 0.8333333333333334,
+      "errors": 5,
       "words": 6,
       "session_idx": 11
     },
     {
       "ref": "friday afternoon at five thirty",
-      "hyp": "tyd's effects at five days",
+      "hyp": "party festivities at five o'clock",
       "wer": 0.6,
       "errors": 3,
       "words": 5,
@@ -3235,15 +3235,15 @@
     },
     {
       "ref": "lawmakers passed a measure last year",
-      "hyp": "alabama just a minor last year",
-      "wer": 0.5,
-      "errors": 3,
+      "hyp": "autism just a minor issue year by year",
+      "wer": 1.0,
+      "errors": 6,
       "words": 6,
       "session_idx": 12
     },
     {
       "ref": "i mean a large flat plate",
-      "hyp": "i mean a large scale pet",
+      "hyp": "i mean a large slab bed",
       "wer": 0.3333333333333333,
       "errors": 2,
       "words": 6,
@@ -3251,7 +3251,7 @@
     },
     {
       "ref": "i'd like to see it be more of an amateur sport",
-      "hyp": "i'd like to see it by any means of any method",
+      "hyp": "i'd like to see it by any means of ANY sort",
       "wer": 0.5454545454545454,
       "errors": 6,
       "words": 11,
@@ -3267,7 +3267,7 @@
     },
     {
       "ref": "praying more often than usual",
-      "hyp": "creating more offends an usual",
+      "hyp": "creating more off-hand any usual",
       "wer": 0.6,
       "errors": 3,
       "words": 5,
@@ -3291,15 +3291,15 @@
     },
     {
       "ref": "my in laws listen to the kind of music i hate",
-      "hyp": "my in all lists to the kind of music i eat",
-      "wer": 0.2727272727272727,
-      "errors": 3,
+      "hyp": "my in all lists to the kind of music i hate",
+      "wer": 0.18181818181818182,
+      "errors": 2,
       "words": 11,
       "session_idx": 12
     },
     {
       "ref": "download on your computer or television",
-      "hyp": "tenpeople on your meals or food",
+      "hyp": "loneliness on your instruments or appliances",
       "wer": 0.5,
       "errors": 3,
       "words": 6,
@@ -3339,7 +3339,7 @@
     },
     {
       "ref": "pay and exhaustion and you know",
-      "hyp": "please a record to you know",
+      "hyp": "please an exchange to you know",
       "wer": 0.6666666666666666,
       "errors": 4,
       "words": 6,
@@ -3355,7 +3355,7 @@
     },
     {
       "ref": "former employers",
-      "hyp": "business experiences",
+      "hyp": "forum experiences",
       "wer": 1.0,
       "errors": 2,
       "words": 2,
@@ -3379,17 +3379,17 @@
     },
     {
       "ref": "i noticed something interesting last time",
-      "hyp": "i needed something interesting last time",
-      "wer": 0.16666666666666666,
-      "errors": 1,
+      "hyp": "i needed something interesting time time",
+      "wer": 0.3333333333333333,
+      "errors": 2,
       "words": 6,
       "session_idx": 12
     },
     {
       "ref": "they wouldn't have to",
-      "hyp": "they wouldn't have",
-      "wer": 0.25,
-      "errors": 1,
+      "hyp": "they wouldn't have to",
+      "wer": 0.0,
+      "errors": 0,
       "words": 4,
       "session_idx": 12
     },
@@ -3411,7 +3411,7 @@
     },
     {
       "ref": "the decision to censor the articles",
-      "hyp": "the decision to endorse the original",
+      "hyp": "the decision to suspend the italics",
       "wer": 0.3333333333333333,
       "errors": 2,
       "words": 6,
@@ -3419,7 +3419,7 @@
     },
     {
       "ref": "special rules for employment cases",
-      "hyp": "social welfare for employed citizens",
+      "hyp": "cash rewards for employed soldiers",
       "wer": 0.8,
       "errors": 4,
       "words": 5,
@@ -3459,7 +3459,7 @@
     },
     {
       "ref": "that's neat that you like cross stitching also",
-      "hyp": "that's neat that you like riskiest cities",
+      "hyp": "that's neat that you like risque cuisine all",
       "wer": 0.375,
       "errors": 3,
       "words": 8,
@@ -3467,9 +3467,9 @@
     },
     {
       "ref": "the measure now heads to goverment",
-      "hyp": "the major news head to company",
-      "wer": 0.6666666666666666,
-      "errors": 4,
+      "hyp": "the major now hires to company",
+      "wer": 0.5,
+      "errors": 3,
       "words": 6,
       "session_idx": 12
     },
@@ -3515,7 +3515,7 @@
     },
     {
       "ref": "it was a cordless phone",
-      "hyp": "it was a pretty farm",
+      "hyp": "it was a pretty fun",
       "wer": 0.4,
       "errors": 2,
       "words": 5,
@@ -3539,9 +3539,9 @@
     },
     {
       "ref": "my skill set got diminished by the steroid",
-      "hyp": "my son is excited about the jury",
-      "wer": 0.75,
-      "errors": 6,
+      "hyp": "my son has got AIDS by theurved",
+      "wer": 0.625,
+      "errors": 5,
       "words": 8,
       "session_idx": 12
     },
@@ -3571,7 +3571,7 @@
     },
     {
       "ref": "you just call him direct",
-      "hyp": "you just call him naked",
+      "hyp": "you just call him dentist",
       "wer": 0.2,
       "errors": 1,
       "words": 5,
@@ -3603,9 +3603,9 @@
     },
     {
       "ref": "do we have to wait until all the land fills",
-      "hyp": "do we have to batel use all the ground floor",
-      "wer": 0.4,
-      "errors": 4,
+      "hyp": "do you have to batel into the ground till they fall",
+      "wer": 0.8,
+      "errors": 8,
       "words": 10,
       "session_idx": 13
     },
@@ -3683,15 +3683,15 @@
     },
     {
       "ref": "anything like that we participated",
-      "hyp": "anything like that we produce",
-      "wer": 0.2,
-      "errors": 1,
+      "hyp": "anything like that we're positive",
+      "wer": 0.4,
+      "errors": 2,
       "words": 5,
       "session_idx": 13
     },
     {
       "ref": "seven years in the pros",
-      "hyp": "seven years in the past",
+      "hyp": "seven years in the power",
       "wer": 0.2,
       "errors": 1,
       "words": 5,
@@ -3715,25 +3715,25 @@
     },
     {
       "ref": "that has got to be blooming this time of year",
-      "hyp": "that has got to be near someone of time",
-      "wer": 0.4,
-      "errors": 4,
+      "hyp": "that has got to be born this time of year",
+      "wer": 0.1,
+      "errors": 1,
       "words": 10,
       "session_idx": 13
     },
     {
       "ref": "even these buses",
-      "hyp": "even these phases",
-      "wer": 0.3333333333333333,
-      "errors": 1,
+      "hyp": "even the press",
+      "wer": 0.6666666666666666,
+      "errors": 2,
       "words": 3,
       "session_idx": 13
     },
     {
       "ref": "take your sick leave",
-      "hyp": "got you kick live",
-      "wer": 1.0,
-      "errors": 4,
+      "hyp": "get your kick leave",
+      "wer": 0.5,
+      "errors": 2,
       "words": 4,
       "session_idx": 13
     },
@@ -3747,9 +3747,9 @@
     },
     {
       "ref": "the leaves are just dead",
-      "hyp": "the living is just ood",
-      "wer": 0.6,
-      "errors": 3,
+      "hyp": "the leaves are just adid",
+      "wer": 0.2,
+      "errors": 1,
       "words": 5,
       "session_idx": 13
     },
@@ -3771,7 +3771,7 @@
     },
     {
       "ref": "the pros and cons of both",
-      "hyp": "the frost and rain of both",
+      "hyp": "the frost and kind of both",
       "wer": 0.3333333333333333,
       "errors": 2,
       "words": 6,
@@ -3779,7 +3779,7 @@
     },
     {
       "ref": "were thoroughbreds",
-      "hyp": "we're frustrated",
+      "hyp": "we're surprised",
       "wer": 1.0,
       "errors": 2,
       "words": 2,
@@ -3787,7 +3787,7 @@
     },
     {
       "ref": "you get programming",
-      "hyp": "you get smog",
+      "hyp": "you get smogging",
       "wer": 0.3333333333333333,
       "errors": 1,
       "words": 3,
@@ -3803,15 +3803,15 @@
     },
     {
       "ref": "i think a cup or two",
-      "hyp": "i think a top or too low",
-      "wer": 0.5,
-      "errors": 3,
+      "hyp": "i think a step or two",
+      "wer": 0.16666666666666666,
+      "errors": 1,
       "words": 6,
       "session_idx": 13
     },
     {
       "ref": "i don't mean to be knocking",
-      "hyp": "i don't need to be knitting",
+      "hyp": "i don't need to be talking",
       "wer": 0.3333333333333333,
       "errors": 2,
       "words": 6,
@@ -3827,7 +3827,7 @@
     },
     {
       "ref": "a controlled substance",
-      "hyp": "a controlled situation",
+      "hyp": "a controlled sophomore",
       "wer": 0.3333333333333333,
       "errors": 1,
       "words": 3,
@@ -3835,7 +3835,7 @@
     },
     {
       "ref": "we're real close",
-      "hyp": "six houses",
+      "hyp": "kill dues",
       "wer": 1.0,
       "errors": 3,
       "words": 3,
@@ -3851,7 +3851,7 @@
     },
     {
       "ref": "it might be kind of scary",
-      "hyp": "it might be kind of weird",
+      "hyp": "it might be kind of rare",
       "wer": 0.16666666666666666,
       "errors": 1,
       "words": 6,
@@ -3867,9 +3867,9 @@
     },
     {
       "ref": "do you have friends with older children",
-      "hyp": "do you have friends for older children",
-      "wer": 0.14285714285714285,
-      "errors": 1,
+      "hyp": "do you have friends for old children",
+      "wer": 0.2857142857142857,
+      "errors": 2,
       "words": 7,
       "session_idx": 14
     },
@@ -3883,9 +3883,9 @@
     },
     {
       "ref": "i just file federal income tax every year",
-      "hyp": "i just fell real soon after every year",
-      "wer": 0.5,
-      "errors": 4,
+      "hyp": "i just fell real close every year ever",
+      "wer": 0.625,
+      "errors": 5,
       "words": 8,
       "session_idx": 14
     },
@@ -3955,7 +3955,7 @@
     },
     {
       "ref": "i make that once in a while",
-      "hyp": "i bought that once in a while",
+      "hyp": "i picked that once in a while",
       "wer": 0.14285714285714285,
       "errors": 1,
       "words": 7,
@@ -3979,9 +3979,9 @@
     },
     {
       "ref": "the junk mail that you get",
-      "hyp": "the junk mail that you get",
-      "wer": 0.0,
-      "errors": 0,
+      "hyp": "the bank measures that you get",
+      "wer": 0.3333333333333333,
+      "errors": 2,
       "words": 6,
       "session_idx": 14
     },
@@ -4027,23 +4027,23 @@
     },
     {
       "ref": "it had to be november anyway",
-      "hyp": "it had to be ninety percent",
-      "wer": 0.3333333333333333,
-      "errors": 2,
+      "hyp": "it had to be snapped anyway",
+      "wer": 0.16666666666666666,
+      "errors": 1,
       "words": 6,
       "session_idx": 14
     },
     {
       "ref": "if you do decide to go with child care",
-      "hyp": "if you do decide to go with child care job",
-      "wer": 0.1111111111111111,
-      "errors": 1,
+      "hyp": "if you do decide to go with child care",
+      "wer": 0.0,
+      "errors": 0,
       "words": 9,
       "session_idx": 14
     },
     {
       "ref": "does insurance pay for the body damage",
-      "hyp": "a interest program for the government",
+      "hyp": "a interest program for the party's subject",
       "wer": 0.7142857142857143,
       "errors": 5,
       "words": 7,
@@ -4051,9 +4051,9 @@
     },
     {
       "ref": "one is eight and one is eleven",
-      "hyp": "one is eight and one is eleven",
-      "wer": 0.0,
-      "errors": 0,
+      "hyp": "one his eight and one his eleven",
+      "wer": 0.2857142857142857,
+      "errors": 2,
       "words": 7,
       "session_idx": 14
     },
@@ -4067,7 +4067,7 @@
     },
     {
       "ref": "newer neighborhoods and development communities",
-      "hyp": "no antipattern and semiconductor companies",
+      "hyp": "no antipattern and developmental companies",
       "wer": 0.8,
       "errors": 4,
       "words": 5,
@@ -4075,9 +4075,9 @@
     },
     {
       "ref": "they are going to get a gun no matter what",
-      "hyp": "they are going to get a good no matter what",
-      "wer": 0.1,
-      "errors": 1,
+      "hyp": "they are going to get a gun no matter what",
+      "wer": 0.0,
+      "errors": 0,
       "words": 10,
       "session_idx": 14
     },
@@ -4123,7 +4123,7 @@
     },
     {
       "ref": "most people aren't",
-      "hyp": "many people aren't",
+      "hyp": "my people aren't",
       "wer": 0.3333333333333333,
       "errors": 1,
       "words": 3,
@@ -4131,7 +4131,7 @@
     },
     {
       "ref": "i think what they will do is start paying mexico",
-      "hyp": "i think what they will do is start paying makeup",
+      "hyp": "i think what they will do is start paying makefile",
       "wer": 0.1,
       "errors": 1,
       "words": 10,
@@ -4155,7 +4155,7 @@
     },
     {
       "ref": "those small little trucks and cars like that",
-      "hyp": "their smart wall clocks and cars like that",
+      "hyp": "there's more little lakes and trees like that",
       "wer": 0.5,
       "errors": 4,
       "words": 8,
@@ -4179,7 +4179,7 @@
     },
     {
       "ref": "there's so much going on here",
-      "hyp": "there's no much going on here",
+      "hyp": "there's too much going on here",
       "wer": 0.16666666666666666,
       "errors": 1,
       "words": 6,
@@ -4195,7 +4195,7 @@
     },
     {
       "ref": "being one of these late in life mothers",
-      "hyp": "being one of these guys in life in like circumstances",
+      "hyp": "being one of these guys in life in like matter",
       "wer": 0.5,
       "errors": 4,
       "words": 8,
@@ -4203,15 +4203,15 @@
     },
     {
       "ref": "the drug dealers",
-      "hyp": "the drug dolls",
-      "wer": 0.3333333333333333,
-      "errors": 1,
+      "hyp": "the dog dallas",
+      "wer": 0.6666666666666666,
+      "errors": 2,
       "words": 3,
       "session_idx": 15
     },
     {
       "ref": "my wife's mother is the only grandparent left",
-      "hyp": "my mother's moved the only campground life",
+      "hyp": "my mother's more the only stopping point",
       "wer": 0.625,
       "errors": 5,
       "words": 8,
@@ -4243,17 +4243,17 @@
     },
     {
       "ref": "it's second nature",
-      "hyp": "it's second nature",
-      "wer": 0.0,
-      "errors": 0,
+      "hyp": "it's second picture",
+      "wer": 0.3333333333333333,
+      "errors": 1,
       "words": 3,
       "session_idx": 15
     },
     {
       "ref": "find out where the languages are",
-      "hyp": "when out were the teenagers are",
-      "wer": 0.5,
-      "errors": 3,
+      "hyp": "run out where the teenagers are",
+      "wer": 0.3333333333333333,
+      "errors": 2,
       "words": 6,
       "session_idx": 15
     },
@@ -4267,7 +4267,7 @@
     },
     {
       "ref": "it's like a bullet going by",
-      "hyp": "it's like a partial gun right",
+      "hyp": "it's like a partial gun running",
       "wer": 0.5,
       "errors": 3,
       "words": 6,
@@ -4275,9 +4275,9 @@
     },
     {
       "ref": "i mean lunch today was eighteen dollars",
-      "hyp": "i many nights today was excited days",
-      "wer": 0.5714285714285714,
-      "errors": 4,
+      "hyp": "i mean twelve days was ahead of them",
+      "wer": 0.7142857142857143,
+      "errors": 5,
       "words": 7,
       "session_idx": 15
     },
@@ -4299,17 +4299,17 @@
     },
     {
       "ref": "if the news we're getting is any good",
-      "hyp": "if the news we're scared is any good",
-      "wer": 0.125,
-      "errors": 1,
+      "hyp": "if the news we're headed is good",
+      "wer": 0.25,
+      "errors": 2,
       "words": 8,
       "session_idx": 15
     },
     {
       "ref": "if something goes wrong",
-      "hyp": "if something go wrong",
-      "wer": 0.25,
-      "errors": 1,
+      "hyp": "if something goes wrong",
+      "wer": 0.0,
+      "errors": 0,
       "words": 4,
       "session_idx": 15
     },
@@ -4323,7 +4323,7 @@
     },
     {
       "ref": "used to chase each other all through the house",
-      "hyp": "how to say each other all through the house",
+      "hyp": "how to change each other all through the house",
       "wer": 0.2222222222222222,
       "errors": 2,
       "words": 9,
@@ -4339,9 +4339,9 @@
     },
     {
       "ref": "that kind of gas mileage",
-      "hyp": "that kind of dish cuisine",
-      "wer": 0.4,
-      "errors": 2,
+      "hyp": "that's kind of messy materials",
+      "wer": 0.6,
+      "errors": 3,
       "words": 5,
       "session_idx": 15
     },
@@ -4387,7 +4387,7 @@
     },
     {
       "ref": "spending money that does not belong to them",
-      "hyp": "trading money that does not belong to them",
+      "hyp": "paying money that does not belong to them",
       "wer": 0.125,
       "errors": 1,
       "words": 8,
@@ -4403,7 +4403,7 @@
     },
     {
       "ref": "that's the freedom of choice",
-      "hyp": "that's the family of choice",
+      "hyp": "that's the fame of choice",
       "wer": 0.2,
       "errors": 1,
       "words": 5,
@@ -4443,9 +4443,9 @@
     },
     {
       "ref": "were his civil rights violated",
-      "hyp": "for his creative works valued",
-      "wer": 0.8,
-      "errors": 4,
+      "hyp": "or his civil rights petition",
+      "wer": 0.4,
+      "errors": 2,
       "words": 5,
       "session_idx": 15
     },
@@ -4475,23 +4475,23 @@
     },
     {
       "ref": "we can keep that out of our minds",
-      "hyp": "we can keep that out of our minds",
-      "wer": 0.0,
-      "errors": 0,
+      "hyp": "we can keep that out of our mind",
+      "wer": 0.125,
+      "errors": 1,
       "words": 8,
       "session_idx": 15
     },
     {
       "ref": "forms for his photography business",
-      "hyp": "framings for his graphic business",
-      "wer": 0.4,
-      "errors": 2,
+      "hyp": "forms for his holographic business",
+      "wer": 0.2,
+      "errors": 1,
       "words": 5,
       "session_idx": 15
     },
     {
       "ref": "we are seeing that here as well",
-      "hyp": "we are sitting that here as well",
+      "hyp": "we are saying that here as well",
       "wer": 0.14285714285714285,
       "errors": 1,
       "words": 7,
@@ -4507,7 +4507,7 @@
     },
     {
       "ref": "it depends on the person",
-      "hyp": "it depends on the version",
+      "hyp": "it depends on the season",
       "wer": 0.2,
       "errors": 1,
       "words": 5,
@@ -4531,17 +4531,17 @@
     },
     {
       "ref": "no one can drive on ice",
-      "hyp": "you one can drive on heat",
-      "wer": 0.3333333333333333,
-      "errors": 2,
+      "hyp": "no one can drive on heat",
+      "wer": 0.16666666666666666,
+      "errors": 1,
       "words": 6,
       "session_idx": 16
     },
     {
       "ref": "maybe they based it on that mister mom movie",
-      "hyp": "maybe they passed it on to that movie home",
-      "wer": 0.5555555555555556,
-      "errors": 5,
+      "hyp": "maybe they passed it on that measure home",
+      "wer": 0.4444444444444444,
+      "errors": 4,
       "words": 9,
       "session_idx": 16
     },
@@ -4643,7 +4643,7 @@
     },
     {
       "ref": "how do you like your tread mill",
-      "hyp": "how do you like your cat",
+      "hyp": "how do you like your cat bill",
       "wer": 0.2857142857142857,
       "errors": 2,
       "words": 7,
@@ -4659,9 +4659,9 @@
     },
     {
       "ref": "their self identity is stronger",
-      "hyp": "they're self-funded stadium",
-      "wer": 1.0,
-      "errors": 5,
+      "hyp": "they're self-funded is wrong",
+      "wer": 0.8,
+      "errors": 4,
       "words": 5,
       "session_idx": 16
     },
@@ -4675,9 +4675,9 @@
     },
     {
       "ref": "i thought that that was what celery seed was for",
-      "hyp": "i thought that was what calgary said was fair",
-      "wer": 0.4,
-      "errors": 4,
+      "hyp": "i thought that was whatinally sadly sad as far",
+      "wer": 0.6,
+      "errors": 6,
       "words": 10,
       "session_idx": 16
     },
@@ -4691,7 +4691,7 @@
     },
     {
       "ref": "was it six weeks old",
-      "hyp": "while it six weeks old",
+      "hyp": "well it six weeks old",
       "wer": 0.2,
       "errors": 1,
       "words": 5,
@@ -4699,7 +4699,7 @@
     },
     {
       "ref": "fifteen feet wide",
-      "hyp": "affine breed dogs",
+      "hyp": "affine flower wax",
       "wer": 1.0,
       "errors": 3,
       "words": 3,
@@ -4707,15 +4707,15 @@
     },
     {
       "ref": "or a bigger city",
-      "hyp": "for a big size",
-      "wer": 0.75,
-      "errors": 3,
+      "hyp": "for a big city",
+      "wer": 0.5,
+      "errors": 2,
       "words": 4,
       "session_idx": 16
     },
     {
       "ref": "fish chunks and dip it in the fondue",
-      "hyp": "crazies and keep it in the condo",
+      "hyp": "pizza pancakes and keep it in the freezer",
       "wer": 0.5,
       "errors": 4,
       "words": 8,
@@ -4747,9 +4747,9 @@
     },
     {
       "ref": "have you ever been drug tested",
-      "hyp": "have you ever been drugged",
-      "wer": 0.3333333333333333,
-      "errors": 2,
+      "hyp": "have you ever been drug tested",
+      "wer": 0.0,
+      "errors": 0,
       "words": 6,
       "session_idx": 16
     },
@@ -4803,17 +4803,17 @@
     },
     {
       "ref": "to the price of what i buy",
-      "hyp": "to the value of what a beazley",
-      "wer": 0.42857142857142855,
-      "errors": 3,
+      "hyp": "do the quality of what a person is",
+      "wer": 0.7142857142857143,
+      "errors": 5,
       "words": 7,
       "session_idx": 16
     },
     {
       "ref": "even in my case",
-      "hyp": "even in my case",
-      "wer": 0.0,
-      "errors": 0,
+      "hyp": "even in my place",
+      "wer": 0.25,
+      "errors": 1,
       "words": 4,
       "session_idx": 16
     },
@@ -4843,7 +4843,7 @@
     },
     {
       "ref": "they even looked halfway decent",
-      "hyp": "they even look favorable decision",
+      "hyp": "they even liked special seasons",
       "wer": 0.6,
       "errors": 3,
       "words": 5,
@@ -4851,7 +4851,7 @@
     },
     {
       "ref": "a food processor",
-      "hyp": "i vote politics",
+      "hyp": "i love movies",
       "wer": 1.0,
       "errors": 3,
       "words": 3,
@@ -4907,17 +4907,17 @@
     },
     {
       "ref": "that's from the child's standpoint",
-      "hyp": "that's from the child's standpoint",
-      "wer": 0.0,
-      "errors": 0,
+      "hyp": "that's from the child's girlfriend",
+      "wer": 0.2,
+      "errors": 1,
       "words": 5,
       "session_idx": 17
     },
     {
       "ref": "there is no timetable for a decision",
-      "hyp": "there is no downside for a decision",
-      "wer": 0.14285714285714285,
-      "errors": 1,
+      "hyp": "there is no damage to a decision",
+      "wer": 0.2857142857142857,
+      "errors": 2,
       "words": 7,
       "session_idx": 17
     },
@@ -4931,7 +4931,7 @@
     },
     {
       "ref": "nurses get so worn down",
-      "hyp": "ladies get too run down",
+      "hyp": "ladies get to run down",
       "wer": 0.6,
       "errors": 3,
       "words": 5,
@@ -4939,9 +4939,9 @@
     },
     {
       "ref": "the second time you see it",
-      "hyp": "the second time you say it",
-      "wer": 0.16666666666666666,
-      "errors": 1,
+      "hyp": "the second time you see it",
+      "wer": 0.0,
+      "errors": 0,
       "words": 6,
       "session_idx": 17
     },
@@ -4955,9 +4955,9 @@
     },
     {
       "ref": "but at that point i was too far gone",
-      "hyp": "but at that point i was to far gone",
-      "wer": 0.1111111111111111,
-      "errors": 1,
+      "hyp": "but at that point i was to far gun",
+      "wer": 0.2222222222222222,
+      "errors": 2,
       "words": 9,
       "session_idx": 17
     },
@@ -4995,7 +4995,7 @@
     },
     {
       "ref": "started investigating",
-      "hyp": "rower's industry",
+      "hyp": "avoided inheritance",
       "wer": 1.0,
       "errors": 2,
       "words": 2,
@@ -5003,7 +5003,7 @@
     },
     {
       "ref": "vice presidents of companies",
-      "hyp": "first parties of companies",
+      "hyp": "risk prevention of companies",
       "wer": 0.5,
       "errors": 2,
       "words": 4,
@@ -5011,7 +5011,7 @@
     },
     {
       "ref": "i wasn't opposed to paying for it",
-      "hyp": "i wasn't afraid to spend for it",
+      "hyp": "i wasn't supposed to spend for it",
       "wer": 0.2857142857142857,
       "errors": 2,
       "words": 7,
@@ -5035,15 +5035,15 @@
     },
     {
       "ref": "we see more and more women being involved",
-      "hyp": "we say more and more and more involved",
-      "wer": 0.375,
-      "errors": 3,
+      "hyp": "we see more and more women being involved",
+      "wer": 0.0,
+      "errors": 0,
       "words": 8,
       "session_idx": 17
     },
     {
       "ref": "i have to make this one last as long as i can",
-      "hyp": "i have to make this one as close to canon as i can",
+      "hyp": "i have to make this one as close as possible",
       "wer": 0.3333333333333333,
       "errors": 4,
       "words": 12,
@@ -5075,9 +5075,9 @@
     },
     {
       "ref": "question and answer period",
-      "hyp": "causation and cause version",
-      "wer": 0.75,
-      "errors": 3,
+      "hyp": "causation and cause period",
+      "wer": 0.5,
+      "errors": 2,
       "words": 4,
       "session_idx": 17
     },
@@ -5099,9 +5099,9 @@
     },
     {
       "ref": "i'll turn the radio on",
-      "hyp": "i'll see the radio on",
-      "wer": 0.2,
-      "errors": 1,
+      "hyp": "i'll turn the radio on",
+      "wer": 0.0,
+      "errors": 0,
       "words": 5,
       "session_idx": 17
     },
@@ -5123,15 +5123,15 @@
     },
     {
       "ref": "what happened to get us to this point",
-      "hyp": "what happened to get us to this point",
-      "wer": 0.0,
-      "errors": 0,
+      "hyp": "what have to get us to this point",
+      "wer": 0.125,
+      "errors": 1,
       "words": 8,
       "session_idx": 17
     },
     {
       "ref": "trump has said there was no collusion",
-      "hyp": "crumples as bad there was no collision",
+      "hyp": "crumbs as bad there was no collision",
       "wer": 0.5714285714285714,
       "errors": 4,
       "words": 7,
@@ -5155,7 +5155,7 @@
     },
     {
       "ref": "we sit around and eat popcorn",
-      "hyp": "we sit around and eat food",
+      "hyp": "we sit around and eat breakfast",
       "wer": 0.16666666666666666,
       "errors": 1,
       "words": 6,
@@ -5195,9 +5195,9 @@
     },
     {
       "ref": "you're developing your imagination",
-      "hyp": "you remember or familiar",
-      "wer": 1.0,
-      "errors": 4,
+      "hyp": "you're delighted or amused",
+      "wer": 0.75,
+      "errors": 3,
       "words": 4,
       "session_idx": 18
     },
@@ -5211,7 +5211,7 @@
     },
     {
       "ref": "usually busy fighting for survival",
-      "hyp": "usually buy buying for yourself",
+      "hyp": "usually buy planting for Saturday",
       "wer": 0.6,
       "errors": 3,
       "words": 5,
@@ -5227,7 +5227,7 @@
     },
     {
       "ref": "i don't even get to see half my paycheck",
-      "hyp": "i don't even get to say my name",
+      "hyp": "i don't even get to say how my physics",
       "wer": 0.3333333333333333,
       "errors": 3,
       "words": 9,
@@ -5251,7 +5251,7 @@
     },
     {
       "ref": "it's kind of rainy actually",
-      "hyp": "kind of wonderful actually",
+      "hyp": "kind of wandering actually",
       "wer": 0.4,
       "errors": 2,
       "words": 5,
@@ -5259,17 +5259,17 @@
     },
     {
       "ref": "it was worth the buck i guess",
-      "hyp": "it was far the back i guess",
-      "wer": 0.2857142857142857,
-      "errors": 2,
+      "hyp": "it is how the back i guess",
+      "wer": 0.42857142857142855,
+      "errors": 3,
       "words": 7,
       "session_idx": 18
     },
     {
       "ref": "a pop up trailer",
-      "hyp": "a top up for farmers",
-      "wer": 0.75,
-      "errors": 3,
+      "hyp": "a top up daily",
+      "wer": 0.5,
+      "errors": 2,
       "words": 4,
       "session_idx": 18
     },
@@ -5283,7 +5283,7 @@
     },
     {
       "ref": "they seem to be economically driven also",
-      "hyp": "they seem to be extremely often also",
+      "hyp": "they seem to be extremely similarly also",
       "wer": 0.2857142857142857,
       "errors": 2,
       "words": 7,
@@ -5299,9 +5299,9 @@
     },
     {
       "ref": "too much business",
-      "hyp": "so much money",
-      "wer": 0.6666666666666666,
-      "errors": 2,
+      "hyp": "too much pleasure",
+      "wer": 0.3333333333333333,
+      "errors": 1,
       "words": 3,
       "session_idx": 18
     },
@@ -5323,15 +5323,15 @@
     },
     {
       "ref": "even though they're so close",
-      "hyp": "even know they're so close",
-      "wer": 0.2,
-      "errors": 1,
+      "hyp": "even know they're too close",
+      "wer": 0.4,
+      "errors": 2,
       "words": 5,
       "session_idx": 18
     },
     {
       "ref": "earning his money",
-      "hyp": "one his money",
+      "hyp": "on his money",
       "wer": 0.3333333333333333,
       "errors": 1,
       "words": 3,
@@ -5355,9 +5355,9 @@
     },
     {
       "ref": "used to be six bucks",
-      "hyp": "used to be six packs",
-      "wer": 0.2,
-      "errors": 1,
+      "hyp": "used to be sixteenth",
+      "wer": 0.4,
+      "errors": 2,
       "words": 5,
       "session_idx": 18
     },
@@ -5395,7 +5395,7 @@
     },
     {
       "ref": "public broadcasting",
-      "hyp": "public financing",
+      "hyp": "public transportation",
       "wer": 0.5,
       "errors": 1,
       "words": 2,
@@ -5403,7 +5403,7 @@
     },
     {
       "ref": "sewing and quilting",
-      "hyp": "owned and clothing",
+      "hyp": "own and clothing",
       "wer": 0.6666666666666666,
       "errors": 2,
       "words": 3,
@@ -5419,7 +5419,7 @@
     },
     {
       "ref": "through oklahoma city",
-      "hyp": "they're okay major cities",
+      "hyp": "they're okay moms cities",
       "wer": 1.3333333333333333,
       "errors": 4,
       "words": 3,
@@ -5475,7 +5475,7 @@
     },
     {
       "ref": "state land grant colleges",
-      "hyp": "six ten percent dollars",
+      "hyp": "seats twelve rent dollars",
       "wer": 1.0,
       "errors": 4,
       "words": 4,
@@ -5499,7 +5499,7 @@
     },
     {
       "ref": "it's only been that way in the last five years",
-      "hyp": "it's only that way that the last five years",
+      "hyp": "it's only that way that in the last five years",
       "wer": 0.2,
       "errors": 2,
       "words": 10,
@@ -5531,9 +5531,9 @@
     },
     {
       "ref": "i've always wondered how he gets around",
-      "hyp": "i've always wondered how he gets around",
-      "wer": 0.0,
-      "errors": 0,
+      "hyp": "i've always won how he gets around",
+      "wer": 0.14285714285714285,
+      "errors": 1,
       "words": 7,
       "session_idx": 19
     },
@@ -5547,7 +5547,7 @@
     },
     {
       "ref": "fiction books that i really like",
-      "hyp": "x-ray books that i really like",
+      "hyp": "exciting books that i really like",
       "wer": 0.16666666666666666,
       "errors": 1,
       "words": 6,
@@ -5579,15 +5579,15 @@
     },
     {
       "ref": "they finally came up with evidence",
-      "hyp": "they finally give up with evidence",
-      "wer": 0.16666666666666666,
-      "errors": 1,
+      "hyp": "they finally take up with parents",
+      "wer": 0.3333333333333333,
+      "errors": 2,
       "words": 6,
       "session_idx": 19
     },
     {
       "ref": "that's true i didn't think about that",
-      "hyp": "that's czear i didn't think about that",
+      "hyp": "that's cuz i didn't think about that",
       "wer": 0.14285714285714285,
       "errors": 1,
       "words": 7,
@@ -5603,7 +5603,7 @@
     },
     {
       "ref": "part of it would probably work out",
-      "hyp": "but of it would probably work out",
+      "hyp": "sort of it would probably work out",
       "wer": 0.14285714285714285,
       "errors": 1,
       "words": 7,
@@ -5635,7 +5635,7 @@
     },
     {
       "ref": "buying of our fish",
-      "hyp": "buying off our faces",
+      "hyp": "buying off our face",
       "wer": 0.5,
       "errors": 2,
       "words": 4,
@@ -5667,9 +5667,9 @@
     },
     {
       "ref": "i am close to receiving my english degree",
-      "hyp": "i am close to revue myarangui agree",
-      "wer": 0.5,
-      "errors": 4,
+      "hyp": "i am close to revue my english degree",
+      "wer": 0.125,
+      "errors": 1,
       "words": 8,
       "session_idx": 19
     },
@@ -5715,7 +5715,7 @@
     },
     {
       "ref": "it's far beyond me",
-      "hyp": "it's very beautiful",
+      "hyp": "it's four miles",
       "wer": 0.75,
       "errors": 3,
       "words": 4,
@@ -5723,7 +5723,7 @@
     },
     {
       "ref": "we've gained an awful lot from the space program",
-      "hyp": "we've been an awful lot from the past program",
+      "hyp": "we've gotten an awful lot from the peace program",
       "wer": 0.2222222222222222,
       "errors": 2,
       "words": 9,
@@ -5731,7 +5731,7 @@
     },
     {
       "ref": "two sets of grandparents",
-      "hyp": "two set of computers",
+      "hyp": "two sets of computer parts",
       "wer": 0.5,
       "errors": 2,
       "words": 4,
@@ -5747,7 +5747,7 @@
     },
     {
       "ref": "you want salary too plus what",
-      "hyp": "you want calgary to miss what",
+      "hyp": "you want calgary to pass what",
       "wer": 0.5,
       "errors": 3,
       "words": 6,
@@ -5819,9 +5819,9 @@
     },
     {
       "ref": "if they work at it a little bit",
-      "hyp": "if they work it a little bit",
-      "wer": 0.125,
-      "errors": 1,
+      "hyp": "if they work it a little bit less",
+      "wer": 0.25,
+      "errors": 2,
       "words": 8,
       "session_idx": 20
     },
@@ -5867,9 +5867,9 @@
     },
     {
       "ref": "just about any kind of music",
-      "hyp": "just about any kind of music",
-      "wer": 0.0,
-      "errors": 0,
+      "hyp": "like about any kind of music",
+      "wer": 0.16666666666666666,
+      "errors": 1,
       "words": 6,
       "session_idx": 20
     },
@@ -5899,7 +5899,7 @@
     },
     {
       "ref": "you've got to find an even line",
-      "hyp": "you've got to find an even plant",
+      "hyp": "you've got to find an even better",
       "wer": 0.14285714285714285,
       "errors": 1,
       "words": 7,
@@ -5907,9 +5907,9 @@
     },
     {
       "ref": "i think he barely makes it",
-      "hyp": "i think he really picks it",
-      "wer": 0.3333333333333333,
-      "errors": 2,
+      "hyp": "i think he really makes it",
+      "wer": 0.16666666666666666,
+      "errors": 1,
       "words": 6,
       "session_idx": 20
     },
@@ -5971,9 +5971,9 @@
     },
     {
       "ref": "if there starts to be a lot of violence",
-      "hyp": "if there's to be a lot of volunteers",
-      "wer": 0.3333333333333333,
-      "errors": 3,
+      "hyp": "if there's to be a lot of traffic between",
+      "wer": 0.4444444444444444,
+      "errors": 4,
       "words": 9,
       "session_idx": 20
     },
@@ -5987,9 +5987,9 @@
     },
     {
       "ref": "i don't think too many of them are anymore",
-      "hyp": "i don't think too many of them are anybody",
-      "wer": 0.1111111111111111,
-      "errors": 1,
+      "hyp": "i don't think too many of them are anymore",
+      "wer": 0.0,
+      "errors": 0,
       "words": 9,
       "session_idx": 20
     },
@@ -6011,17 +6011,17 @@
     },
     {
       "ref": "i'm originally from maine",
-      "hyp": "i'm originally from miami",
-      "wer": 0.25,
-      "errors": 1,
+      "hyp": "i'm certainly from minding",
+      "wer": 0.5,
+      "errors": 2,
       "words": 4,
       "session_idx": 20
     },
     {
       "ref": "to grow up and to decide what they want to do",
-      "hyp": "the grew up and to decide what they want to do",
-      "wer": 0.18181818181818182,
-      "errors": 2,
+      "hyp": "they grew up and to decide what they do",
+      "wer": 0.36363636363636365,
+      "errors": 4,
       "words": 11,
       "session_idx": 20
     },
@@ -6051,17 +6051,17 @@
     },
     {
       "ref": "they can pretty much get everybody there",
-      "hyp": "they can pretty much get every everybody there",
-      "wer": 0.14285714285714285,
-      "errors": 1,
+      "hyp": "they can pretty much get every body there",
+      "wer": 0.2857142857142857,
+      "errors": 2,
       "words": 7,
       "session_idx": 20
     },
     {
       "ref": "you can just say i'm sorry",
-      "hyp": "you can just say i'm sorry",
-      "wer": 0.0,
-      "errors": 0,
+      "hyp": "you can just say i'm sure",
+      "wer": 0.16666666666666666,
+      "errors": 1,
       "words": 6,
       "session_idx": 20
     },
@@ -6099,7 +6099,7 @@
     },
     {
       "ref": "sometimes they're not very open",
-      "hyp": "sometimes you're not very hopeful",
+      "hyp": "sometimes you're not very good",
       "wer": 0.4,
       "errors": 2,
       "words": 5,
@@ -6107,7 +6107,7 @@
     },
     {
       "ref": "we're toward the bottom",
-      "hyp": "we store the battery",
+      "hyp": "we store the system",
       "wer": 0.75,
       "errors": 3,
       "words": 4,
@@ -6195,17 +6195,17 @@
     },
     {
       "ref": "she'll be two in july",
-      "hyp": "he'll be very in d hall",
-      "wer": 0.8,
-      "errors": 4,
+      "hyp": "he'll be very in dallas",
+      "wer": 0.6,
+      "errors": 3,
       "words": 5,
       "session_idx": 21
     },
     {
       "ref": "i just flat didn't spend any money",
-      "hyp": "i just that didn't feel any money",
-      "wer": 0.2857142857142857,
-      "errors": 2,
+      "hyp": "i just that's not been any money",
+      "wer": 0.42857142857142855,
+      "errors": 3,
       "words": 7,
       "session_idx": 21
     },
@@ -6219,23 +6219,23 @@
     },
     {
       "ref": "i do have my radio going most of the day though",
-      "hyp": "i do have my pretty going most of the day though",
-      "wer": 0.09090909090909091,
-      "errors": 1,
+      "hyp": "i do have my pretty going of the day though",
+      "wer": 0.18181818181818182,
+      "errors": 2,
       "words": 11,
       "session_idx": 21
     },
     {
       "ref": "a girl and a boy",
-      "hyp": "our girl and you boy",
-      "wer": 0.4,
-      "errors": 2,
+      "hyp": "a girl and a boy",
+      "wer": 0.0,
+      "errors": 0,
       "words": 5,
       "session_idx": 21
     },
     {
       "ref": "he has used a lot",
-      "hyp": "he has won a lot",
+      "hyp": "he has taught a lot",
       "wer": 0.2,
       "errors": 1,
       "words": 5,
@@ -6243,7 +6243,7 @@
     },
     {
       "ref": "it's a little bit financial type thing",
-      "hyp": "it's a little bit complicated type thing",
+      "hyp": "it's a little bit functional type thing",
       "wer": 0.14285714285714285,
       "errors": 1,
       "words": 7,
@@ -6259,7 +6259,7 @@
     },
     {
       "ref": "i'm different from that",
-      "hyp": "i'm worrying from that",
+      "hyp": "i'm giving from that",
       "wer": 0.25,
       "errors": 1,
       "words": 4,
@@ -6267,9 +6267,9 @@
     },
     {
       "ref": "temperature swing in about four hours",
-      "hyp": "cam are your sure picks in about two hours",
-      "wer": 1.0,
-      "errors": 6,
+      "hyp": "cam are your kind in about about four hours",
+      "wer": 0.8333333333333334,
+      "errors": 5,
       "words": 6,
       "session_idx": 21
     },
@@ -6283,15 +6283,15 @@
     },
     {
       "ref": "i only weigh sixteen today",
-      "hyp": "i only enjoy sixteen",
-      "wer": 0.4,
-      "errors": 2,
+      "hyp": "i only enjoy sixteen today",
+      "wer": 0.2,
+      "errors": 1,
       "words": 5,
       "session_idx": 21
     },
     {
       "ref": "horrible stuff like that",
-      "hyp": "obvious stuff like that",
+      "hyp": "hockey stuff like that",
       "wer": 0.25,
       "errors": 1,
       "words": 4,
@@ -6299,15 +6299,15 @@
     },
     {
       "ref": "an opera or the symphony or something",
-      "hyp": "an essay on the country or something",
-      "wer": 0.42857142857142855,
-      "errors": 3,
+      "hyp": "an error or the country or something",
+      "wer": 0.2857142857142857,
+      "errors": 2,
       "words": 7,
       "session_idx": 21
     },
     {
       "ref": "if they don't have any living relatives",
-      "hyp": "if they don't have any driving expertise",
+      "hyp": "if they don't have any driving guidelines",
       "wer": 0.2857142857142857,
       "errors": 2,
       "words": 7,
@@ -6323,9 +6323,9 @@
     },
     {
       "ref": "a record of the rap songs of the eighties",
-      "hyp": "a record of the rap songs of the artists",
-      "wer": 0.1111111111111111,
-      "errors": 1,
+      "hyp": "a degree of the rap song of the lads",
+      "wer": 0.3333333333333333,
+      "errors": 3,
       "words": 9,
       "session_idx": 21
     },
@@ -6339,15 +6339,15 @@
     },
     {
       "ref": "i don't read as much as i would like to either",
-      "hyp": "i don't read as much as i would like to",
-      "wer": 0.09090909090909091,
-      "errors": 1,
+      "hyp": "i don't read as much as i would like to either",
+      "wer": 0.0,
+      "errors": 0,
       "words": 11,
       "session_idx": 21
     },
     {
       "ref": "this was pasture land",
-      "hyp": "this was nutritional line",
+      "hyp": "this was racial line",
       "wer": 0.5,
       "errors": 2,
       "words": 4,
@@ -6355,31 +6355,31 @@
     },
     {
       "ref": "i want them to come back up next year",
-      "hyp": "i want them to come back up some next year",
-      "wer": 0.1111111111111111,
-      "errors": 1,
+      "hyp": "i want them to come back up some where",
+      "wer": 0.2222222222222222,
+      "errors": 2,
       "words": 9,
       "session_idx": 21
     },
     {
       "ref": "noticed that when i was a kid",
-      "hyp": "sets that when i was a kid",
-      "wer": 0.14285714285714285,
-      "errors": 1,
+      "hyp": "says that when i was a good",
+      "wer": 0.2857142857142857,
+      "errors": 2,
       "words": 7,
       "session_idx": 21
     },
     {
       "ref": "things that are under state jurisdiction",
-      "hyp": "things that we under state restrictions",
-      "wer": 0.3333333333333333,
-      "errors": 2,
+      "hyp": "things that are under state restrictions",
+      "wer": 0.16666666666666666,
+      "errors": 1,
       "words": 6,
       "session_idx": 21
     },
     {
       "ref": "i was an administrator",
-      "hyp": "i was an amador",
+      "hyp": "i was an amitrior",
       "wer": 0.25,
       "errors": 1,
       "words": 4,
@@ -6411,15 +6411,15 @@
     },
     {
       "ref": "but it has a pretty low crime rate",
-      "hyp": "but it has a pretty low crime rate",
-      "wer": 0.0,
-      "errors": 0,
+      "hyp": "but it is a pretty low crime rate",
+      "wer": 0.125,
+      "errors": 1,
       "words": 8,
       "session_idx": 21
     },
     {
       "ref": "big closet space",
-      "hyp": "big college past",
+      "hyp": "big college campus",
       "wer": 0.6666666666666666,
       "errors": 2,
       "words": 3,
@@ -6435,7 +6435,7 @@
     },
     {
       "ref": "i write software",
-      "hyp": "i went software",
+      "hyp": "i wrote software",
       "wer": 0.3333333333333333,
       "errors": 1,
       "words": 3,
@@ -6459,7 +6459,7 @@
     },
     {
       "ref": "we'd have to build less prisons",
-      "hyp": "we'd have to build less planes",
+      "hyp": "we'd have to build less units",
       "wer": 0.16666666666666666,
       "errors": 1,
       "words": 6,
@@ -6467,7 +6467,7 @@
     },
     {
       "ref": "just light reading",
-      "hyp": "is exotic reading",
+      "hyp": "doesnt light read",
       "wer": 0.6666666666666666,
       "errors": 2,
       "words": 3,
@@ -6475,17 +6475,17 @@
     },
     {
       "ref": "well we just started",
-      "hyp": "well we just started",
-      "wer": 0.0,
-      "errors": 0,
+      "hyp": "well we just start",
+      "wer": 0.25,
+      "errors": 1,
       "words": 4,
       "session_idx": 22
     },
     {
       "ref": "we started taking her",
-      "hyp": "we started teaching her",
-      "wer": 0.25,
-      "errors": 1,
+      "hyp": "we started taking her",
+      "wer": 0.0,
+      "errors": 0,
       "words": 4,
       "session_idx": 22
     },
@@ -6507,7 +6507,7 @@
     },
     {
       "ref": "i'd like to go bird hunting",
-      "hyp": "i'd like to go for running",
+      "hyp": "i'd like to go music listening",
       "wer": 0.3333333333333333,
       "errors": 2,
       "words": 6,
@@ -6531,7 +6531,7 @@
     },
     {
       "ref": "what do you think are some current trends",
-      "hyp": "what do you think are some good paints",
+      "hyp": "what do you think are some good points",
       "wer": 0.25,
       "errors": 2,
       "words": 8,
@@ -6547,7 +6547,7 @@
     },
     {
       "ref": "do you watch star trek",
-      "hyp": "do you watch car film",
+      "hyp": "do you watch car track",
       "wer": 0.4,
       "errors": 2,
       "words": 5,
@@ -6563,33 +6563,33 @@
     },
     {
       "ref": "i don't see much tv mostly when i'm in school",
-      "hyp": "i don't see much success mostly in i'm out in chool",
-      "wer": 0.4,
-      "errors": 4,
+      "hyp": "i don't see much success mostly in i'm out in school",
+      "wer": 0.3,
+      "errors": 3,
       "words": 10,
       "session_idx": 22
     },
     {
       "ref": "they could probably come in and say",
-      "hyp": "they could probably come in an house",
-      "wer": 0.2857142857142857,
-      "errors": 2,
+      "hyp": "they could probably come in and say",
+      "wer": 0.0,
+      "errors": 0,
       "words": 7,
       "session_idx": 22
     },
     {
       "ref": "i don't get too many of those",
-      "hyp": "i don't get so many of those",
-      "wer": 0.14285714285714285,
-      "errors": 1,
+      "hyp": "i don't get too many of those",
+      "wer": 0.0,
+      "errors": 0,
       "words": 7,
       "session_idx": 22
     },
     {
       "ref": "did they do that before you went in or what",
-      "hyp": "did they do that before i went in or in",
-      "wer": 0.2,
-      "errors": 2,
+      "hyp": "did they do that before i went in or in back",
+      "wer": 0.3,
+      "errors": 3,
       "words": 10,
       "session_idx": 22
     },
@@ -6603,15 +6603,15 @@
     },
     {
       "ref": "i have three cats and a dog",
-      "hyp": "i have three kids in a dog",
-      "wer": 0.2857142857142857,
-      "errors": 2,
+      "hyp": "i have three kids and a dog",
+      "wer": 0.14285714285714285,
+      "errors": 1,
       "words": 7,
       "session_idx": 22
     },
     {
       "ref": "they don't need that seven day waiting period",
-      "hyp": "they don't need that even day waiting for",
+      "hyp": "they don't need that even say waiting period",
       "wer": 0.25,
       "errors": 2,
       "words": 8,
@@ -6635,7 +6635,7 @@
     },
     {
       "ref": "you learn more about the characters and stuff",
-      "hyp": "you learn may about the cycles and stuff",
+      "hyp": "you learn my about the cycles and stuff",
       "wer": 0.25,
       "errors": 2,
       "words": 8,
@@ -6643,7 +6643,7 @@
     },
     {
       "ref": "just a little shell to go under a suit",
-      "hyp": "just a little girl to go on a horse",
+      "hyp": "just a little girl to go on a boat",
       "wer": 0.3333333333333333,
       "errors": 3,
       "words": 9,
@@ -6651,7 +6651,7 @@
     },
     {
       "ref": "then we put our receipts in there",
-      "hyp": "then we put a refrigerator in there",
+      "hyp": "then we put a restriction in there",
       "wer": 0.2857142857142857,
       "errors": 2,
       "words": 7,
@@ -6667,7 +6667,7 @@
     },
     {
       "ref": "fifty nine kilometers per gallon",
-      "hyp": "every new automobile for civilian",
+      "hyp": "five year automobile for civilian",
       "wer": 1.0,
       "errors": 5,
       "words": 5,
@@ -6675,7 +6675,7 @@
     },
     {
       "ref": "they'd seen it earlier",
-      "hyp": "that does it early",
+      "hyp": "that seems it early",
       "wer": 0.75,
       "errors": 3,
       "words": 4,
@@ -6699,25 +6699,25 @@
     },
     {
       "ref": "which i thought was a real interesting question",
-      "hyp": "which i thought was a real interesting question",
-      "wer": 0.0,
-      "errors": 0,
+      "hyp": "which i thought was a real interesting occasion",
+      "wer": 0.125,
+      "errors": 1,
       "words": 8,
       "session_idx": 22
     },
     {
       "ref": "well that's about it really",
-      "hyp": "well let's about it really",
-      "wer": 0.2,
-      "errors": 1,
+      "hyp": "well that's about it really",
+      "wer": 0.0,
+      "errors": 0,
       "words": 5,
       "session_idx": 22
     },
     {
       "ref": "if i don't have a reel with a button on it",
-      "hyp": "if i don't have a real with a medium on it",
-      "wer": 0.18181818181818182,
-      "errors": 2,
+      "hyp": "if i don't have a real value with a moment on it",
+      "wer": 0.2727272727272727,
+      "errors": 3,
       "words": 11,
       "session_idx": 22
     },
@@ -6731,15 +6731,15 @@
     },
     {
       "ref": "i enjoy going to the beach and to beach areas",
-      "hyp": "i enjoyed going to the movies and visited areas",
-      "wer": 0.4,
-      "errors": 4,
+      "hyp": "i enjoyed going to the tickets and watch movies",
+      "wer": 0.5,
+      "errors": 5,
       "words": 10,
       "session_idx": 22
     },
     {
       "ref": "i guess i'm partial to big tree country",
-      "hyp": "i guess i'm difficult to make sure",
+      "hyp": "i guess i'm willing to make sure family",
       "wer": 0.5,
       "errors": 4,
       "words": 8,
@@ -6755,7 +6755,7 @@
     },
     {
       "ref": "the high school i went to",
-      "hyp": "the height girl went to",
+      "hyp": "the gun girl called i went to",
       "wer": 0.5,
       "errors": 3,
       "words": 6,
@@ -6771,15 +6771,15 @@
     },
     {
       "ref": "you could do it",
-      "hyp": "you good do it",
-      "wer": 0.25,
-      "errors": 1,
+      "hyp": "you get to do it",
+      "wer": 0.5,
+      "errors": 2,
       "words": 4,
       "session_idx": 23
     },
     {
       "ref": "he was treated like all the rest of students",
-      "hyp": "he was tired like all the rest of students",
+      "hyp": "he was ready like all the rest of students",
       "wer": 0.1111111111111111,
       "errors": 1,
       "words": 9,
@@ -6787,7 +6787,7 @@
     },
     {
       "ref": "i don't think so anymore",
-      "hyp": "i don't think so soon",
+      "hyp": "i don't think he's anymore",
       "wer": 0.2,
       "errors": 1,
       "words": 5,
@@ -6819,7 +6819,7 @@
     },
     {
       "ref": "i really don't have any job benefits to speak of",
-      "hyp": "i really have any some ideas to break off",
+      "hyp": "i really have any time routines to break off",
       "wer": 0.5,
       "errors": 5,
       "words": 10,
@@ -6827,9 +6827,9 @@
     },
     {
       "ref": "it really helps those people",
-      "hyp": "it really keeps those people",
-      "wer": 0.2,
-      "errors": 1,
+      "hyp": "it really helps those people",
+      "wer": 0.0,
+      "errors": 0,
       "words": 5,
       "session_idx": 23
     },
@@ -6851,7 +6851,7 @@
     },
     {
       "ref": "camping for you in a motor home",
-      "hyp": "sometimes you use in a penny home",
+      "hyp": "sometimes you use in a small home",
       "wer": 0.5714285714285714,
       "errors": 4,
       "words": 7,
@@ -6859,9 +6859,9 @@
     },
     {
       "ref": "if you've only got a token force there",
-      "hyp": "if you've only got a talking bird there",
-      "wer": 0.25,
-      "errors": 2,
+      "hyp": "if you've only got a\u6c64\u96de\u8db3\u5920 there",
+      "wer": 0.375,
+      "errors": 3,
       "words": 8,
       "session_idx": 23
     },
@@ -6875,15 +6875,15 @@
     },
     {
       "ref": "i'd just as soon a lot fewer people did",
-      "hyp": "i'd just as if we would a lot of people say",
-      "wer": 0.5555555555555556,
-      "errors": 5,
+      "hyp": "i'd just as soon be a lot of people do",
+      "wer": 0.3333333333333333,
+      "errors": 3,
       "words": 9,
       "session_idx": 23
     },
     {
       "ref": "they think it's kind of cool",
-      "hyp": "they think it's kind of real",
+      "hyp": "they think it's kind of good",
       "wer": 0.16666666666666666,
       "errors": 1,
       "words": 6,
@@ -6891,25 +6891,25 @@
     },
     {
       "ref": "crime is too much",
-      "hyp": "damn good so much",
-      "wer": 0.75,
-      "errors": 3,
+      "hyp": "damn is too much",
+      "wer": 0.25,
+      "errors": 1,
       "words": 4,
       "session_idx": 23
     },
     {
       "ref": "i don't know how my father did it",
-      "hyp": "i didn't know how my father did it",
-      "wer": 0.125,
-      "errors": 1,
+      "hyp": "i don't know how my father did it",
+      "wer": 0.0,
+      "errors": 0,
       "words": 8,
       "session_idx": 23
     },
     {
       "ref": "lived on a farm for sixty years",
-      "hyp": "given on a home for six years",
-      "wer": 0.42857142857142855,
-      "errors": 3,
+      "hyp": "different on a home for sixth year",
+      "wer": 0.5714285714285714,
+      "errors": 4,
       "words": 7,
       "session_idx": 23
     },
@@ -6923,7 +6923,7 @@
     },
     {
       "ref": "really kind of gone the rounds",
-      "hyp": "really kind of run the world",
+      "hyp": "really kind of run the round",
       "wer": 0.3333333333333333,
       "errors": 2,
       "words": 6,
@@ -6979,7 +6979,7 @@
     },
     {
       "ref": "savings and loans",
-      "hyp": "activizing and wine",
+      "hyp": "activizing and running",
       "wer": 0.6666666666666666,
       "errors": 2,
       "words": 3,
@@ -6987,7 +6987,7 @@
     },
     {
       "ref": "they plastered over drywall",
-      "hyp": "they pledged over cable",
+      "hyp": "they pledged over death",
       "wer": 0.5,
       "errors": 2,
       "words": 4,
@@ -6995,7 +6995,7 @@
     },
     {
       "ref": "i'll slice white grape",
-      "hyp": "all class weight classes",
+      "hyp": "all class right cups",
       "wer": 1.0,
       "errors": 4,
       "words": 4,
@@ -7011,7 +7011,7 @@
     },
     {
       "ref": "on the outskirts of houston",
-      "hyp": "on the pockets of fashion",
+      "hyp": "on the academic of questioning",
       "wer": 0.4,
       "errors": 2,
       "words": 5,
@@ -7035,7 +7035,7 @@
     },
     {
       "ref": "getting pledge sheets for the boy scouts",
-      "hyp": "getting back to the most for the most",
+      "hyp": "getting back at the most for the most",
       "wer": 0.8571428571428571,
       "errors": 6,
       "words": 7,

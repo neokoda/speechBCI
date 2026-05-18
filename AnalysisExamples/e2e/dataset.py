@@ -152,8 +152,22 @@ class BCIDataset(Dataset):
         if tokenizer is not None:
             unk_id = getattr(tokenizer, "unk_token_id", None)
             sos_id = tokenizer.convert_tokens_to_ids("<|startoftranscript|>")
+            # Cohere ASR: <|startofcontext|> appears only in cohere-transcribe; this
+            # check has to run before the Whisper check because Cohere also has
+            # <|startoftranscript|> but lacks <|transcribe|>/<|notimestamps|>.
+            startofcontext_id = tokenizer.convert_tokens_to_ids("<|startofcontext|>")
+            is_cohere = (startofcontext_id is not None and startofcontext_id != unk_id
+                         and sos_id is not None and sos_id != unk_id)
 
-            if sos_id is not None and sos_id != unk_id:
+            if is_cohere:
+                en_id = tokenizer.convert_tokens_to_ids("<|en|>")
+                # Decoder prompt mirrors the first slots of Cohere's build_prompt()
+                # — startofcontext + startoftranscript + source_lang + target_lang.
+                # Omits emotion/pnc/itn/timestamp/diarize (use defaults).
+                self._is_whisper = True   # reuse the prefix-masking branch below
+                self._prefix_ids = [startofcontext_id, sos_id, en_id, en_id]
+                self._eos_id = tokenizer.convert_tokens_to_ids("<|endoftext|>")
+            elif sos_id is not None and sos_id != unk_id:
                 # Whisper tokenizer detected
                 transcribe_id   = tokenizer.convert_tokens_to_ids("<|transcribe|>")
                 notimestamps_id = tokenizer.convert_tokens_to_ids("<|notimestamps|>")

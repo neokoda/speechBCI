@@ -164,6 +164,38 @@ def evaluate(args):
         )
         model.build_per_session_norm(session_stats)
 
+    elif args.model_type == "cohere":
+        from e2e.cohere_model import CohereBCIModel, COHERE_REPO_DEFAULT
+
+        cohere_repo = args.whisper_model or COHERE_REPO_DEFAULT
+        tokenizer = AutoTokenizer.from_pretrained(cohere_repo, trust_remote_code=True)
+
+        sessions = ALL_SESSIONS
+        train_ds = BCIDataset(
+            args.data_dir, sessions, split="train",
+            tokenizer=tokenizer, max_text_len=args.max_text_len, augment=False,
+        )
+        session_stats = train_ds.get_session_stats_for_model()
+
+        ds = BCIDataset(
+            args.data_dir, sessions, split="test",
+            tokenizer=tokenizer, max_text_len=args.max_text_len, augment=False,
+        )
+        loader = DataLoader(
+            ds, batch_size=args.batch_size, shuffle=False,
+            collate_fn=bci_collate_fn, num_workers=0,
+        )
+        print(f"Test examples: {len(ds)}")
+
+        print(f"Loading CohereBCIModel from {args.ckpt}")
+        model = CohereBCIModel(
+            cohere_repo=cohere_repo,
+            lora_r=args.lora_r,
+            lora_alpha=args.lora_alpha,
+            n_sessions=len(sessions),
+        )
+        model.build_per_session_norm(session_stats)
+
     elif args.model_type == "canary":
         from e2e.canary_model import CanaryBCIModel
 
@@ -318,8 +350,8 @@ def parse_args():
     p.add_argument("--data-dir",       required=True)
     p.add_argument("--ckpt",           required=True,
                    help="Checkpoint directory (contains checkpoint.pt)")
-    p.add_argument("--model-type",     default="llava", choices=["llava", "whisper", "canary"],
-                   help="llava=E2EBCIModel (Qwen), whisper=WhisperBCIModel, canary=CanaryBCIModel")
+    p.add_argument("--model-type",     default="llava", choices=["llava", "whisper", "canary", "cohere"],
+                   help="llava=E2EBCIModel (Qwen), whisper=WhisperBCIModel, canary=CanaryBCIModel, cohere=CohereBCIModel")
     # LLaVA model args
     p.add_argument("--lm",             default=None,
                    help="HuggingFace LM id (required for --model-type llava)")
@@ -341,7 +373,7 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
-    if args.model_type not in ("llava", "canary") and args.lm is None:
+    if args.model_type == "llava" and args.lm is None:
         raise ValueError("--lm is required for --model-type llava")
     if args.hf_token:
         from huggingface_hub import login

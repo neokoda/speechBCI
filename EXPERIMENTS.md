@@ -6,7 +6,7 @@ WER convention: corpus-level (micro-averaged) — `total_errors / total_words` s
 
 Session-slice keys: `willett_4_18` (sessions 4–18, 15 sessions), `willett_19` (Willett-aligned 19-session split), `all_24` (full 24 sessions). For models with **per-session input layers** (two-stage), the model can only be evaluated on the sessions it was trained on; cells outside that range are marked `N/A`.
 
-Last updated: 2026-05-18 (Session 19 start).
+Last updated: 2026-05-18 (Session 20 — full-set eval slices populated for v7 first).
 
 ---
 
@@ -48,14 +48,16 @@ All E2E runs verified trained on **24 sessions** (8800 train + 880 test utteranc
 
 | ID | Run | Architecture | LM backbone | Encoder init | Best val WER | Full WER@willett_4_18 | Full WER@willett_19 | Full WER@all_24 | CER@all_24 | Path |
 |---|---|---|---|---|---|---|---|---|---|---|
-| E2E-1 | `e2e_v4` | LLaVA-style | Qwen 3.5-0.8B Base + LoRA r=16 | CTC-pretrained | 0.3626 | TBD | TBD | **0.3068** | 0.2862 | `experiments/e2e_v4/tests/eval_full.json` |
-| E2E-2 | `e2e_v5` | LLaVA-style (continued from v4) | Qwen 3.5-0.8B Base + LoRA r=16 | from v4/best | 0.3585 | TBD | TBD | **0.3043** | 0.2867 | `experiments/e2e_v5/eval_full.json` |
+| E2E-1 | `e2e_v4` | LLaVA-style | Qwen 3.5-0.8B Base + LoRA r=16 | CTC-pretrained | 0.3626 | 0.2567 | 0.3103 | **0.3056** | 0.2859 | `experiments/e2e_v4/eval_full.json` |
+| E2E-2 | `e2e_v5` | LLaVA-style (continued from v4) | Qwen 3.5-0.8B Base + LoRA r=16 | from v4/best | 0.3585 | 0.2537 | 0.3055 | **0.3045** | 0.2864 | `experiments/e2e_v5/eval_full.json` |
 | E2E-3 | `e2e_canary_ctc` | Audio enc-dec FM | NVIDIA Canary | CTC encoder | **0.2779** | TBD | TBD | TBD | TBD | `experiments/e2e_canary_ctc/` |
 | E2E-4 | `e2e_granite` | Audio enc-dec FM | IBM Granite-Speech | (fresh) | **0.2505** | TBD | TBD | TBD | TBD | `experiments/e2e_granite/` |
-| E2E-5 | `e2e_v6` | **Cross-attn** | Whisper-medium.en (244M) | CTC encoder | **0.2154** | TBD | TBD | TBD | TBD | `experiments/e2e_v6/` |
-| **E2E-6** | **`e2e_v7`** | **Cross-attn** | **Whisper-large-v3 (1.55B)** | from v6/best (encoder only) | **0.2055** | TBD | TBD | TBD | TBD | `experiments/e2e_v7/` |
+| E2E-5 | `e2e_v6` | **Cross-attn** | Whisper-medium.en (244M) | CTC encoder | **0.2154** | 0.1760 | 0.2146 | 0.2157 | 0.1850 | `experiments/e2e_v6/eval_full.json` |
+| **E2E-6** | **`e2e_v7`** | **Cross-attn** | **Whisper-large-v3 (1.55B)** | from v6/best (encoder only) | **0.2055** | **0.1716** | **0.2062** | **0.2053** | **0.1755** | `experiments/e2e_v7/eval_full.json` |
+| E2E-7 | `e2e_v8` (aborted) | Cross-attn | Whisper-large-v3 (1.55B) | from v7 (full state, --reset-optimizer) | 0.2221 @step 6000 | — | — | — | — | `experiments/e2e_v8/train.log` |
+| E2E-8 | `e2e_cohere` | **Cross-attn** | **Cohere Transcribe (2B, 8L decoder)** | enc from v7 (proj reset, decoder LoRA fresh) | 0.6016 (partial 10-batch val @step 8500) | 5.7708 | 5.6295 | **5.6837** | 8.5695 | `experiments/e2e_cohere/eval_full.json` |
 
-**Headline E2E:** `e2e_v7` — Whisper-large-v3 cross-attention, val WER 0.2055 (essentially tied with the two-stage 5-gram baseline 0.2141, and better than every neural-rescored two-stage except fine-tuned LLaMA at 0.1997).
+**Headline E2E:** `e2e_v7` — Whisper-large-v3 cross-attention, val WER 0.2055; full-set WER@all_24 = **0.2053** (essentially tied with the two-stage 5-gram baseline 0.2141, and better than every neural-rescored two-stage except fine-tuned LLaMA at 0.1997). The Session-20 v8 push (3× higher peak LRs) regressed to a best val WER of 0.2221 by step 6000 and was aborted at step 7000 per the stop condition — v7 remains the headline.
 
 ---
 

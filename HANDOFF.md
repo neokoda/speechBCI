@@ -543,3 +543,107 @@ Historical: RTX 5090 (32 GB VRAM, sm_120) was used through Session 18 — requir
 **PyTorch install (if recreating):** `pip install torch --index-url https://download.pytorch.org/whl/cu124` (for L40S sm_89). For RTX 5090 use cu128 nightly.
 
 **TF:** 2.15 in older venvs (for WFST pipeline).
+
+---
+
+## 9d. Session 20 (2026-05-18) — full-set evals + v8 push + Cohere Transcribe port
+
+**Goals:** populate `EXPERIMENTS.md §3` slice columns; attempt to push Whisper v7 → v8 with higher LRs; port `CohereLabs/cohere-transcribe-03-2026` as a third audio-FM E2E variant.
+
+### Pod-state delta vs Session 19
+
+| Item | Session 19 | Session 20 |
+|---|---|---|
+| GPU | L40S 46 GB (busy with vllm) | **RTX 3090 24 GB, idle** |
+| Venv | `/workspace/venv` present | None on first connect — rebuilt with `torch==2.4.1+cu124 transformers==5.6.2 peft==0.19.1 tensorflow==2.15.* numpy<2 scipy<1.13 jiwer sentencepiece accelerate librosa soundfile` |
+| Data + experiments | present | restored via `bash backup_to_drive.sh --restore --skip-lm` (~28 GB) |
+| HF cache | empty | filled with whisper-large-v3 (3.1 GB), whisper-medium.en (3.1 GB), Qwen3.5-0.8B-Base (1.6 GB), Qwen3-1.7B (4.0 GB), canary-qwen-2.5b (5.1 GB), Cohere Transcribe (4.1 GB) — anonymous HF rate-limiting was severe so all big files were pulled with `aria2c -x16 -s16 --max-tries=50` directly from `https://huggingface.co/.../resolve/main/...` (the `hf` CLI/xet path stalls indefinitely on this pod). HF_TOKEN set in env for the gated Cohere repo. |
+
+### Stage 1 — Full-set eval on existing E2E checkpoints (DONE for 4 of 5)
+
+`AnalysisExamples/e2e/eval.py` ran with the S19 slicing patch. One unrelated CLI bug fixed: the `--lm required` guard fired for all non-canary types; replaced with `args.model_type == "llava"`.
+
+| ID | Run | Whisper / LM | WER@willett_4_18 | WER@willett_19 | WER@all_24 | CER@all_24 | n@all_24 |
+|---|---|---|---|---|---|---|---|
+| E2E-1 | `e2e_v4` | Qwen 3.5-0.8B (LLaVA) | 0.2567 | 0.3103 | 0.3056 | 0.2859 | 880 |
+| E2E-2 | `e2e_v5` | Qwen 3.5-0.8B (continued) | 0.2537 | 0.3055 | 0.3045 | 0.2864 | 880 |
+| E2E-5 | `e2e_v6` | whisper-medium.en | 0.1760 | 0.2146 | 0.2157 | 0.1850 | 880 |
+| **E2E-6** | **`e2e_v7`** | **whisper-large-v3** | **0.1716** | **0.2062** | **0.2053** | **0.1755** | **880** |
+| E2E-3 | `e2e_canary_ctc` | NVIDIA Canary + Qwen3-1.7B | — | — | — | — | — (BLOCKED, see §Dilemma) |
+| E2E-4 | `e2e_granite` | Granite-Speech | — | — | — | — | skipped (no granite branch in `eval.py`; deferred per S20 plan) |
+
+JSON written to `experiments/<run>/eval_full.json` for each completed row, with the `slices` schema introduced in S19.
+
+### Stage 2 — Whisper v8 (DONE, aborted per stop-condition)
+
+`experiments/e2e_v8/` — Whisper-large-v3 resumed from `e2e_v7/best` (encoder + projector + LoRA via pre-seeded `checkpoint.pt`) with 3× higher peak LRs (encoder 2e-4, projector 1.5e-3, lora 3e-4) over 15k steps planned.
+
+- Mid-run change: original `--batch-size 8 --grad-accum 2` (effective 16) used only 27% GPU and 7.6 GB / 24 GB VRAM. Restarted with `--batch-size 16 --grad-accum 1` (same effective 16; resumed from saved step-1000 checkpoint without `--reset-optimizer`). GPU util rose to 40–61%, step time 0.7 s → 0.4 s.
+- Note: `train_whisper.py` does not accept `--label-smoothing` (only `train.py` for LLaVA does). The flag was dropped from the launch command.
+
+Validation trajectory (step → val_WER):
+500: 0.2499, 1000: 0.2505, 1500: 0.2465, 2000: **0.2386**, 2500: 0.2481, 3000: 0.2485, 3500: 0.2406, 4000: **0.2299**, 4500: 0.2317, 5000: 0.2326, 5500: 0.2343, 6000: **0.2221**, 6500: 0.2272, 7000: 0.2308.
+
+Best v8 val WER = **0.2221 at step 6000**. Stop condition (must beat 0.2055 by step 7000) failed. v8 aborted. **v7 remains the headline E2E** (WER@all_24 = 0.2053). No `experiments/e2e_v8/best/` was ever written because best_WER (loaded from v7) was 0.2055 and v8 never surpassed it; only the rolling `experiments/e2e_v8/checkpoint.pt` survives (step 7000 weights).
+
+EXPERIMENTS.md §3 updated; row E2E-7 added for v8 noting the regression.
+
+### Stage 3 — Cohere Transcribe (IN PROGRESS)
+
+Architecture (from `config.json`): 48-layer Conformer audio encoder (d=1280) → linear 1280→1024 → 8-layer Transformer decoder (h=1024, ff=4096, vocab=16384). Total 2.06B params; encoder alone is 1.90B. Custom tokenizer (`CohereAsrTokenizer`, SentencePiece, 16384 vocab) with prompt-format `<|startofcontext|><|startoftranscript|>...<|en|><|en|>...`.
+
+**Adaptation** (mirrors `AnalysisExamples/e2e/whisper_model.py`):
+- `AnalysisExamples/e2e/cohere_model.py` — `CohereBCIModel`: my Conformer (4L, d=512) → Linear+LayerNorm 512→1024 → Cohere decoder (cross-attn to ECoG memory). Cohere's 48-layer audio encoder is deleted; `encoder_decoder_proj` is set to `None` since the projector already emits 1024-dim memory. A small `_EncoderStub(nn.Module)` exposes `main_input_name = "input_features"` so HF generate's `_prepare_model_inputs` doesn't crash on the missing encoder. LoRA targets the Cohere decoder attention modules — `query_net, key_net, value_net, out_projection` (Cohere uses non-standard names).
+- `AnalysisExamples/e2e/train_cohere.py` — copy of `train_whisper.py` with `WhisperBCIModel`→`CohereBCIModel`, `model.whisper`→`model.cohere`, and a CLI flag `--cohere-repo`.
+- `AnalysisExamples/e2e/dataset.py` — added a Cohere branch before the Whisper branch. Cohere prefix = `[<|startofcontext|>, <|startoftranscript|>, <|en|>, <|en|>]`; EOS = `<|endoftext|>`. Reuses the existing whisper-style decoder_input_ids + labels with prefix-positions masked to -100.
+
+**Run details:** `experiments/e2e_cohere` initialized from `e2e_v7/best` via `--init-encoder-from` (loads 146 encoder/projector keys; projector mismatched 1280 vs 1024, reset). Configuration mirrors v8 (lr-encoder 2e-4, lr-projector 1.5e-3, lr-lora 3e-4, lora r=16, 15k steps, warmup 200, batch=8 g_accum=2 effective 16). Smoke eval at step 50 succeeded.
+
+Trajectory so far (step → val_WER):
+500: 0.7951, 1000: 0.7443, 1500: 0.7459, 2000: 0.7410, 2500: 0.7082, 3000: **0.7016**. Train loss 9.34 → 2.3 over 3000 steps. Currently still running; will continue through step 15000 per spec.
+
+### Dilemmas recorded for future sessions
+
+1. **Canary E2E eval is broken.** `experiments/e2e_canary_ctc` reports training val_WER 0.2779. Running `AnalysisExamples/e2e/eval.py --model-type canary --lm Qwen/Qwen3-1.7B` produces WER ~1.8 across all batches — generation output is garbage. Most likely cause: transformers 5.6.2 changed Qwen3 chat-template / generate-with-`inputs_embeds` semantics and the no-think seed path in `canary_model.generate()` no longer produces the same decoder state as it did when training was done. Did not block any other deliverable. Non-destructive default: leave the row TBD in EXPERIMENTS.md §3 and revisit by either pinning transformers to the training-time version inside an isolated venv, or by patching `canary_model.generate()` to use the new Qwen3 chat-template API.
+
+2. **HF anonymous rate-limit on this pod is severe.** `huggingface_hub.snapshot_download` (xet) and `hf download` both stall at random byte offsets and don't recover for many minutes. Workaround used: `aria2c -x16 -s16 -c --header="Authorization: Bearer $HF_TOKEN"` against `https://huggingface.co/<repo>/resolve/main/<file>`. Set HF_TOKEN in env before any pull. Mention in next-session preflight.
+
+3. **Disk pressure** — at the peak the overlay was at 84%. Total HF cache after S20: ~21 GB. If a future session needs to add Granite + larger models, prune `/workspace/.hf_home/hub/` for unused models first.
+
+### Files changed in Session 20
+
+- `AnalysisExamples/e2e/eval.py` — fixed `--lm required` guard so non-LLaVA model types don't trip it.
+- `AnalysisExamples/e2e/dataset.py` — added Cohere tokenizer branch ahead of Whisper's, using `<|startofcontext|>` as the discriminator.
+- `AnalysisExamples/e2e/cohere_model.py` — **new**: `CohereBCIModel` mirroring `whisper_model.py`.
+- `AnalysisExamples/e2e/train_cohere.py` — **new**: mirror of `train_whisper.py`.
+- `EXPERIMENTS.md` — populated §3 slice columns for v4, v5, v6, v7; appended E2E-7 (v8 regression).
+- `TRACKER.md` — A2 checkboxes ticked for v6, v7.
+
+### Next-session priorities
+
+1. Finish the Cohere run (target step 15000) and add the result row to EXPERIMENTS.md.
+2. Resolve the Canary generation incompat — patch `canary_model.generate()` to use `tokenizer.apply_chat_template(..., enable_thinking=False)` instead of the manual `<|im_start|>assistant\n` seed.
+3. If Cohere ends up the new headline, consider granite next; otherwise call the project on v7.
+4. Two-stage three-schema eval (TRACKER B2) is still pending.
+
+
+### Stage 3 final result — Cohere underperforms catastrophically at full eval
+
+**Cohere training** completed all 15000 steps. Training-time partial-val WER trajectory (on the first 80 utterances, batch_size=8 × val_batches=10):
+500 → 0.7951, 1000 → 0.7443, 1500 → 0.7459, 2000 → 0.7410, 2500 → 0.7082, 3000 → 0.7016, 3500 → 0.6557, 4000 → 0.6754, 4500 → 0.6984, 5000 → 0.6721, 5500 → 0.6508, 6000 → 0.6475, 6500 → 0.6328, 7000 → 0.6148, 7500 → 0.6311, 8000 → 0.6311, **8500 → 0.6016 (best)**, 9000 → 0.6230, 9500 → 0.6328, 10000 → 0.6262, 10500 → 0.6344, 11000 → 0.6197, 11500 → 0.6279, 12000 → 0.6279, 12500 → 0.6295, 13000 → 0.6295, 13500 → 0.6377, 14000 → 0.6279, 14500 → 0.6213, 15000 → 0.6377.
+
+The best checkpoint is `experiments/e2e_cohere/best/checkpoint.pt` (step 8500, partial val_WER 0.6016).
+
+**Full-set eval (added a `--model-type cohere` branch to `eval.py`):** WER@all_24 = **5.6837**, CER 8.5695, n=880 — **9× worse than the partial-val number** during training, and orders of magnitude worse than v7 (0.2053).
+
+Inspection of the generated text shows runaway generation: the model produces output sequences far longer than the references, and EOS (`<|endoftext|>`, id 3) is rarely emitted. The training-time partial-val (first 10 batches = 80 utterances) was apparently misleadingly low. Causes to investigate next session:
+   - The training generate is wrapped indirectly through the autocast region of validate(), while eval.py is plain fp32 — Cohere is sensitive to dtype since its `static cache` path is auto-skipped under transformers 5.6.2 (see `modeling_cohere_asr.py:929-937`). Run the eval inside `with torch.autocast("cuda", dtype=torch.bfloat16)` to match training and compare.
+   - The Cohere prompt prefix `[<|startofcontext|>, <|startoftranscript|>, <|en|>, <|en|>]` may be missing required tokens (`<|emo:undefined|>`, `<|pnc|>`, `<|noitn|>`, `<|notimestamp|>`, `<|nodiarize|>`) that the pretrained decoder learned to expect. Try the full `build_prompt("en", punctuation=True)` from `modeling_cohere_asr.py:980-987` for both training and generation.
+   - LoRA only on the attention projections may be insufficient when the FFN parameters carry most of Cohere's English-acoustic knowledge. Consider extending LoRA to `dense_in`/`dense_out` of `DecoderFeedForward`.
+
+EXPERIMENTS.md §3 updated; row E2E-8 added with the full-set numbers.
+
+### Final EXPERIMENTS.md state
+
+Five E2E rows now have full-set WER/CER slices populated: v4 (0.3056), v5 (0.3045), v6 (0.2157), **v7 (0.2053, headline)**, v8 (0.2221 partial, aborted), cohere (5.68 full-set / 0.60 partial-val). Only canary (E2E-3) and granite (E2E-4) remain TBD due to unresolved environment / branch issues.
+

@@ -14,8 +14,8 @@ Gap checklist. Move items from `[ ]` (pending) → `[x]` (done) as they close. K
 - [ ] Emit slices as JSON keys `wer_<slice>`, `cer_<slice>`, `n_<slice>`
 
 ### A2 — Full-set eval on existing best E2E checkpoints
-- [ ] Eval `experiments/e2e_v7/best` → `experiments/e2e_v7/eval_full.json` (24 sess + slices)
-- [ ] Eval `experiments/e2e_v6/best` → `experiments/e2e_v6/eval_full.json`
+- [x] Eval `experiments/e2e_v7/best` → `experiments/e2e_v7/eval_full.json` (24 sess + slices)  — WER@all_24=0.2053, willett_19=0.2062, willett_4_18=0.1716
+- [x] Eval `experiments/e2e_v6/best` → `experiments/e2e_v6/eval_full.json`  — WER@all_24=0.2157
 - [ ] Eval `experiments/e2e_canary_ctc/best` → `experiments/e2e_canary_ctc/eval_full.json`
 - [ ] Eval `experiments/e2e_granite/best` → `experiments/e2e_granite/eval_full.json`
 
