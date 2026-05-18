@@ -1,6 +1,6 @@
 # Speech BCI: Thesis Progress Handoff
 
-**Last Updated:** 2026-05-03 (Session 18 — E2E v4/v5 audit, LR finder, encoder swap test, cross-attention decision)
+**Last Updated:** 2026-05-18 (Session 19 — experiment-matrix audit, EXPERIMENTS.md + TRACKER.md created, eval.py session-slicing, GPU blocked by vLLM, headline E2E identified as Whisper-large-v3 v7 @ val WER 0.2055)
 
 ---
 
@@ -422,12 +422,124 @@ python AnalysisExamples/e2e/eval.py \
 
 ---
 
+## 9c. Session 19 (2026-05-18) — experiment-matrix audit + docs + eval slicing
+
+**Goals for session:** finalize the experiment list, build canonical results docs, push Whisper further, evaluate Cohere transcribe-03-2026. The first three were done; training was blocked (see "Blockers" below).
+
+### Key corrections to previous Handoff entries
+
+| Claim in earlier sections | Reality after verification |
+|---|---|
+| HANDOFF §9: "E2E datasets: 19 sessions by default" | **All E2E runs (v4, v5, v6, v7, canary, granite) actually trained on 24 sessions** — every `phase2.log` shows `Loaded 8800 examples from 24 sessions (train) / 880 (test)`. The "19 sessions by default" line is stale. |
+| HANDOFF §9b: "cross-attention is the next step (not yet built)" | **Already built and trained.** `e2e_v6` = Whisper-medium.en cross-attention (val WER 0.2154 at step 9000). `e2e_v7` = Whisper-large-v3 cross-attention (val WER 0.2055 at step 14500). |
+| Plan-mode draft initially said "v7 used whisper-medium" | Wrong — `e2e_v7/phase2.log` line 5: `Loading tokenizer: openai/whisper-large-v3`. v6 was medium.en; v7 is large-v3. |
+| Hardware §10: RTX 5090 (32 GB) | **Current pod is NVIDIA L40S (46 GB)**. Different machine; CUDA arch is sm_89, not sm_120. |
+| "venv311 / venv312" | Neither exists on this pod — only `/workspace/venv`. v7 was trained with `/workspace/venv` per Session 18 notes (torch 2.4.1+cu124, peft 0.19.1). |
+
+### Headline E2E result (verified)
+
+`e2e_v7` Whisper-large-v3 cross-attention reached **val WER 0.2055 at step 14500/15000** on 24 sessions — still tightening at the end of the run (monotone improvement over the last 5k steps; LR profile cosine-decayed). This is essentially tied with the two-stage 5-gram baseline (GRU 0.2141, Conformer-spatial 0.2155) and beaten only by 5-gram + fine-tuned LLaMA-2 7B rescoring (0.1997).
+
+**Encoder lineage in v7:** `ctc_4l/best` → `e2e_v6/best` → loaded into `e2e_v7` (146 encoder/projector keys; whisper-medium → whisper-large-v3 projector skipped due to shape mismatch). So v7's encoder is the most-adapted version available for any v8 continuation.
+
+### LM-pipeline best (verified)
+
+`bssf_ft_llama2_ckpt7000` = 5-gram + **fine-tuned LLaMA-2 7B** rescoring on Conformer-spatial 24sess: **WER 0.1997 / CER 0.1418** (asc=0.5, α=1.0, β=0.3). This is the project's best published WER and the run nearest to Seto's 0.169.
+
+### Documentation deliverables (DONE)
+
+| File | Status | Purpose |
+|---|---|---|
+| `EXPERIMENTS.md` (repo root) | **created** | Single source-of-truth list of every notable experiment with `wer@willett_4_18 / wer@willett_19 / wer@all_24` columns. Failed runs (WER ≥ 0.5) in appendix. |
+| `TRACKER.md` (repo root) | **created** | Priority-organized gap checklist (A: E2E push, B: two-stage, C: speed, D: analysis, E: docs). |
+
+### Eval-script change (DONE)
+
+`AnalysisExamples/e2e/eval.py` — added canonical session slicing:
+- Added module-level `WILLETT_19` and `WILLETT_4_18` lists (copied from `recover_gru_24sess.py:145-169`, so the convention matches the existing `recovered_eval_results.json` keys).
+- `compute_wer()` now optionally records `session_idx` per utterance.
+- New `slice_metrics()` returns `{"all_24": {wer, cer, n}, "willett_19": …, "willett_4_18": …}` with corpus-level (micro-averaged) aggregation — same convention used everywhere else (`eval_wfst_lm.py:99`).
+- Eval loop tracks `all_sess`; final JSON now has top-level `"slices"` key.
+
+**Schema reminder:** WER reported throughout the project is corpus-level: `sum(errors) / sum(words)` across the whole subset. NOT mean of per-session WERs.
+
+### Blockers encountered
+
+1. **GPU busy.** The L40S is occupied by an unrelated **vLLM server** (`gemma-4-e4b-it-text-pruned10`) holding 41.5 GB of the 46 GB total. Cannot fit Whisper-large-v3 + Conformer + LoRA in the remaining 3.9 GB. Killing the vllm python process triggers a container restart (PID 1 is `docker-init`, configured by the RunPod template to launch the vllm command — RunPod restarts the container if the launched command exits). So freeing the GPU requires either editing the RunPod template (`--gpu-memory-utilization 0.9` → lower) and accepting one container restart, or provisioning a separate GPU pod.
+2. **Cohere model investigation** not yet started — was scheduled after Whisper v8 finished.
+
+### What's been verified about training configs (from logs, for reproducibility)
+
+**v7 (the headline) was launched with this LR profile:**
+- Encoder LR: peaks at 6.90e-5 (step 500), cosine-decays to ~6.90e-6
+- Projector + cross-attn LR: peaks at 1.00e-3, decays to ~1.00e-4
+- LoRA LR: peaks at 1.75e-4, decays to ~1.75e-5
+- 15000 steps, batch size 16 (effective), warmup 500 steps
+- Was initialized from `e2e_v6/best` (encoder + projector load; projector mismatched so reset)
+
+**v7 trajectory:** 0.2435 (step 500) → 0.2257 (1000) → 0.2086 (10000) → 0.2073 (12000) → 0.2061 (13000) → **0.2055 (14500, best)**. Improvement plateaued but never reverted — strongly suggests more steps would help.
+
+### Next-session plan (resume here)
+
+**Stage 0 — Unblock GPU.** Either:
+   - Edit RunPod template: lower vllm's `--gpu-memory-utilization` from `0.9` to `0.15` (~7 GB for Gemma, ~39 GB free for training). Accept one container restart and reconnect.
+   - OR provision a separate GPU pod for training.
+
+**Stage 1 — Sanity (CPU/GPU smoke).**
+   - Verify the `eval.py` slicing patch with a tiny smoke run (it's a pure post-processing change, low risk).
+   - Run full-set eval on each existing E2E `best` checkpoint to populate EXPERIMENTS.md §3 with real `wer@willett_4_18 / willett_19 / all_24` numbers:
+     ```bash
+     for run in e2e_v7 e2e_v6 e2e_canary_ctc e2e_granite e2e_v5 e2e_v4; do
+       python AnalysisExamples/e2e/eval.py \
+         --data-dir data/derived/tfRecords --ckpt experiments/$run/best \
+         --model-type whisper --whisper-model openai/whisper-large-v3 \  # adjust per run
+         --beam 1 --batch-size 8 --output experiments/$run/eval_full.json
+     done
+     ```
+   - For each run, set the right `--model-type` / `--lm` / `--whisper-model` per `EXPERIMENTS.md` §3.
+
+**Stage 2 — Push Whisper v7 → v8 (the most-likely-to-improve option).**
+   - Resume from `experiments/e2e_v7/best/checkpoint.pt`, +15k steps, higher peak LRs:
+     - encoder 2e-4 (was 6.9e-5)
+     - projector 1.5e-3 (was 1.0e-3)
+     - lora 3e-4 (was 1.75e-4)
+   - Cosine decay to ~1/4 of peak. Reuse all other v7 hyperparams.
+   - Output dir: `experiments/e2e_v8/`.
+   - Stop condition: if val WER doesn't beat 0.2055 by step 7000, **revert** and accept v7 as headline.
+
+**Stage 3 — Cohere transcribe-03-2026.**
+   - Verify HuggingFace availability of `CohereLabs/cohere-transcribe-03-2026` (HF_TOKEN needs license acceptance).
+   - Inspect config: is it audio enc-dec like Whisper? cross-attention shape?
+   - Write `AnalysisExamples/e2e/cohere_model.py` mirroring `whisper_model.py` structure.
+   - Train with the best Whisper config from Stage 2.
+
+**Stage 4 — Two-stage 3-schema eval.**
+   - Patch `AnalysisExamples/eval_wfst_lm.py` to emit session slices the same way `eval.py` now does.
+   - Re-run all existing 24-sess WFST/rescoring evals; populate EXPERIMENTS.md §2.
+
+**Stage 5 — Speed measurement script + analysis chapter.** See `TRACKER.md` priorities C and D.
+
+### File state at end of Session 19
+
+Modified:
+- `AnalysisExamples/e2e/eval.py` (added `WILLETT_19`, `WILLETT_4_18`, `SLICES`, `slice_metrics()`; eval loop tracks session_idx)
+- `HANDOFF.md` (this section)
+
+Created:
+- `EXPERIMENTS.md`
+- `TRACKER.md`
+
+No training launched, no checkpoints written.
+
+---
+
 ## 10. Hardware
 
-RTX 5090 (32 GB VRAM). 256 GB disk, 64 GB RAM (128+ for lattice rescoring).
+Varies by pod. **Session 19 pod: NVIDIA L40S (46 GB VRAM)**, 1.2 PB workspace mount, occupied by an unrelated vLLM server (see "Blockers" in §9c).
+Historical: RTX 5090 (32 GB VRAM, sm_120) was used through Session 18 — required PyTorch nightly cu128 for sm_120 support. RTX 4090 also used at points.
 
-**PyTorch:** 2.12.0.dev20260408+cu128 (nightly) for RTX 5090 sm_120 support.
-Install: `pip install torch --index-url https://download.pytorch.org/whl/nightly/cu126`
-The older `/workspace/venv311` has PyTorch 2.11.0+cu128 — works on RTX 4090 but NOT RTX 5090.
+**Current venv:** `/workspace/venv` (PyTorch 2.4.1+cu124, peft 0.19.1, transformers 5.6.2). Was the venv used to train v6/v7. The HANDOFF-mentioned `venv311` / `venv312` do not exist on this pod.
 
-**TF:** 2.21.0 in venv312; 2.15 in venv311. Both work with RTX 5090.
+**PyTorch install (if recreating):** `pip install torch --index-url https://download.pytorch.org/whl/cu124` (for L40S sm_89). For RTX 5090 use cu128 nightly.
+
+**TF:** 2.15 in older venvs (for WFST pipeline).

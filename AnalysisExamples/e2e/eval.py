@@ -44,6 +44,22 @@ ALL_SESSIONS = [
     "t12.2022.08.13", "t12.2022.08.18", "t12.2022.08.23", "t12.2022.08.25",
 ]
 
+# Canonical 3-schema slices — see AnalysisExamples/recover_gru_24sess.py:145-169
+WILLETT_19 = [
+    "t12.2022.04.28", "t12.2022.05.05", "t12.2022.05.17", "t12.2022.05.19",
+    "t12.2022.05.24", "t12.2022.05.26", "t12.2022.06.02", "t12.2022.06.07",
+    "t12.2022.06.14", "t12.2022.06.16", "t12.2022.06.21", "t12.2022.06.28",
+    "t12.2022.07.05", "t12.2022.07.14", "t12.2022.07.21", "t12.2022.07.27",
+    "t12.2022.08.02", "t12.2022.08.11", "t12.2022.08.13",
+]
+WILLETT_4_18 = WILLETT_19[4:19]  # 15 sessions
+
+SLICES = {
+    "all_24":       set(range(len(ALL_SESSIONS))),
+    "willett_19":   {ALL_SESSIONS.index(s) for s in WILLETT_19},
+    "willett_4_18": {ALL_SESSIONS.index(s) for s in WILLETT_4_18},
+}
+
 
 # ---------------------------------------------------------------------------
 # Metrics
@@ -59,17 +75,22 @@ def _edit_distance(a: list, b: list) -> int:
     return d[len(b)]
 
 
-def compute_wer(hyps: list[str], refs: list[str]) -> tuple[float, dict]:
+def compute_wer(hyps: list[str], refs: list[str], sess_idx: list = None) -> tuple[float, list]:
+    """Corpus-level (micro-averaged) WER = total_errors / total_words.
+    If sess_idx provided, each detail row carries the session index."""
     total_words = total_errors = 0
     details = []
-    for hyp, ref in zip(hyps, refs):
+    for k, (hyp, ref) in enumerate(zip(hyps, refs)):
         r = ref.lower().split()
         h = hyp.lower().split()
         err = _edit_distance(r, h)
         total_words  += len(r)
         total_errors += err
-        details.append({"ref": ref, "hyp": hyp,
-                        "wer": err / max(1, len(r)), "errors": err, "words": len(r)})
+        row = {"ref": ref, "hyp": hyp,
+               "wer": err / max(1, len(r)), "errors": err, "words": len(r)}
+        if sess_idx is not None:
+            row["session_idx"] = int(sess_idx[k])
+        details.append(row)
     wer = total_errors / max(1, total_words)
     return wer, details
 
@@ -82,6 +103,23 @@ def compute_cer(hyps: list[str], refs: list[str]) -> float:
         total_chars  += len(r)
         total_errors += _edit_distance(r, h)
     return total_errors / max(1, total_chars)
+
+
+def slice_metrics(hyps, refs, sess_idx):
+    """Compute corpus-level WER/CER per slice (all_24, willett_19, willett_4_18)."""
+    out = {}
+    for name, idx_set in SLICES.items():
+        sub_h, sub_r = [], []
+        for h, r, s in zip(hyps, refs, sess_idx):
+            if int(s) in idx_set:
+                sub_h.append(h); sub_r.append(r)
+        if not sub_h:
+            out[name] = {"wer": None, "cer": None, "n": 0}
+            continue
+        wer, _ = compute_wer(sub_h, sub_r)
+        cer = compute_cer(sub_h, sub_r)
+        out[name] = {"wer": wer, "cer": cer, "n": len(sub_h)}
+    return out
 
 
 # ---------------------------------------------------------------------------
@@ -206,7 +244,7 @@ def evaluate(args):
     print(f"Loaded checkpoint at step {ckpt.get('step', '?')}")
 
     # ── Decode all batches ─────────────────────────────────────────────────
-    all_hyps, all_refs = [], []
+    all_hyps, all_refs, all_sess = [], [], []
     for i, batch in enumerate(loader):
         ecog        = batch["ecog"].to(device)
         ecog_len    = batch["ecog_lengths"].to(device)
@@ -220,17 +258,25 @@ def evaluate(args):
         )
         all_hyps.extend(texts)
         all_refs.extend(batch["texts"])
+        all_sess.extend(session_ids.detach().cpu().tolist())
 
         if (i + 1) % 20 == 0:
             wer_so_far, _ = compute_wer(all_hyps, all_refs)
             print(f"  batch {i+1}/{len(loader)}  WER so far: {wer_so_far:.4f}")
 
     # ── Metrics ───────────────────────────────────────────────────────────
-    wer, details = compute_wer(all_hyps, all_refs)
+    wer, details = compute_wer(all_hyps, all_refs, sess_idx=all_sess)
     cer = compute_cer(all_hyps, all_refs)
+    slices = slice_metrics(all_hyps, all_refs, all_sess)
 
     print(f"\n{'='*60}")
-    print(f"  WER: {wer:.4f}   CER: {cer:.4f}")
+    print(f"  WER (all_24): {wer:.4f}   CER (all_24): {cer:.4f}")
+    for name in ("all_24", "willett_19", "willett_4_18"):
+        s = slices[name]
+        if s["wer"] is None:
+            print(f"  {name:>14s}: n={s['n']}  (empty subset)")
+        else:
+            print(f"  {name:>14s}: WER={s['wer']:.4f}  CER={s['cer']:.4f}  n={s['n']}")
     print(f"  (baseline two-stage: WER=0.1895 / CER=0.1362)")
     print(f"{'='*60}\n")
 
@@ -250,6 +296,7 @@ def evaluate(args):
             "beam":         args.beam,
             "wer":          wer,
             "cer":          cer,
+            "slices":       slices,
             "n_examples":   len(all_hyps),
             "baseline_wer": 0.1895,
             "baseline_cer": 0.1362,
