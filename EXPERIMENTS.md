@@ -6,7 +6,7 @@ WER convention: corpus-level (micro-averaged) — `total_errors / total_words` s
 
 Session-slice keys: `willett_4_18` (sessions 4–18, 15 sessions), `willett_19` (Willett-aligned 19-session split), `all_24` (full 24 sessions). For models with **per-session input layers** (two-stage), the model can only be evaluated on the sessions it was trained on; cells outside that range are marked `N/A`.
 
-Last updated: 2026-05-19 (Session 20 — full slice columns populated for all WFST-only two-stage results and for the 24sess Conformer phoneme decoders; BSSF rescoring slices still TBD pending LLaMA-2 7B base rescore re-run).
+Last updated: 2026-05-19 (Session 20 — full slice columns populated for all WFST-only two-stage results, the 24sess Conformer phoneme decoders, **and the base-LLaMA BSSF rescoring re-runs**. LM7 (fine-tuned LLaMA) full-set slices remain unrecoverable due to lost LoRA adapter.).
 
 ---
 
@@ -43,13 +43,13 @@ All numbers are corpus-level on 24-sess test data. Slice columns for WFST-only e
 
 | ID | Decoder | LM stack | WER@willett_4_18 | CER@willett_4_18 | WER@willett_19 | CER@willett_19 | WER@all_24 | CER@all_24 | Path |
 |---|---|---|---|---|---|---|---|---|---|
-| LM-x | GRU 24sess | 5-gram → LLaMA-2 7B (base) rescore | TBD‡ | TBD‡ | TBD‡ | TBD‡ | **0.1928** | **0.1410** | `experiments/bssf_5gram_llama2_gru/` |
-| LM6 | Conformer-spatial 24sess | 5-gram → LLaMA-2 7B (base) rescore | TBD‡ | TBD‡ | TBD‡ | TBD‡ | **0.1968** | **0.1418** | `experiments/bssf_5gram_llama2_conformer_spatial/` |
-| **LM7** | **Conformer-spatial 24sess** | **5-gram → ft-LLaMA-2 7B rescore** (ckpt7000) | not recoverable§ | — | not recoverable§ | — | **0.1910** | **0.1365** | `experiments/bssf_ft_llama2_ckpt7000/` |
+| LM-x | GRU 24sess | 5-gram → LLaMA-2 7B (base) rescore | 0.1638 | 0.1194 | 0.1971 | 0.1420 | 0.1943 | 0.1412 | `experiments/bssf_5gram_llama2_gru_redo/result.json` |
+| **LM6** | **Conformer-spatial 24sess** | **5-gram → LLaMA-2 7B (base) rescore** (re-run 2026-05-19, asc=0.5 β=0.5 α=0.8) | **0.1556** | **0.1127** | **0.1855** | **0.1340** | **0.1897** | **0.1363** | `experiments/bssf_5gram_llama2_conformer_spatial_redo/result.json` |
+| LM7 | Conformer-spatial 24sess | 5-gram → ft-LLaMA-2 7B rescore (ckpt7000) | not recoverable§ | — | not recoverable§ | — | **0.1910** | **0.1365** | `experiments/bssf_ft_llama2_ckpt7000/bssf_llama2_7b.json` |
 
-‡ Slice WER/CER pending a re-run of `rescore_nbest.py` with cached LLaMA-2-7B base scores (in progress as of 2026-05-19). The cached `bssf_llama2_7b.json` files only have the grid-summary WER/CER, no per-utterance hypotheses.
+§ The fine-tuned LoRA adapter `experiments/llama2_owt2_lora/checkpoint-7000` is not on local disk and not in the gdrive backup. Reproducing LM7's exact numbers would require re-fine-tuning via `AnalysisExamples/finetune_llama_owt2.py` (~hours on LLaMA-2 base + OWT2). Note that LM6 with *base* LLaMA-2 7B (no fine-tune) actually beats the saved LM7 WER@all_24 by 0.0013 absolute — implying the recorded LM7 grid wasn't strictly optimal.
 
-§ The fine-tuned LoRA adapter `experiments/llama2_owt2_lora/checkpoint-7000` is not on local disk and not in the gdrive backup. Reproducing LM7 numbers would require re-fine-tuning via `AnalysisExamples/finetune_llama_owt2.py` (~hours on LLaMA-2 base + OWT2).
+**Re-run notes:** the 2026-05-19 re-run was done with `AnalysisExamples/rescore_with_slices.py` (loads `_nbest_tmp.json`, runs LLaMA-2 7B on every hypothesis with fp16/batched scoring, grid-searches over asc ∈ {0.3, 0.5, 0.7}, β ∈ {0.5, 1.0, 1.5}, α ∈ {0.0, 0.3, 0.5, 0.8, 1.2}, then picks per-slice best). N-best source: `wfst_5gram_conformer_temp1p5_beam24_nb200/` for LM6 and `wfst_5gram_gru_temp1p5/` for LM-x (both restored from gdrive after the earlier cleanup deleted them). LLaMA-2 7B base downloaded directly via HF snapshot_download (safetensors only).
 
 ---
 

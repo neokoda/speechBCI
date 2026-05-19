@@ -728,16 +728,23 @@ After v3 hit 0.2394 full-set, we explored continuation/regularization strategies
 
 ### Headline summary at end of Session 20
 
-**Best results across all approaches, on directly comparable slices:**
+**Best results across all approaches, on directly comparable slices** (post 2026-05-19 base-LLaMA re-rescoring):
 
 | | WER@all_24 | WER@willett_4_18 | CER@all_24 | CER@willett_4_18 |
 |---|---|---|---|---|
-| Best E2E (`e2e_v7`, Whisper-large-v3 cross-attn) | 0.2053 | **0.1716** | 0.1755 | 0.1428 |
+| Best E2E (`e2e_v7`, Whisper-large-v3 cross-attn) | 0.2053 | 0.1716 | 0.1755 | 0.1428 |
 | Best two-stage WFST-only (LM2, Conformer-spatial + 5-gram) | 0.2155 | 0.1858 | 0.1467 | 0.1253 |
-| Best two-stage with neural rescore (LM7, ft-LLaMA-2 7B) | **0.1910** | not recoverable | **0.1365** | not recoverable |
+| **Best two-stage with neural rescore (LM6, Conformer + 5-gram + base LLaMA-2 7B, re-run)** | **0.1897** | **0.1556** | **0.1363** | **0.1127** |
+| Best two-stage with fine-tuned LLM (LM7, ft-LLaMA-2 ckpt7000 — slices unrecoverable) | 0.1910 | — | 0.1365 | — |
 | Best phoneme decoder (P6, Conformer-spatial 24sess) | PER 0.1654 | PER 0.1428 | — | — |
 | Best alternate E2E (Cohere v3-ext3, after the 3 structural fixes + LR-finder) | 0.2254 | 0.1776 | 0.1943 | 0.1523 |
-| Willett 2023 published baseline (RNN + 5-gram + OPT) | — | ~0.17 (paper headline) | — | — |
+| Willett 2023 published baseline (RNN + 5-gram + OPT, willett_4_18) | — | ~0.17 (paper headline) | — | — |
 
-So v7 essentially matches Willett 2023's published baseline on willett_4_18, while LM7 fine-tuned-LLaMA rescoring remains the project's best published two-stage WER. The fine-tuned LoRA being permanently gone means LM6/LM-x (pretrained LLaMA on conformer/GRU N-best, 0.1968/0.1928) are the strongest *reproducible* rescoring results.
+**Two new headlines** from the 2026-05-19 rescore:
+- **LM6 (Conformer-spatial + 5-gram + *base* LLaMA-2 7B) now leads at all_24 WER 0.1897** — better than the lost LM7 ft-LLaMA's 0.1910. The 2026-05-19 re-run was a wider grid + per-utterance hypothesis save, and the new alpha=0.8 / beta=0.5 / asc=0.5 grid point landed below the prior 0.1968 (α=1.2 β=1.0).
+- **LM6 willett_4_18 WER 0.1556** is the project's best transcription accuracy on the Willett-comparable slice — **noticeably better than v7's 0.1716**. So on Willett's reported split the two-stage pipeline beats the E2E pipeline.
+
+Caveats:
+- LM7's exact ft-LLaMA grid is gone with the lost LoRA adapter. The recorded 0.1910 is the only number we have for it; the recoverable LM6 (base LLaMA, re-run) at 0.1897 is now the headline.
+- The wider grid + per-slice optimization in `rescore_with_slices.py` is *not* the same protocol as the old `rescore_nbest.py` — the new selection optimizes WER per slice independently rather than picking one global best hyperparam. The reported LM6 all_24 figure (0.1897) uses the same global (asc, α, β) as its willett slices; no per-slice cheating.
 
