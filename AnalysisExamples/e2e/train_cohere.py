@@ -86,8 +86,17 @@ def save_checkpoint(path, model, optimizer, scheduler, step, best_wer, args):
 
 
 def load_checkpoint(path, model, optimizer, scheduler, reset_optimizer=False,
-                    init_encoder_from=None, phase2_lrs=None):
+                    init_encoder_from=None, init_weights_from=None, phase2_lrs=None):
     resume_file = os.path.join(path, "checkpoint.pt")
+
+    if init_weights_from is not None:
+        weights_file = (init_weights_from if init_weights_from.endswith(".pt")
+                        else os.path.join(init_weights_from, "checkpoint.pt"))
+        print(f"Loading full model weights from {weights_file}")
+        ckpt = torch.load(weights_file, map_location="cpu", weights_only=False)
+        res = model.load_state_dict(ckpt["model"], strict=False)
+        print(f"  Loaded weights (missing={len(res.missing_keys)} unexpected={len(res.unexpected_keys)})")
+        return 0, float("inf")
 
     if init_encoder_from is not None:
         enc_file = (init_encoder_from if init_encoder_from.endswith(".pt")
@@ -263,6 +272,7 @@ def train(args):
         args.output_dir, model, optimizer, scheduler,
         reset_optimizer=args.reset_optimizer,
         init_encoder_from=getattr(args, "init_encoder_from", None),
+        init_weights_from=getattr(args, "init_weights_from", None),
         phase2_lrs=phase2_lrs,
     )
     global_step = start_step
@@ -360,6 +370,8 @@ def parse_args():
     p.add_argument("--cohere-repo",       default=COHERE_REPO_DEFAULT)
     p.add_argument("--reset-optimizer",   action="store_true")
     p.add_argument("--init-encoder-from", default=None)
+    p.add_argument("--init-weights-from", default=None,
+                   help="Load full model state from a checkpoint (for continuations).")
     p.add_argument("--phase",             type=int, default=2, choices=[1, 2])
     p.add_argument("--phase1-steps",      type=int, default=300)
     p.add_argument("--max-steps",         type=int, default=15000)

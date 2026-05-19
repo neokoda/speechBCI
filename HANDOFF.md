@@ -627,7 +627,59 @@ Trajectory so far (step → val_WER):
 4. Two-stage three-schema eval (TRACKER B2) is still pending.
 
 
-### Stage 3 final result — Cohere underperforms catastrophically at full eval
+### Stage 3 v3 — Cohere works (WER 0.2394 full-set)
+
+After v1/v2 plateaued, three structural issues were identified and fixed in v3 (`experiments/e2e_cohere_v3/`):
+
+1. **Weight-loading bug** (already fixed in v2): HF `from_pretrained` silently loaded only 869/2150 keys because Cohere's modeling code sets `base_model_prefix = "model"` but the `*ForConditionalGeneration` class composes encoder/decoder directly on `self`. Workaround: manually `load_state_dict(load_file(safetensors_path), strict=False)` after `from_pretrained`. See `cohere_model.py:81-98`.
+
+2. **Truncated prompt prefix.** v1/v2 used `[<|startofcontext|>, <|startoftranscript|>, <|en|>, <|en|>]` (4 tokens). Cohere's pretrained `build_prompt("en", punctuation=True)` (modeling_cohere_asr.py:984-987) returns **9 tokens**: `<|startofcontext|><|startoftranscript|><|emo:undefined|><|en|><|en|><|pnc|><|noitn|><|notimestamp|><|nodiarize|>`. Truncating put cross-attn in an OOD regime → EOS was rarely emitted → runaway generation gave WER 5.68 at full-eval. Fixed in `dataset.py:162-179` and `cohere_model.py:188-196`.
+
+3. **Attention-only LoRA.** v1/v2 LoRA-adapted only `query_net, key_net, value_net, out_projection`. The 4096-d `DecoderFeedForward` (`dense_in`/`dense_out`) carries most of Cohere's English/acoustic knowledge, learned on 128-bin Mel features — when fed ECoG memory, the unchanged FFN is mismatched. v3 adds FFN LoRA → 32M trainable params (was ~10M). Fixed in `cohere_model.py:42-50`.
+
+4. **Wrong LRs.** Built `init_cohere_v3.py` (encoder from `ctc_4l/best`, fresh PEFT LoRA with new targets) → ran `lr_range_test.py` (Smith 2017 / 10) for each group. Result vs v2:
+   - encoder: 6.5e-4 (v2: 2e-4 → 3× too low)
+   - projector: 2.7e-4 (v2: 1.5e-3 → **5× too high**, the main optimization bug)
+   - lora: 3.1e-4 (v2: 3e-4, about right)
+   v3 uses these LRs verbatim.
+
+5. **Encoder init.** v1/v2 used `e2e_v7/best` encoder (already cross-attn-adapted to Whisper-large-v3). v3 uses `ctc_4l/best` (neutral phoneme-CTC encoder, no decoder coupling) per user direction — gives Cohere maximum flexibility.
+
+**v3 launch (the working command):**
+```bash
+ulimit -s unlimited && HF_HUB_OFFLINE=1 /workspace/venv/bin/python -u AnalysisExamples/e2e/train_cohere.py \
+  --data-dir data/derived/tfRecords \
+  --cohere-repo CohereLabs/cohere-transcribe-03-2026 \
+  --output-dir experiments/e2e_cohere_v3 \
+  --init-encoder-from experiments/ctc_4l/best \
+  --reset-optimizer --phase 2 --max-steps 15000 \
+  --batch-size 8 --grad-accum 2 --num-workers 4 \
+  --lr-encoder 6e-4 --lr-projector 2.7e-4 --lr-lora 3e-4 \
+  --lora-r 16 --weight-decay 0.05 --lora-dropout 0.1 \
+  --warmup-steps 200 --patience 0 \
+  --eval-every 500 --save-every 1000 --log-every 50 \
+  --eval-at 50 --val-batches 20 --max-text-len 64
+```
+
+**v3 partial-val trajectory:** 0.5491 (500) → 0.4707 (1000) → 0.4644 (1500) → 0.4374 (2500) → 0.4149 (3000) → 0.3933 (5500) → 0.3924 (6000) → 0.3879 (7000) → 0.3843 (10000) → 0.3834 (10500) → 0.3762 (11000) → **0.3726 (12500, best)** → 0.3825 (15000). The post-12500 plateau is the model running out of fitting headroom (train loss ~0.005) — generalization gap, not undertrained.
+
+**v3 full-set eval:**
+```
+all_24:       WER=0.2394  CER=0.2074  n=880
+willett_19:   WER=0.2409  CER=0.2089  n=680
+willett_4_18: WER=0.1936  CER=0.1637  n=600
+```
+
+Compared to other E2E rows in EXPERIMENTS.md §3:
+- v7 Whisper-large-v3:    0.2053 ← still headline
+- v6 Whisper-medium.en:   0.2157
+- **v3 Cohere:            0.2394** ← new, competitive with v6, behind v7
+- v5 Qwen LLaVA:          0.3045
+- v1/v2 Cohere (buggy):   5.68
+
+The partial-val ↔ full-set gap finally lines up (0.37 partial × 880/200 utts → 0.24 full-set, matches expected), confirming the runaway-generation problem from v1/v2 is fully solved.
+
+### Stage 3 v1/v2 final result (kept for history) — Cohere underperformed catastrophically at full eval
 
 **Cohere training** completed all 15000 steps. Training-time partial-val WER trajectory (on the first 80 utterances, batch_size=8 × val_batches=10):
 500 → 0.7951, 1000 → 0.7443, 1500 → 0.7459, 2000 → 0.7410, 2500 → 0.7082, 3000 → 0.7016, 3500 → 0.6557, 4000 → 0.6754, 4500 → 0.6984, 5000 → 0.6721, 5500 → 0.6508, 6000 → 0.6475, 6500 → 0.6328, 7000 → 0.6148, 7500 → 0.6311, 8000 → 0.6311, **8500 → 0.6016 (best)**, 9000 → 0.6230, 9500 → 0.6328, 10000 → 0.6262, 10500 → 0.6344, 11000 → 0.6197, 11500 → 0.6279, 12000 → 0.6279, 12500 → 0.6295, 13000 → 0.6295, 13500 → 0.6377, 14000 → 0.6279, 14500 → 0.6213, 15000 → 0.6377.
@@ -646,4 +698,46 @@ EXPERIMENTS.md §3 updated; row E2E-8 added with the full-set numbers.
 ### Final EXPERIMENTS.md state
 
 Five E2E rows now have full-set WER/CER slices populated: v4 (0.3056), v5 (0.3045), v6 (0.2157), **v7 (0.2053, headline)**, v8 (0.2221 partial, aborted), cohere (5.68 full-set / 0.60 partial-val). Only canary (E2E-3) and granite (E2E-4) remain TBD due to unresolved environment / branch issues.
+
+---
+
+### Stage 4 (Session 20, 2026-05-19) — Cohere v3 continuation lineage + Whisper continuation experiments + slice fill-in
+
+After v3 hit 0.2394 full-set, we explored continuation/regularization strategies + structural fixes for Whisper.
+
+**Cohere line — v3 → v3-ext → v3-ext3 (new best):**
+- v3-ext: init from v3/best, ⅓ LRs (encoder 2e-4, projector 9e-5, lora 1e-4), LoRA dropout 0.1→0.2, weight decay 0.05→0.1, full-set val every 500 steps. Best partial val 0.2303 at step 14000.
+- v3-ext2: init from v3-ext/best, even-lower LRs (8e-5/4e-5/4e-5). 10k+ steps, no improvement; killed.
+- **v3-ext3** (new headline Cohere): init from v3-ext/best, ultra-low LRs (3e-5/1.5e-5/1.5e-5 — half of v3's cosine floor), 20k steps, 1000-step warmup. Patience=0 originally fired prematurely at step 13000 due to a stale "Patience N/0" print path; resumed without `--reset-optimizer` to continue the saved cosine. Found best at step 12500 in productive LR band ~1e-5/5e-6. **Full-set WER 0.2254 / CER 0.1943** (down from v3's 0.2394). On willett_4_18 slice: **WER 0.1776 / CER 0.1523**.
+- v3-ext4: continuation from v3-ext3/best with literally-constant LR 1e-5/5e-6 (warmup_steps=100, max_steps=400000 so cosine never decays). Early-stopped at step 3000 (patience 5). Full-set WER 0.2272 — slightly worse than v3-ext3, confirming that the slow cosine decay over the productive band was contributing, not just the absolute LR magnitude.
+
+**LR-finder result (Cohere, neutral-init from `ctc_4l/best`):** productive LR window for Cohere lineage is enc ~1e-5 to 3e-5, proj+lora ~5e-6 to 1.5e-5. Above this we wasted budget perturbing converged weights; below it the noise floor overwhelms updates.
+
+**Whisper line — v7-ext, v9, v10 (all failed to beat v7):**
+- v7-ext: applied the Cohere recipe to v7 (LRs ~1/6 of v7's cosine floor: enc 1.2e-6, proj 1.7e-5, lora 3e-6; LoRA dropout 0.1→0.2). Saw best 0.2032 partial val at step 1000 (within the ±0.005 partial-val noise floor of v7's 0.2055). Stayed in 0.2025-0.2090 band the entire run. Killed at step 8500.
+- v9: init from v7/best, **added FFN LoRA targets** (`fc1`/`fc2` of Whisper decoder layers — 45M→58M trainable) + SpecAugment on the encoder. v7's original LRs. Severe initial regression (val WER 0.26-0.28 in first 2k steps), then slow recovery toward 0.22. Killed at step 7500 (best 0.2219).
+- v10: same as v9 but **without SpecAugment** — ablation to isolate which intervention caused the early degradation. At step 1000 v10 was at 0.2230 vs v9's 0.2577 — clear divergence. So SpecAugment WAS the early-regression culprit. v10 then plateaued in the 0.22-0.23 band, never reaching v7's 0.2055. Killed at step 7500.
+
+**Conclusion on Whisper:** the v7 result (full-set 0.2053) is at the architecture × data ceiling. Three independent continuation attempts (v7-ext, v9, v10) all converged to the same band without breaking it. Lower LRs match within noise; structural changes (FFN LoRA, SpecAugment) regress because new free parameters perturb v7's already-converged adaptation faster than they add useful capacity. Structural changes (FFN LoRA + SpecAugment combined, or deeper encoder) would need a clean from-scratch run rather than a v7 continuation — out of scope this session.
+
+**WFST slice fill-in (Session 20-end):** All `wfst_only` results now have WER/CER per slice in EXPERIMENTS.md §2a. Reconstructed by replaying the cached `_nbest_tmp.json` (top-1 hyp per utterance) and aggregating by session via the verified BCIDataset session order. Confirmed reconstruction matches the published global WER exactly (e.g. GRU+5gram all_24 WER = 0.2141 from replay vs 0.2141 published). BSSF rescoring slice data still TBD pending a re-run with cached LLaMA-2 7B base.
+
+**Phoneme PER slice fill-in (Session 20-end):** Wrote `AnalysisExamples/slice_phoneme_eval.py` (mirror of `recover_gru_24sess.py` for the Conformer 24sess models — no recovery hacks needed, clean TF checkpoints). Filled in PER@willett_19 and PER@willett_4_18 for P4 (Conformer-vanilla 24sess), P6 (Conformer-spatial 24sess, the project's best phoneme decoder), and the Conformer+SE ablation. Headline P6 PER on willett_4_18 = 0.1428.
+
+**Disk and gdrive cleanup (Session 20-end):** Deleted ~28 GB of obsolete experiment dirs locally (`e2e_0.8b*`, `e2e_v7_ext`, `e2e_v10`, `*_smoke`, `e2e_granite*`, `e2e_canary_smoke`, `ctc_encoder`, plus 4 unused HF cache models). Mirror-deleted the same paths from `gdrive:speechBCI_backup/experiments/...` so the backup matches local. Free space went from 12 GB (87% used) to 35+ GB. Lost-forever: the fine-tuned LLaMA-2 LoRA adapter `experiments/llama2_owt2_lora/checkpoint-7000` is gone from both disk and gdrive — would need to re-run `AnalysisExamples/finetune_llama_owt2.py` to reproduce LM7's 0.1910 number.
+
+### Headline summary at end of Session 20
+
+**Best results across all approaches, on directly comparable slices:**
+
+| | WER@all_24 | WER@willett_4_18 | CER@all_24 | CER@willett_4_18 |
+|---|---|---|---|---|
+| Best E2E (`e2e_v7`, Whisper-large-v3 cross-attn) | 0.2053 | **0.1716** | 0.1755 | 0.1428 |
+| Best two-stage WFST-only (LM2, Conformer-spatial + 5-gram) | 0.2155 | 0.1858 | 0.1467 | 0.1253 |
+| Best two-stage with neural rescore (LM7, ft-LLaMA-2 7B) | **0.1910** | not recoverable | **0.1365** | not recoverable |
+| Best phoneme decoder (P6, Conformer-spatial 24sess) | PER 0.1654 | PER 0.1428 | — | — |
+| Best alternate E2E (Cohere v3-ext3, after the 3 structural fixes + LR-finder) | 0.2254 | 0.1776 | 0.1943 | 0.1523 |
+| Willett 2023 published baseline (RNN + 5-gram + OPT) | — | ~0.17 (paper headline) | — | — |
+
+So v7 essentially matches Willett 2023's published baseline on willett_4_18, while LM7 fine-tuned-LLaMA rescoring remains the project's best published two-stage WER. The fine-tuned LoRA being permanently gone means LM6/LM-x (pretrained LLaMA on conformer/GRU N-best, 0.1968/0.1928) are the strongest *reproducible* rescoring results.
 

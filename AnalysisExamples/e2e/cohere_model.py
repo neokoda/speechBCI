@@ -39,12 +39,15 @@ COHERE_REPO_DEFAULT = "CohereLabs/cohere-transcribe-03-2026"
 class CohereBCIModel(nn.Module):
     """End-to-end BCI decoder: Conformer + projector + Cohere decoder cross-attention."""
 
-    # Cohere decoder attention modules (different names from Whisper/Qwen)
-    LORA_TARGET_MODULES     = ["query_net", "key_net", "value_net", "out_projection"]
-    # Cross-attention only: same submodule names but only in the second_sub_layer of
-    # each TransformerDecoderLayer. PEFT's target_modules matches by leaf name, so
-    # we can't isolate the cross-attn block by name alone — use LORA_TARGET_MODULES
-    # and accept LoRA on both self- and cross-attn projections (matches Whisper default).
+    # Cohere decoder modules: attention projections + FFN dense layers.
+    # Attention-only LoRA proved insufficient (v1/v2 plateaued ~0.37 WER vs
+    # Whisper's 0.20). DecoderFeedForward (modeling_cohere_asr.py:534) carries
+    # most of Cohere's English/acoustic knowledge; adapting just attention leaves
+    # the FFN frozen at its 128-bin-Mel-trained values, mismatched for ECoG.
+    LORA_TARGET_MODULES     = [
+        "query_net", "key_net", "value_net", "out_projection",  # attention
+        "dense_in", "dense_out",                                  # FFN
+    ]
 
     def __init__(
         self,
@@ -81,6 +84,21 @@ class CohereBCIModel(nn.Module):
         base = AutoModelForSpeechSeq2Seq.from_pretrained(
             cohere_repo, trust_remote_code=True,
         )
+        # Workaround: Cohere's modeling code sets `base_model_prefix = "model"` on
+        # the pretrained class but the `*ForConditionalGeneration` head puts encoder/
+        # decoder/log_softmax directly on `self` (no `self.model = CohereAsrModel(...)`
+        # composition). HF's `from_pretrained` silently fails to load ~60% of the
+        # weights because of this prefix mismatch (returns `missing=0, unexpected=0`
+        # but 1281 / 2150 file tensors stay at random `_init_weights` init).
+        # Workaround: reload the safetensors file directly via state_dict.
+        from huggingface_hub import hf_hub_download
+        from safetensors.torch import load_file
+        weights_path = hf_hub_download(cohere_repo, "model.safetensors")
+        file_sd = load_file(weights_path)
+        load_res = base.load_state_dict(file_sd, strict=False)
+        n_loaded = len(file_sd) - len(load_res.unexpected_keys)
+        print(f"[CohereBCIModel] Manually loaded {n_loaded}/{len(file_sd)} Cohere "
+              f"base weights from safetensors (HF from_pretrained only got ~869)")
         self.cohere_decoder_hidden = base.decoder_hidden_size  # 1024
 
         # Projector: Conformer d_model (512) → Cohere decoder hidden (1024).
@@ -163,16 +181,15 @@ class CohereBCIModel(nn.Module):
         cross_mask = self._cross_attention_mask(ecog_memory, ecog_len)
 
         B = ecog_memory.shape[0]
-        # Minimal decoder prompt: <|startofcontext|><|startoftranscript|><|en|><|en|>
-        # — matches Cohere build_prompt's first 4 tokens (the rest are options
-        # for diarize/timestamp/etc that don't apply to single-language ECoG).
-        decoder_start = tokenizer.convert_tokens_to_ids("<|startofcontext|>")
-        bos           = tokenizer.convert_tokens_to_ids("<|startoftranscript|>")
-        lang          = tokenizer.convert_tokens_to_ids("<|en|>")
-        prompt = torch.tensor(
-            [decoder_start, bos, lang, lang],
-            dtype=torch.long, device=ecog.device,
-        ).unsqueeze(0).expand(B, -1)
+        # Full 9-token build_prompt prefix (modeling_cohere_asr.py:984-987).
+        # Must match the training-time prefix in dataset.py.
+        ids = lambda t: tokenizer.convert_tokens_to_ids(t)
+        prompt_ids = [
+            ids("<|startofcontext|>"), ids("<|startoftranscript|>"), ids("<|emo:undefined|>"),
+            ids("<|en|>"), ids("<|en|>"), ids("<|pnc|>"), ids("<|noitn|>"),
+            ids("<|notimestamp|>"), ids("<|nodiarize|>"),
+        ]
+        prompt = torch.tensor(prompt_ids, dtype=torch.long, device=ecog.device).unsqueeze(0).expand(B, -1)
 
         eos_id = tokenizer.convert_tokens_to_ids("<|endoftext|>")
         pad_id = tokenizer.convert_tokens_to_ids("<pad>")

@@ -160,12 +160,22 @@ class BCIDataset(Dataset):
                          and sos_id is not None and sos_id != unk_id)
 
             if is_cohere:
-                en_id = tokenizer.convert_tokens_to_ids("<|en|>")
-                # Decoder prompt mirrors the first slots of Cohere's build_prompt()
-                # — startofcontext + startoftranscript + source_lang + target_lang.
-                # Omits emotion/pnc/itn/timestamp/diarize (use defaults).
+                # Full 9-token prompt from modeling_cohere_asr.py:984-987:
+                # <|startofcontext|><|startoftranscript|><|emo:undefined|>
+                # <|en|><|en|><|pnc|><|noitn|><|notimestamp|><|nodiarize|>
+                # The pretrained decoder learned to attend to all 9 prefix slots;
+                # truncating to 4 puts cross-attn in an OOD regime.
+                en_id           = tokenizer.convert_tokens_to_ids("<|en|>")
+                emo_id          = tokenizer.convert_tokens_to_ids("<|emo:undefined|>")
+                pnc_id          = tokenizer.convert_tokens_to_ids("<|pnc|>")
+                noitn_id        = tokenizer.convert_tokens_to_ids("<|noitn|>")
+                notimestamp_id  = tokenizer.convert_tokens_to_ids("<|notimestamp|>")
+                nodiarize_id    = tokenizer.convert_tokens_to_ids("<|nodiarize|>")
                 self._is_whisper = True   # reuse the prefix-masking branch below
-                self._prefix_ids = [startofcontext_id, sos_id, en_id, en_id]
+                self._prefix_ids = [
+                    startofcontext_id, sos_id, emo_id,
+                    en_id, en_id, pnc_id, noitn_id, notimestamp_id, nodiarize_id,
+                ]
                 self._eos_id = tokenizer.convert_tokens_to_ids("<|endoftext|>")
             elif sos_id is not None and sos_id != unk_id:
                 # Whisper tokenizer detected

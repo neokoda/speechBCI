@@ -75,8 +75,10 @@ def main():
     p = argparse.ArgumentParser()
     p.add_argument("--data-dir",      required=True)
     p.add_argument("--ckpt",          required=True, help="Checkpoint dir to load weights from")
-    p.add_argument("--model-type",    default="llava", choices=["llava", "whisper", "granite", "canary"],
-                   help="llava=E2EBCIModel (Qwen), whisper=WhisperBCIModel, granite=GraniteBCIModel, canary=CanaryBCIModel")
+    p.add_argument("--model-type",    default="llava", choices=["llava", "whisper", "granite", "canary", "cohere"],
+                   help="llava=E2EBCIModel (Qwen), whisper=WhisperBCIModel, granite=GraniteBCIModel, canary=CanaryBCIModel, cohere=CohereBCIModel")
+    p.add_argument("--cohere-repo",   default="CohereLabs/cohere-transcribe-03-2026",
+                   help="HuggingFace Cohere ASR repo (for --model-type cohere)")
     # LLaVA model args
     p.add_argument("--lm",            default=None,
                    help="HuggingFace LM id (required for --model-type llava)")
@@ -207,6 +209,32 @@ def main():
                 return list(model.projector.parameters())
             else:
                 return [p for n, p in model.llm.named_parameters() if "lora" in n.lower()]
+
+    elif args.model_type == "cohere":
+        from e2e.cohere_model import CohereBCIModel
+
+        tokenizer = AutoTokenizer.from_pretrained(args.cohere_repo, trust_remote_code=True)
+        train_loader, _ = make_dataloaders(
+            args.data_dir, ALL_SESSIONS, tokenizer,
+            batch_size=args.batch_size, max_text_len=args.max_text_len,
+            num_workers=args.num_workers,
+        )
+
+        model = CohereBCIModel(
+            cohere_repo=args.cohere_repo,
+            lora_r=args.lora_r, lora_alpha=args.lora_alpha, lora_dropout=args.lora_dropout,
+            n_sessions=len(ALL_SESSIONS),
+        )
+        train_session_stats = train_loader.dataset.get_session_stats_for_model()
+        model.build_per_session_norm(train_session_stats)
+
+        def get_target_params(model, target):
+            if target == "encoder":
+                return list(model.encoder.parameters())
+            elif target == "projector":
+                return list(model.projector.parameters())
+            else:
+                return [p for n, p in model.cohere.named_parameters() if "lora" in n.lower()]
 
     else:
         if args.lm is None:

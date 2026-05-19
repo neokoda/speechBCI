@@ -33,7 +33,12 @@ from .conformer_pt import ConformerEncoder
 class WhisperBCIModel(nn.Module):
     """End-to-end BCI decoder: Conformer + projector + Whisper decoder cross-attention."""
 
-    LORA_TARGET_MODULES       = ["q_proj", "k_proj", "v_proj", "out_proj"]
+    # Attention projections + FFN. The FFN (`fc1`/`fc2`) carries most of Whisper's
+    # speech knowledge (trained on 680k hr of Mel spectrograms). Attention-only LoRA
+    # can't adapt those features to ECoG input. v9+ includes FFN targets; older
+    # checkpoints (v6, v7) only had attention LoRA, but load_state_dict(..., strict=False)
+    # leaves the new fc1/fc2 LoRA at fresh PEFT init (lora_B zero → no contribution at step 0).
+    LORA_TARGET_MODULES       = ["q_proj", "k_proj", "v_proj", "out_proj", "fc1", "fc2"]
     LORA_CROSS_ATTN_MODULES   = ["encoder_attn.q_proj", "encoder_attn.k_proj",
                                   "encoder_attn.v_proj", "encoder_attn.out_proj"]
 
