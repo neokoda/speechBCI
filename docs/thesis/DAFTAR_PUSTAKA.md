@@ -60,7 +60,9 @@ Shih, J. J., Krusienski, D. J., & Wolpaw, J. R. (2012). Brain-computer interface
 
 Silva, A. B. et al. (2024). The speech neuroprosthesis. Nature Reviews Neuroscience.
 
-Touvron, H., Lavril, T., Izacard, G., Martinet, X., Lachaux, M. A., Lacroix, T., ... & Lample, G. (2023). Llama: Open and efficient foundation language models. arXiv preprint arXiv:2302.13971.
+Simeral, J. D., Hosman, T., Saab, J., Flesher, S. N., Vilela, M., Franco, B., ... & Hochberg, L. R. (2021). Home Use of a Percutaneous Wireless Intracortical Brain-Computer Interface by Individuals With Tetraplegia. IEEE Transactions on Biomedical Engineering, 68(7), 2313-2325.
+
+Touvron, H., Martin, L., Stone, K., Albert, P., Almahairi, A., Babaei, Y., ... & Scialom, T. (2023). Llama 2: Open Foundation and Fine-Tuned Chat Models. arXiv preprint arXiv:2307.09288.
 
 Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A. N.,... & Polosukhin, I. (2017). Attention is all you need. Advances in Neural Information Processing Systems, 30.
 
