@@ -85,7 +85,7 @@ Once the five blockers are clear, pull only what's needed, in this order, to sta
 | Asset | Source | Size | For |
 |---|---|---|---|
 | `e2e_cohere_v3_ext3/best/checkpoint.pt` | `gdrive:speechBCI_backup/experiments/e2e_cohere_v3_ext3/` | **390 MB** | Cohere timing — local copy on old pod was deleted (only 1.2 MB skeleton present) |
-| `languageModel_5gram.tar.gz` | Dryad version 253293 | **38.2 GB tar** (extracts to TLG.fst + G.fst + G_no_prune.fst + words.txt; extracted total ≈ 80 GB — but we only need TLG.fst + words.txt for `--lm none` decoding) | LM1, LM2, LM3, LM-x, LM6 timing |
+| `languageModel_5gram.tar.gz` | Dryad version 253293 | **38.2 GB tar** → extract **TLG.fst (~41 GB) + words.txt** only; **skip** `G.fst` (5 GB) and `G_no_prune.fst` (75 GB) — those are only for lattice rescoring which we are not doing (`--lm none` path uses `load_rescore=False`). Peak disk during extract ≈ 80 GB; delete tar immediately after, then ~41 GB resident. See `backup_to_drive.sh:232-249`. | LM1, LM2, LM3, LM-x, LM6 timing |
 | LLaMA-2 7B base safetensors | HF `meta-llama/Llama-2-7b-hf` | ~13 GB | LM-x, LM6 |
 | `openai/whisper-medium.en` | HF | ~1.5 GB | v6 |
 | `openai/whisper-large-v3` | HF | ~3 GB | v7 |
@@ -182,3 +182,32 @@ Append a **Session 21 entry** to `HANDOFF.md` summarising:
 - Whether the WFST `t_wfst` confirms Seto's WPM > 78 claim for n-gram pipelines.
 
 Then delete this file. It's a one-session bridge.
+
+---
+
+## 11. Session 22 completion status (2026-05-28)
+
+**E2E benchmarks: COMPLETE ✓**  
+All 6 E2E models × 2 subsets = 12 speed runs completed. Results in `experiments/e2e_*/speed_*.json`. EXPERIMENTS.md §4 fully populated for E2E rows. Storage measured via `AnalysisExamples/measure_storage.py` for all E2E models.
+
+**WFST benchmarks: BLOCKED — hardware memory constraint**  
+Root cause: The OpenFST runtime loads TLG.fst (42 GB file) into ~58 GB of anonymous RAM. The container cgroup has a 60 GB hard memory limit with swap disabled (`memory.swap.max = 0`), leaving insufficient headroom for process overhead. Confirmed by monitoring `/sys/fs/cgroup/memory.current` — it climbs to 60.2 GB during FST loading and the process is OOM-killed.
+
+The isolation fix (`_tf_infer.py` subprocess to separate TF inference from TLG.fst loading) was implemented and works (TF subprocess exits cleanly, freeing its ~18 GB before lm_decoder starts). But the FST itself needs more RAM than the cgroup allows.
+
+**Additional blockers resolved this session:**
+- cuDNN 9.1 (runtime) vs 9.3 (compile) mismatch → GRU falls back to CPU. Conformer models were not reached.
+- lm_decoder ABI conflict (libtorch 1.13.1 vs venv torch 2.4.1) → fixed via LD_LIBRARY_PATH re-exec.
+- TF/torch import ordering conflict → fixed by inlining ALL_SESSIONS and replacing BCIDataset with pure-TF TFRecord counting.
+
+**What's in EXPERIMENTS.md §4 now:**
+- §4a storage: all 11 models complete (WFST sizes measured from disk: LM1 43 GB, LM2/LM3 42 GB, LM-x 56 GB, LM6 55 GB).
+- §4b speed: all E2E rows complete; WFST rows marked N/A‡ with explanation footnote.
+- LM1 GRU t_neural measured on CPU: 0.082 s/utt (batched, ~880 utts in 71.8 s). Not representative of GPU (cuDNN mismatch). Conformer t_neural not measured.
+
+**To unblock WFST benchmarks in a future session:**
+- Option A: Request cgroup memory limit increase to ≥ 80 GB (current: 60 GB hard).
+- Option B: Recompile lm_decoder with OpenFST memory-mapped FST reading (`mmap` mode) so TLG.fst pages can be reclaimed under pressure.
+- Option C: Use a pruned/compressed TLG.fst with smaller memory footprint.
+
+**Seto's WPM > 78 claim:** Not verifiable from this session — WFST decode timing unavailable.

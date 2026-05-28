@@ -1,0 +1,245 @@
+{
+  "models": [
+    {
+      "model": "LM1 (GRU + 5-gram)",
+      "components": [
+        {
+          "component": "phoneme_ckpt (gru_1024u_5L_24sess)",
+          "size_mb": 0.5,
+          "status": "OK"
+        },
+        {
+          "component": "5gram/TLG.fst",
+          "size_mb": null,
+          "status": "MISSING"
+        },
+        {
+          "component": "5gram/words.txt",
+          "size_mb": null,
+          "status": "MISSING"
+        },
+        {
+          "component": "5gram/units.txt",
+          "size_mb": null,
+          "status": "MISSING"
+        }
+      ],
+      "total_mb": 0.5
+    },
+    {
+      "model": "LM2 (Conformer-spatial + 5-gram)",
+      "components": [
+        {
+          "component": "phoneme_ckpt (conformer_spatial_24sess)",
+          "size_mb": 0.6,
+          "status": "OK"
+        },
+        {
+          "component": "5gram/TLG.fst",
+          "size_mb": null,
+          "status": "MISSING"
+        },
+        {
+          "component": "5gram/words.txt",
+          "size_mb": null,
+          "status": "MISSING"
+        },
+        {
+          "component": "5gram/units.txt",
+          "size_mb": null,
+          "status": "MISSING"
+        }
+      ],
+      "total_mb": 0.6
+    },
+    {
+      "model": "LM3 (Conformer-vanilla + 5-gram)",
+      "components": [
+        {
+          "component": "phoneme_ckpt (conformer_vanilla_24sess)",
+          "size_mb": 0.5,
+          "status": "OK"
+        },
+        {
+          "component": "5gram/TLG.fst",
+          "size_mb": null,
+          "status": "MISSING"
+        },
+        {
+          "component": "5gram/words.txt",
+          "size_mb": null,
+          "status": "MISSING"
+        },
+        {
+          "component": "5gram/units.txt",
+          "size_mb": null,
+          "status": "MISSING"
+        }
+      ],
+      "total_mb": 0.5
+    },
+    {
+      "model": "LM-x (GRU + 5-gram + LLaMA-2)",
+      "components": [
+        {
+          "component": "phoneme_ckpt (gru_1024u_5L_24sess)",
+          "size_mb": 0.5,
+          "status": "OK"
+        },
+        {
+          "component": "5gram/TLG.fst",
+          "size_mb": null,
+          "status": "MISSING"
+        },
+        {
+          "component": "5gram/words.txt",
+          "size_mb": null,
+          "status": "MISSING"
+        },
+        {
+          "component": "5gram/units.txt",
+          "size_mb": null,
+          "status": "MISSING"
+        },
+        {
+          "component": "LLaMA-2-7B-hf (HF snapshot)",
+          "size_mb": 13480.6,
+          "status": "OK"
+        }
+      ],
+      "total_mb": 13481.1
+    },
+    {
+      "model": "LM6 (Conformer-spatial + 5-gram + LLaMA-2)",
+      "components": [
+        {
+          "component": "phoneme_ckpt (conformer_spatial_24sess)",
+          "size_mb": 0.6,
+          "status": "OK"
+        },
+        {
+          "component": "5gram/TLG.fst",
+          "size_mb": null,
+          "status": "MISSING"
+        },
+        {
+          "component": "5gram/words.txt",
+          "size_mb": null,
+          "status": "MISSING"
+        },
+        {
+          "component": "5gram/units.txt",
+          "size_mb": null,
+          "status": "MISSING"
+        },
+        {
+          "component": "LLaMA-2-7B-hf (HF snapshot)",
+          "size_mb": 13480.6,
+          "status": "OK"
+        }
+      ],
+      "total_mb": 13481.2
+    },
+    {
+      "model": "e2e_v5  (Qwen-LLaVA)",
+      "components": [
+        {
+          "component": "checkpoint.pt (LoRA adapter)",
+          "size_mb": 358.1,
+          "status": "OK"
+        },
+        {
+          "component": "HF backbone (Qwen/Qwen3.5-0.8B-Base)",
+          "size_mb": 1769.9,
+          "status": "OK"
+        }
+      ],
+      "total_mb": 2128.0
+    },
+    {
+      "model": "e2e_v6  (Whisper-medium.en)",
+      "components": [
+        {
+          "component": "checkpoint.pt (LoRA adapter)",
+          "size_mb": 436.8,
+          "status": "OK"
+        },
+        {
+          "component": "HF backbone (openai/whisper-medium.en)",
+          "size_mb": 3059.5,
+          "status": "OK"
+        }
+      ],
+      "total_mb": 3496.3
+    },
+    {
+      "model": "e2e_v7  (Whisper-large-v3)",
+      "components": [
+        {
+          "component": "checkpoint.pt (LoRA adapter)",
+          "size_mb": 497.3,
+          "status": "OK"
+        },
+        {
+          "component": "HF backbone (openai/whisper-large-v3)",
+          "size_mb": 3091.8,
+          "status": "OK"
+        }
+      ],
+      "total_mb": 3589.1
+    },
+    {
+      "model": "e2e_cohere_v3_ext3 (Cohere)",
+      "components": [
+        {
+          "component": "checkpoint.pt (LoRA adapter)",
+          "size_mb": 389.3,
+          "status": "OK"
+        },
+        {
+          "component": "HF backbone (CohereLabs/cohere-transcribe-03-2026)",
+          "size_mb": 4134.8,
+          "status": "OK"
+        }
+      ],
+      "total_mb": 4524.1
+    },
+    {
+      "model": "e2e_canary_ctc (Canary)",
+      "components": [
+        {
+          "component": "checkpoint.pt (LoRA adapter)",
+          "size_mb": 666.0,
+          "status": "OK"
+        },
+        {
+          "component": "HF backbone (Qwen/Qwen3-1.7B)",
+          "size_mb": 4079.5,
+          "status": "OK"
+        },
+        {
+          "component": "HF encoder (nvidia/canary-qwen-2.5b)",
+          "size_mb": 5119.2,
+          "status": "OK"
+        }
+      ],
+      "total_mb": 9864.7
+    },
+    {
+      "model": "e2e_granite (Granite)",
+      "components": [
+        {
+          "component": "checkpoint.pt (LoRA adapter)",
+          "size_mb": 450.8,
+          "status": "OK"
+        },
+        {
+          "component": "HF backbone (ibm-granite/granite-speech-4.1-2b)",
+          "size_mb": 4871.1,
+          "status": "OK"
+        }
+      ],
+      "total_mb": 5321.9
+    }
+  ]
+}

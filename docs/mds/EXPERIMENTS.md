@@ -82,17 +82,53 @@ Other runs tried during Session 20 (not part of the headline; checkpoints have b
 
 ## 4. Speed / efficiency
 
-To be populated by `AnalysisExamples/measure_speed.py` (S1–S3). Targets per proposal §540–598: RTF, WPM per model on RTX 5090, batch=1, 100 utterances, warmup=10.
+Measured by `AnalysisExamples/measure_speed.py`. Hardware: **NVIDIA GeForce RTX 3090 (24 GB)**, batch=1, beam=1, 5-utt warmup. Two subsets: `first100` (100 utts, test indices 0–99) and `willett_4_18` (600 utts, 15 sessions). T_audio = n_neural_bins × 20 ms (Seto thesis §III.2). WPM uses reference word count / T_audio. Sidecar JSON: `experiments/storage_sizes.json`, `experiments/<run>/speed_<subset>.json`.
 
-| Model | RTF | WPM | Mean processing time / utt (s) | Mean audio length / utt (s) |
-|---|---|---|---|---|
-| GRU + 5-gram | TBD | TBD | TBD | TBD |
-| Conformer-spatial + 5-gram | TBD | TBD | TBD | TBD |
-| Conformer-spatial + 5-gram + ft-LLaMA-2 | TBD | TBD | TBD | TBD |
-| E2E Qwen (v5) | TBD | TBD | TBD | TBD |
-| E2E Canary | TBD | TBD | TBD | TBD |
-| E2E Granite | TBD | TBD | TBD | TBD |
-| **E2E Whisper-large-v3 (v7)** | TBD | TBD | TBD | TBD |
+† Canary generates repetitive tokens at inference time (known runaway-generation issue with `transformers` ≥ 5.6; see HANDOFF §Blockers). RTF is valid wall-clock; WPM is suppressed (hyp word count inflated).  
+‡ WFST decode cannot be benchmarked on this machine: OpenFST loads TLG.fst (42 GB file) into ≈58 GB of anonymous RAM; the container has a 60 GB cgroup hard limit with swap disabled, leaving insufficient headroom for process overhead. The TF phoneme-decoder stage alone was measured (GRU ran on CPU due to cuDNN 9.1 runtime vs 9.3 compile mismatch; the Conformer models would use GPU). t_neural reported as the batched-inference average per utt.
+
+### 4a. Storage
+
+| Model | Components | Total (GB) |
+|---|---|---|
+| LM1 (GRU + 5-gram) | phoneme ckpt (0.84 GB) + TLG.fst (42 GB) + words.txt | **43** |
+| LM2 (Conformer-spatial + 5-gram) | phoneme ckpt (0.34 GB) + TLG.fst (42 GB) + words.txt | **42** |
+| LM3 (Conformer-vanilla + 5-gram) | phoneme ckpt (0.34 GB) + TLG.fst (42 GB) + words.txt | **42** |
+| LM-x (GRU + 5-gram + LLaMA-2-7B) | phoneme ckpt (0.84 GB) + TLG.fst (42 GB) + words.txt + LLaMA-2-7B (13 GB) | **56** |
+| LM6 (Conformer-spatial + 5-gram + LLaMA-2-7B) | phoneme ckpt (0.34 GB) + TLG.fst (42 GB) + words.txt + LLaMA-2-7B (13 GB) | **55** |
+| E2E-v5 (Qwen-LLaVA 0.8B) | checkpoint.pt (358 MB) + Qwen3.5-0.8B-Base (1,770 MB) | **2.1** |
+| E2E-v6 (Whisper-medium.en) | checkpoint.pt (437 MB) + whisper-medium.en (3,060 MB) | **3.5** |
+| E2E-v7 (Whisper-large-v3) | checkpoint.pt (497 MB) + whisper-large-v3 (3,092 MB) | **3.6** |
+| E2E-cohere | checkpoint.pt (389 MB) + cohere-transcribe-03-2026 (4,135 MB) | **4.5** |
+| E2E-canary† | checkpoint.pt (666 MB) + Qwen3-1.7B (4,080 MB) + canary-qwen-2.5b (5,119 MB) | **9.8** |
+| E2E-granite | checkpoint.pt (451 MB) + granite-speech-4.1-2b (4,871 MB) | **5.3** |
+
+### 4b. Speed
+
+| Model | Subset | RTF (corpus) | WPM (ref) | t_total mean (s) | T_audio mean (s) | t_neural (s/utt) | t_wfst | t_rescore |
+|---|---|---|---|---|---|---|---|---|
+| LM1 (GRU + 5-gram) | willett_4_18 | N/A‡ | 63.6 | N/A‡ | 5.79 | 0.082 (CPU) | N/A‡ | N/A |
+| LM1 (GRU + 5-gram) | first100 | N/A‡ | 52.8 | N/A‡ | 8.44 | 0.082 (CPU) | N/A‡ | N/A |
+| LM2 (Conformer-spatial + 5-gram) | willett_4_18 | N/A‡ | 63.6 | N/A‡ | 5.79 | N/A‡ | N/A‡ | N/A |
+| LM2 (Conformer-spatial + 5-gram) | first100 | N/A‡ | 52.8 | N/A‡ | 8.44 | N/A‡ | N/A‡ | N/A |
+| LM3 (Conformer-vanilla + 5-gram) | willett_4_18 | N/A‡ | 63.6 | N/A‡ | 5.79 | N/A‡ | N/A‡ | N/A |
+| LM3 (Conformer-vanilla + 5-gram) | first100 | N/A‡ | 52.8 | N/A‡ | 8.44 | N/A‡ | N/A‡ | N/A |
+| LM-x (GRU + 5-gram + LLaMA-2) | willett_4_18 | N/A‡ | 63.6 | N/A‡ | 5.79 | 0.082 (CPU) | N/A‡ | N/A‡ |
+| LM-x (GRU + 5-gram + LLaMA-2) | first100 | N/A‡ | 52.8 | N/A‡ | 8.44 | 0.082 (CPU) | N/A‡ | N/A‡ |
+| LM6 (Conformer-spatial + 5-gram + LLaMA-2) | willett_4_18 | N/A‡ | 63.6 | N/A‡ | 5.79 | N/A‡ | N/A‡ | N/A‡ |
+| LM6 (Conformer-spatial + 5-gram + LLaMA-2) | first100 | N/A‡ | 52.8 | N/A‡ | 8.44 | N/A‡ | N/A‡ | N/A‡ |
+| **E2E-v5 (Qwen-LLaVA 0.8B)** | willett_4_18 | **0.071** | 63.6 | 0.411 | 5.79 | N/A | N/A | N/A |
+| **E2E-v5 (Qwen-LLaVA 0.8B)** | first100 | **0.057** | 52.8 | 0.481 | 8.44 | N/A | N/A | N/A |
+| **E2E-v6 (Whisper-medium.en)** | willett_4_18 | **0.046** | 63.6 | 0.264 | 5.79 | N/A | N/A | N/A |
+| **E2E-v6 (Whisper-medium.en)** | first100 | **0.036** | 52.8 | 0.306 | 8.44 | N/A | N/A | N/A |
+| **E2E-v7 (Whisper-large-v3)** | willett_4_18 | **0.074** | 63.6 | 0.430 | 5.79 | N/A | N/A | N/A |
+| **E2E-v7 (Whisper-large-v3)** | first100 | **0.062** | 52.8 | 0.520 | 8.44 | N/A | N/A | N/A |
+| **E2E-cohere** | willett_4_18 | **0.021** | 63.6 | 0.119 | 5.79 | N/A | N/A | N/A |
+| **E2E-cohere** | first100 | **0.018** | 52.8 | 0.152 | 8.44 | N/A | N/A | N/A |
+| E2E-canary† | willett_4_18 | 0.321 | — | 1.857 | 5.79 | N/A | N/A | N/A |
+| E2E-canary† | first100 | 0.224 | — | 1.889 | 8.44 | N/A | N/A | N/A |
+| **E2E-granite** | willett_4_18 | **0.067** | 63.6 | 0.389 | 5.79 | N/A | N/A | N/A |
+| **E2E-granite** | first100 | **0.056** | 52.8 | 0.473 | 8.44 | N/A | N/A | N/A |
 
 ---
 
