@@ -25,7 +25,9 @@
     },
     "n": 600,
     "total_audio_s": 3475.26,
-    "total_wall_s": 246.5877536330372
+    "total_wall_s": 246.5877536330372,
+    "wpm_wall": 895.4,
+    "total_words_hyp": 3680
   },
   "per_utt": [
     {

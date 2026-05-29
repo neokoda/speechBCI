@@ -58,18 +58,19 @@ def mb(n: int) -> float:
 
 def hf_snapshot_dir(model_id: str, hf_home: str) -> Path | None:
     """Find the HuggingFace snapshot directory for a model_id."""
-    # Standard HF cache layout:
-    # <hf_home>/hub/models--<org>--<name>/snapshots/<sha>/
     safe_id = model_id.replace("/", "--")
-    hub = Path(hf_home) / "hub"
-    model_dir = hub / f"models--{safe_id}"
-    if not model_dir.exists():
-        return None
-    snapshots = model_dir / "snapshots"
-    if not snapshots.exists():
-        return None
-    shas = sorted(snapshots.iterdir(), key=lambda p: p.stat().st_mtime, reverse=True)
-    return shas[0] if shas else None
+    # Try both <hf_home>/hub/models--... and <hf_home>/models--... layouts
+    for base in [Path(hf_home) / "hub", Path(hf_home)]:
+        model_dir = base / f"models--{safe_id}"
+        if not model_dir.exists():
+            continue
+        snapshots = model_dir / "snapshots"
+        if not snapshots.exists():
+            continue
+        shas = sorted(snapshots.iterdir(), key=lambda p: p.stat().st_mtime, reverse=True)
+        if shas:
+            return shas[0]
+    return None
 
 
 def report_component(label: str, size_bytes: int, found: bool = True) -> dict:
@@ -87,8 +88,30 @@ def measure_two_stage(name: str, ckpt_dir: Path, lm_dir: Path,
     """Return storage breakdown for a two-stage WFST model."""
     rows = []
 
-    # Phoneme decoder checkpoint
-    ckpt_bytes = dir_size_bytes(ckpt_dir)
+    # Phoneme decoder checkpoint — only the active checkpoint (from metadata file)
+    # Read the TF checkpoint metadata to find which checkpoint is active
+    ckpt_meta = ckpt_dir / "checkpoint"
+    active_prefix = None
+    if ckpt_meta.exists():
+        for line in ckpt_meta.read_text().splitlines():
+            if line.startswith("model_checkpoint_path:"):
+                active_prefix = line.split('"')[1]
+                break
+    if active_prefix:
+        ckpt_weight_files = (
+            list(ckpt_dir.glob(f"{active_prefix}.data-*")) +
+            list(ckpt_dir.glob(f"{active_prefix}.index")) +
+            [ckpt_meta]
+        )
+    else:
+        ckpt_weight_files = (
+            list(ckpt_dir.glob("ckpt-*.data-*")) +
+            list(ckpt_dir.glob("ckpt-*.index")) +
+            [ckpt_meta]
+        )
+    ckpt_bytes = sum(f.stat().st_size for f in ckpt_weight_files if f.exists())
+    if ckpt_bytes == 0:
+        ckpt_bytes = dir_size_bytes(ckpt_dir)
     rows.append(report_component(f"phoneme_ckpt ({ckpt_dir.name})", ckpt_bytes, ckpt_dir.exists()))
 
     # WFST graph (TLG.fst, words.txt, units.txt)

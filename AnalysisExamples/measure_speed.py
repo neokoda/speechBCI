@@ -276,10 +276,31 @@ def run_wfst_rescore(args, per_utt_wfst, all_nbest, transcriptions,
     print(f"[rescore] Launching LLaMA-2 7B rescore subprocess …")
     t0 = time.perf_counter()
     proc = subprocess.run(cmd, capture_output=False)
-    t_rescore_total = time.perf_counter() - t0
+    t_rescore_wall = time.perf_counter() - t0
 
     if proc.returncode != 0:
-        print(f"[rescore] WARNING: subprocess exited {proc.returncode}")
+        raise RuntimeError(f"[rescore] subprocess exited {proc.returncode} — "
+                           f"rescore timing invalid, aborting.")
+
+    # Prefer the PURE rescore-loop time (LLaMA forward only) reported by the
+    # subprocess; this EXCLUDES one-time model-load + process-startup cost so
+    # per-utterance RTF is comparable across subsets and to the E2E benchmark
+    # (which warms up then times only generation). Fall back to wall time.
+    t_rescore_total = t_rescore_wall
+    if os.path.exists(out_tmp):
+        try:
+            with open(out_tmp) as f:
+                _ro = json.load(f)
+            if "t_rescore_pure_s" in _ro:
+                t_rescore_total = float(_ro["t_rescore_pure_s"])
+                print(f"[rescore] pure rescore time = {t_rescore_total:.1f}s "
+                      f"(wall incl. load = {t_rescore_wall:.1f}s)")
+        except (OSError, ValueError, KeyError):
+            pass
+        try:
+            os.unlink(out_tmp)
+        except OSError:
+            pass
 
     # Add rescore time to per-utt records (batch average)
     N_sub = len(subset_idx)
@@ -493,15 +514,21 @@ def summarise(per_utt: list[dict], pipeline: str, t_rescore_total: float | None 
     n_words_h    = [p["n_words_hyp"] for p in per_utt]
     n_words_r    = [p["n_words_ref"] for p in per_utt]
 
+    total_wall_s = sum(t_total_list)
+    total_words_hyp = sum(n_words_h)
+    wpm_wall = total_words_hyp / (total_wall_s / 60.0) if total_wall_s > 0 else 0.0
+
     summary = {
         "rtf_corpus": corpus_rtf(t_total_list, n_bins_list),
+        "wpm_wall":   wpm_wall,           # words per wall-clock minute
         "wpm_corpus": corpus_wpm(n_words_h, n_bins_list),
         "wpm_corpus_ref": corpus_wpm(n_words_r, n_bins_list),
         "rtf_stats":  compute_stats([p["rtf"] for p in per_utt]),
         "wpm_stats":  compute_stats([p["wpm"] for p in per_utt]),
         "n": len(per_utt),
         "total_audio_s": sum(n_bins_list) * BIN_DURATION_S,
-        "total_wall_s":  sum(t_total_list),
+        "total_wall_s":  total_wall_s,
+        "total_words_hyp": total_words_hyp,
     }
 
     if pipeline in ("wfst", "wfst+rescore"):
@@ -536,9 +563,9 @@ def save_results(args, per_utt, summary, extra: dict | None = None):
     with open(out_path, "w") as f:
         json.dump(payload, f, indent=2)
     print(f"\nResults saved → {out_path}")
-    print(f"  RTF (corpus): {summary['rtf_corpus']:.4f}")
-    print(f"  WPM (corpus): {summary['wpm_corpus']:.1f}  [ref: {summary['wpm_corpus_ref']:.1f}]")
-    print(f"  RTF (mean):   {summary['rtf_stats']['mean']:.4f}")
+    print(f"  RTF (corpus):    {summary['rtf_corpus']:.4f}")
+    print(f"  WPM (wall-clk): {summary['wpm_wall']:.0f}  words / wall-clock minute")
+    print(f"  RTF (mean):      {summary['rtf_stats']['mean']:.4f}")
 
 
 # ---------------------------------------------------------------------------

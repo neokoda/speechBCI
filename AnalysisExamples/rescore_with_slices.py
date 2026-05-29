@@ -104,7 +104,13 @@ def main():
 
     print(f'Loading session_idx ordering via BCIDataset')
     sess_idx, ds_gt = load_session_idx_for_utts(args.data_dir, ALL_SESSIONS)
-    assert all(a.lower() == b.lower() for a,b in zip(gt, ds_gt)), 'order mismatch!'
+    # When the caller passes the FULL dataset n-best, validate alignment against
+    # BCIDataset order. For a SUBSET (speed-benchmark mode, e.g. willett_4_18 which
+    # is non-contiguous), the subset's own ground_truth is already aligned to its
+    # n-best by the caller, so skip the full-dataset alignment + slice-WER grid.
+    is_subset = len(all_nbest) != len(ds_gt)
+    if not is_subset:
+        assert all(a.lower() == b.lower() for a,b in zip(gt, ds_gt)), 'order mismatch!'
 
     print(f'Loading LLaMA-2 7B from {args.lm_id}')
     tok = AutoTokenizer.from_pretrained(args.lm_id, cache_dir=args.cache_dir, token=args.hf_token)
@@ -133,7 +139,18 @@ def main():
         enriched.append(entry)
         if (i+1) % 100 == 0:
             print(f'  {i+1}/{len(all_nbest)}  ({time.time()-t0:.1f}s)')
-    print(f'Rescoring done in {time.time()-t0:.1f}s')
+    t_rescore_pure = time.time() - t0   # pure LLaMA forward time, EXCLUDES model load
+    print(f'Rescoring done in {t_rescore_pure:.1f}s')
+
+    # Speed-benchmark (subset) mode: only the per-utterance rescore time matters.
+    # Skip the slice-WER grid search (assumes full dataset ordering) and write timing.
+    if is_subset:
+        os.makedirs(os.path.dirname(args.output) or '.', exist_ok=True)
+        with open(args.output, 'w') as f:
+            json.dump({'t_rescore_pure_s': t_rescore_pure,
+                       'n_utts': len(all_nbest)}, f, indent=2)
+        print(f'[subset mode] Saved rescore timing → {args.output}')
+        return
 
     def pick_best(asc, alpha, beta, gamma):
         out = []
@@ -177,7 +194,8 @@ def main():
 
     os.makedirs(os.path.dirname(args.output) or '.', exist_ok=True)
     with open(args.output, 'w') as f:
-        json.dump({'grid': grid, 'best_per_slice': best_per_slice}, f, indent=2)
+        json.dump({'grid': grid, 'best_per_slice': best_per_slice,
+                   't_rescore_pure_s': t_rescore_pure}, f, indent=2)
     print(f'Saved to {args.output}')
 
 

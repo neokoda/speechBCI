@@ -4,147 +4,122 @@
       "model": "LM1 (GRU + 5-gram)",
       "components": [
         {
-          "component": "phoneme_ckpt (gru_1024u_5L_24sess)",
-          "size_mb": 0.5,
+          "component": "phoneme_ckpt",
+          "size_mb": 220.6,
           "status": "OK"
         },
         {
           "component": "5gram/TLG.fst",
-          "size_mb": null,
-          "status": "MISSING"
+          "size_mb": 44119.7,
+          "status": "OK"
         },
         {
           "component": "5gram/words.txt",
-          "size_mb": null,
-          "status": "MISSING"
-        },
-        {
-          "component": "5gram/units.txt",
-          "size_mb": null,
-          "status": "MISSING"
+          "size_mb": 1.8,
+          "status": "OK"
         }
       ],
-      "total_mb": 0.5
+      "total_mb": 44342.1
     },
     {
       "model": "LM2 (Conformer-spatial + 5-gram)",
       "components": [
         {
-          "component": "phoneme_ckpt (conformer_spatial_24sess)",
-          "size_mb": 0.6,
+          "component": "phoneme_ckpt",
+          "size_mb": 361.0,
           "status": "OK"
         },
         {
           "component": "5gram/TLG.fst",
-          "size_mb": null,
-          "status": "MISSING"
+          "size_mb": 44119.7,
+          "status": "OK"
         },
         {
           "component": "5gram/words.txt",
-          "size_mb": null,
-          "status": "MISSING"
-        },
-        {
-          "component": "5gram/units.txt",
-          "size_mb": null,
-          "status": "MISSING"
+          "size_mb": 1.8,
+          "status": "OK"
         }
       ],
-      "total_mb": 0.6
+      "total_mb": 44482.5
     },
     {
       "model": "LM3 (Conformer-vanilla + 5-gram)",
       "components": [
         {
-          "component": "phoneme_ckpt (conformer_vanilla_24sess)",
-          "size_mb": 0.5,
+          "component": "phoneme_ckpt",
+          "size_mb": 360.6,
           "status": "OK"
         },
         {
           "component": "5gram/TLG.fst",
-          "size_mb": null,
-          "status": "MISSING"
+          "size_mb": 44119.7,
+          "status": "OK"
         },
         {
           "component": "5gram/words.txt",
-          "size_mb": null,
-          "status": "MISSING"
-        },
-        {
-          "component": "5gram/units.txt",
-          "size_mb": null,
-          "status": "MISSING"
+          "size_mb": 1.8,
+          "status": "OK"
         }
       ],
-      "total_mb": 0.5
+      "total_mb": 44482.1
     },
     {
       "model": "LM-x (GRU + 5-gram + LLaMA-2)",
       "components": [
         {
-          "component": "phoneme_ckpt (gru_1024u_5L_24sess)",
-          "size_mb": 0.5,
+          "component": "phoneme_ckpt",
+          "size_mb": 220.6,
           "status": "OK"
         },
         {
           "component": "5gram/TLG.fst",
-          "size_mb": null,
-          "status": "MISSING"
+          "size_mb": 44119.7,
+          "status": "OK"
         },
         {
           "component": "5gram/words.txt",
-          "size_mb": null,
-          "status": "MISSING"
+          "size_mb": 1.8,
+          "status": "OK"
         },
         {
-          "component": "5gram/units.txt",
-          "size_mb": null,
-          "status": "MISSING"
-        },
-        {
-          "component": "LLaMA-2-7B-hf (HF snapshot)",
-          "size_mb": 13480.6,
+          "component": "LLaMA-2-7B-hf",
+          "size_mb": 13481.0,
           "status": "OK"
         }
       ],
-      "total_mb": 13481.1
+      "total_mb": 57823.1
     },
     {
       "model": "LM6 (Conformer-spatial + 5-gram + LLaMA-2)",
       "components": [
         {
-          "component": "phoneme_ckpt (conformer_spatial_24sess)",
-          "size_mb": 0.6,
+          "component": "phoneme_ckpt",
+          "size_mb": 361.0,
           "status": "OK"
         },
         {
           "component": "5gram/TLG.fst",
-          "size_mb": null,
-          "status": "MISSING"
+          "size_mb": 44119.7,
+          "status": "OK"
         },
         {
           "component": "5gram/words.txt",
-          "size_mb": null,
-          "status": "MISSING"
+          "size_mb": 1.8,
+          "status": "OK"
         },
         {
-          "component": "5gram/units.txt",
-          "size_mb": null,
-          "status": "MISSING"
-        },
-        {
-          "component": "LLaMA-2-7B-hf (HF snapshot)",
-          "size_mb": 13480.6,
+          "component": "LLaMA-2-7B-hf",
+          "size_mb": 13481.0,
           "status": "OK"
         }
       ],
-      "total_mb": 13481.2
+      "total_mb": 57963.5
     },
     {
       "model": "e2e_v5  (Qwen-LLaVA)",
       "components": [
         {
-          "component": "checkpoint.pt (LoRA adapter)",
+          "component": "checkpoint.pt (encoder+projector+LoRA)",
           "size_mb": 358.1,
           "status": "OK"
         },
@@ -160,7 +135,7 @@
       "model": "e2e_v6  (Whisper-medium.en)",
       "components": [
         {
-          "component": "checkpoint.pt (LoRA adapter)",
+          "component": "checkpoint.pt (encoder+projector+LoRA)",
           "size_mb": 436.8,
           "status": "OK"
         },
@@ -176,7 +151,7 @@
       "model": "e2e_v7  (Whisper-large-v3)",
       "components": [
         {
-          "component": "checkpoint.pt (LoRA adapter)",
+          "component": "checkpoint.pt (encoder+projector+LoRA)",
           "size_mb": 497.3,
           "status": "OK"
         },
@@ -192,7 +167,7 @@
       "model": "e2e_cohere_v3_ext3 (Cohere)",
       "components": [
         {
-          "component": "checkpoint.pt (LoRA adapter)",
+          "component": "checkpoint.pt (encoder+projector+LoRA)",
           "size_mb": 389.3,
           "status": "OK"
         },
@@ -208,7 +183,7 @@
       "model": "e2e_canary_ctc (Canary)",
       "components": [
         {
-          "component": "checkpoint.pt (LoRA adapter)",
+          "component": "checkpoint.pt (encoder+projector+LoRA)",
           "size_mb": 666.0,
           "status": "OK"
         },
@@ -229,7 +204,7 @@
       "model": "e2e_granite (Granite)",
       "components": [
         {
-          "component": "checkpoint.pt (LoRA adapter)",
+          "component": "checkpoint.pt (encoder+projector+LoRA)",
           "size_mb": 450.8,
           "status": "OK"
         },
