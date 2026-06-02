@@ -2,7 +2,7 @@
 
 **Scope:** progress + context for *writing the thesis document* (Bahasa Indonesia). This is separate from the repo-root `HANDOFF.md`, which tracks *experiments*. When you need result numbers, the root `HANDOFF.md` and `docs/mds/EXPERIMENTS.md` are the source of truth.
 
-**Last updated:** 2026-05-29 (Bab IV drafted ke `bab4.md` — IV.1 Lingkungan, IV.2 Desain, IV.3 Hasil, IV.4 Pembahasan. Eksperimen dekode fonem kini 4 dekoder (+ Transformer murni PER 0,2444 @4_18). Evaluasi arsitektur hanya pelaporkan irisan willett_4_18 (24-sess dibuang). Dua tahap kini menampilkan GRU/Transformer/Conformer. Tabel IV.4 diperluas dgn kolom params + rincian params + rincian storage + RTF + WPM dari `BENCHMARK_RESULTS.md` (Session 23, subset w4-18). WPM kini = throughput wall-clock (bukan laju referensi 63,6). Pembahasan IV.4 ditulis ulang tanpa label tebal (kalimat utuh), headline = E2E Whisper-large-v3 (paling seimbang). Placeholder tersisa: Prosesor/RAM pod, semua kolom Transformer dua tahap (tdk ada di benchmark), CER Transformer, Canary/Granite WER+CER. Next: revisi Bab IV atau mulai Bab II.)
+**Last updated:** 2026-06-01 (Bab II didraft ke `bab2.md` — 6 bagian, 3 gambar baru, lihat §4c. Dataset naik jadi II.2, II.4.4 lama dihapus, dafpus +Mohri 2002 +Qwen3. | Sebelumnya: 2026-05-29 — Bab IV drafted ke `bab4.md` — IV.1 Lingkungan, IV.2 Desain, IV.3 Hasil, IV.4 Pembahasan. Eksperimen dekode fonem kini 4 dekoder (+ Transformer murni PER 0,2444 @4_18). Evaluasi arsitektur hanya pelaporkan irisan willett_4_18 (24-sess dibuang). Dua tahap kini menampilkan GRU/Transformer/Conformer. IV.4 diperkaya dgn error analysis (CPU-only, dari cache eval_full.json + _nbest_tmp.json): angka entropi 0,0950 vs 0,1448 nats di paragraf 'ketajaman distribusi', plus 4 paragraf baru — komposisi Ins/Del/Sub (E2E v7 vs LM2, didominasi Sub ~95%), WER vs panjang ujaran + Gambar IV.1 (`figures/fig_wer_vs_length.png`), oracle WER + coverage (willett_4_18 coverage 68,3% / no-cov 31,7% / oracle WER 0,0758 vs LM6 0,1556), dan overlap E2E vs LM2 (24,2% komplementer). Skrip: `AnalysisExamples/analyze_errors.py`. Hasil JSON: `experiments/analysis/error_analysis.json`. Catatan: angka "46,9% coverage" lama dari HANDOFF root §5 tidak match dgn cache n-best yang sekarang (beam24/nb200) — pakai angka aktual hasil pengukuran ini. Placeholder tersisa: Prosesor/RAM pod, semua kolom Transformer dua tahap, CER Transformer, Canary/Granite WER+CER. Next: ambil GPU utk Bagian B (data sweep) + LM6 per-utt rescoring kalau mau Ins/Del/Sub LM6.)
 
 ---
 
@@ -11,6 +11,7 @@
 | File                               | Role                                                                                                         |
 | ---------------------------------- | ------------------------------------------------------------------------------------------------------------ |
 | `bab1.md`                        | BAB I PENDAHULUAN — drafted, under active revision by user + assistant.                                     |
+| `bab2.md`                        | BAB II KAJIAN PUSTAKA — **draft selesai** (lihat §4c).                                                      |
 | `bab3.md`                        | BAB III ANALISIS MASALAH DAN RANCANGAN SOLUSI — **draft selesai** (lihat §4b).                              |
 | `figures/`                       | Gambar Bab III (PNG) + `make_figures.py` (generator matplotlib). User sudah merapikan.                      |
 | `WRITING.md`                     | Writing rules.**Read before writing/editing any prose.**                                               |
@@ -37,10 +38,10 @@ PDFs on this Windows machine: `pdftoppm` is NOT installed, so the Read tool fail
 | Bab                          | Status                        | Catatan                                                  |
 | ---------------------------- | ----------------------------- | -------------------------------------------------------- |
 | I Pendahuluan                | **Draft, revisi aktif** | §1.1–§1.6 ada. Lihat keputusan framing di §4.        |
-| II Kajian Pustaka            | Belum mulai                   | Struktur + 2 item feedback dosen wajib (lihat §5, §6). |
+| II Kajian Pustaka            | **Draft selesai (3 gambar)** | `bab2.md`. Lihat §4c. Feedback dosen #2 (dataset) terpenuhi via II.2. |
 | III Analisis & Rancangan     | **Draft selesai (5 gambar)**  | Lihat §4b untuk struktur + keputusan/koreksi.            |
-| IV Evaluasi                  | **Draft selesai**             | `bab4.md`. 2 eksperimen (dekode fonem + evaluasi arsitektur). Placeholder: spek pod, RTF dua tahap, Canary/Granite. |
-| V Kesimpulan & Saran         | Belum mulai                   |                                                          |
+| IV Evaluasi                  | **Draft selesai (struktur 5 bagian)** | `bab4.md`. IV.1 Lingkungan, IV.2 Desain, IV.3 Hasil, IV.4 Analisis (3 subbagian: IV.4.1 entropi+coverage/oracle GRU vs Conformer dari cache asc=0.5 yg konsisten dgn Tabel IV.3, IV.4.2 WER vs panjang ujaran (E2E unggul di hampir semua bucket kecuali 5 kata), IV.4.3 komplementaritas+best-of-two oracle WER 0,1249), IV.5 Pembahasan. Aturan #5 WRITING.md ttg hindari pola partisipial English-style. Skrip `AnalysisExamples/analyze_errors.py` updated utk pakai cache asc=0.5. Placeholder: spek pod, Transformer dua tahap, Canary/Granite WER+CER. |
+| V Kesimpulan & Saran         | **Draft selesai**             | `bab5.md`. V.1 Kesimpulan (3 poin selaras §1.3: dua-tahap menang, E2E kompetitif belum menang, analisis lengkap). V.2 Saran (5 poin: data+pralatih, rescorer lebih baik, ensembling, speaker-independent, perluasan kosakata). |
 
 ---
 
@@ -75,11 +76,30 @@ Gambar (`figures/`, generator `make_figures.py`, **sudah dirapikan user**): III.
 
 ---
 
+## 4c. Bab II — struktur + keputusan (jaga konsistensi)
+
+`bab2.md` draft selesai. Struktur final (penomoran berubah dari proposal karena Dataset naik jadi II.2):
+
+- **II.1 BCI** (II.1.1 Paradigma, II.1.2 Akuisisi, II.1.3 ECoG, **II.1.4 "Produksi Ucapan dalam Otak"** — judul diganti dari "Mekanisme Neural...").
+- **II.2 Dataset Willett et al. (2023)** *(BARU, feedback dosen #2)* — T12/ALS, 24 sesi, tx1 (-3.5xRMS) + spikePow (high-pass 250 Hz, µV²), 128 kanal area 6v → 256-dim, Switchboard+OpenWebText (sumber: readme dataset baris 5, **bukan halusinasi Seto**), 8800 latih/880 uji.
+- **II.3 Pemrosesan Sinyal ECoG → Teks** (II.3.1 Praproses, II.3.2 Fonem+CTC, II.3.3 Fonem→Teks dgn **WFST/beam search/shallow fusion/n-best rescoring**, II.3.4 Metrik).
+- **II.4 Model Berbasis Transformer** (II.4.1 Transformer, II.4.2 Conformer, **II.4.3 Spatial Attention** subbab sendiri).
+- **II.5 Foundation Model** (II.5.1 Varian + Tabel II.2 daftar FM aktual, II.5.2 Adaptasi modalitas = **3 teknik**: proyeksi linier/LLaVA/cross-attention, II.5.3 **PEFT dgn LoRA** + rumus). *II.4.4 Optimasi Kecepatan lama DIHAPUS.*
+- **II.6 Penelitian Terkait** (Willett, Seto, LaBraM/CBraMod, +Feng 2024, +Zhang 2025).
+
+**Keputusan & koreksi (selaras Bab III §4b):**
+- Gambar BARU: II.1 `fig_dataset`, II.2 `fig_ecog_pipeline`, II.3 `fig_transformer_variants` (generator terpisah `figures/make_bab2_figures.py`, reuse helper dari `make_figures.py` — TIDAK menyentuh gambar Bab III).
+- Rumus ditambahkan: CTC, self-attention, shallow fusion, LoRA (W=W₀+(α/r)BA).
+- **Koreksi info salah proposal**: hapus klaim *high-gamma*/band-pass 70-200 Hz (pipeline pakai threshold crossings + spike band power); jumlah kelas fonem = 39+jeda+blank (T×41); model bahasa = 5-gram WFST + rescoring LLaMA-2 (bukan "Transformer").
+- **Dafpus ditambah**: Mohri et al. (2002, Computer Speech & Language 16(1):69-88) untuk WFST; Qwen Team (2025, arXiv:2505.09388) untuk Qwen3. Cohere/Canary/Granite TETAP tanpa sitasi formal.
+- **bab1 §1.6** sudah diperbarui agar urutan Bab II mencerminkan Dataset sebagai II.2.
+- Placeholder/TODO: belum ada gambar arsitektur Transformer asli (Vaswani) — cukup pakai perbandingan blok di Gambar II.3.
+
 ## 5. Feedback dosen (checklist — dari `../proposal/feedback.txt`)
 
 1. Jelaskan masalah *speaker dependency* di riset BCI. → **Sudah** di Batasan Bab I; bisa diperdalam di Bab II.
-2. Tambah bagian di Bab II tentang deskripsi dataset + praproses. → **Bab II TODO.**
-3. Jelaskan detail bagaimana sinyal diadaptasi ke input model. → **Bab II/III TODO.**
+2. Tambah bagian di Bab II tentang deskripsi dataset + praproses. → **Sudah** di Bab II §II.2 (dataset) + §II.3.1 (praproses).
+3. Jelaskan detail bagaimana sinyal diadaptasi ke input model. → **Sudah** di Bab II §II.5.2 (3 teknik adaptasi modalitas) + Bab III §III.3.3.
 
 ---
 

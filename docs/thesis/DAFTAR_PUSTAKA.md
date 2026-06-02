@@ -12,6 +12,8 @@ Card, N. S., et al. (2024). An Accurate and Rapidly Calibrating Speech Neuropros
 
 Ding, N., Qin, Y., Yang, G., Wei, F., Yang, Z., Su, Y., ... & Sun, M. (2023). Parameter-efficient fine-tuning of large-scale pre-trained language models: A benchmark. Nature Machine Intelligence, 5(3), 220-235.
 
+Cho, K., van Merriënboer, B., Gulcehre, C., Bahdanau, D., Bougares, F., Schwenk, H., & Bengio, Y. (2014). Learning Phrase Representations using RNN Encoder-Decoder for Statistical Machine Translation. In Proceedings of the 2014 Conference on Empirical Methods in Natural Language Processing (EMNLP) (pp. 1724-1734). arXiv preprint arXiv:1406.1078.
+
 Devlin, J., Chang, M. W., Lee, K., & Toutanova, K. (2019). BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding. In Proceedings of the 2019 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies, Volume 1 (Long and Short Papers) (pp. 4171-4186). Association for Computational Linguistics.
 
 Feng, S., Liu, H., Wang, Y., & Wang, Y. (2024). Towards an End-to-End Framework for Invasive Brain Signal Decoding with Large Language Models. In Proceedings of Interspeech 2024. arXiv preprint arXiv:2406.11568.
@@ -42,9 +44,13 @@ Metzger, S. L., Littlejohn, K. T., Silva, A. B., Moses, D. A., Seaton, M. P., Wa
 
 Michel, C. M., & Murray, M. M. (2011). Towards the utilization of EEG as a brain imaging tool. NeuroImage, 61(2), 371-385.
 
+Mohri, M., Pereira, F., & Riley, M. (2002). Weighted finite-state transducers in speech recognition. Computer Speech & Language, 16(1), 69-88.
+
 Moses, D. A., Metzger, S. L., Liu, J. R., Anumanchipalli, G. K., Makin, J. G., Sun, P. F.,... & Chang, E. F. (2021). Neuroprosthesis for decoding speech in a paralyzed person with anarthria. New England Journal of Medicine, 385(3), 217-227.
 
 Oord, A. V. D., Vinyals, O., & Kavukcuoglu, K. (2017). Neural discrete representation learning. Advances in neural information processing systems, 30.
+
+Qwen Team. (2025). Qwen3 Technical Report. arXiv preprint arXiv:2505.09388.
 
 Radford, A., Kim, J. W., Xu, T., Brockman, G., McLeavey, C., & Sutskever, I. (2022). Robust Speech Recognition via Large-Scale Weak Supervision. arXiv preprint arXiv:2212.04356.
 

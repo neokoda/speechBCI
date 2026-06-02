@@ -1,0 +1,217 @@
+{
+  "slice": "willett_4_18",
+  "n": 600,
+  "composition": {
+    "e2e_v7": {
+      "sub": 600,
+      "ins": 15,
+      "del": 17,
+      "ref_words": 3682,
+      "sub_rate": 0.16295491580662683,
+      "ins_rate": 0.004073872895165671,
+      "del_rate": 0.004617055947854427,
+      "wer": 0.17164584464964694
+    },
+    "lm2_5gram_only": {
+      "sub": 648,
+      "ins": 23,
+      "del": 13,
+      "ref_words": 3682,
+      "sub_rate": 0.17599130907115698,
+      "ins_rate": 0.0062466051059206955,
+      "del_rate": 0.0035306898424769147,
+      "wer": 0.18576860401955458
+    }
+  },
+  "wer_per_length_bucket": {
+    "e2e_v7": [
+      {
+        "bucket": "2-3",
+        "n": 61,
+        "wer": 0.3532934131736527,
+        "errors": 59,
+        "ref_words": 167
+      },
+      {
+        "bucket": "4",
+        "n": 88,
+        "wer": 0.20454545454545456,
+        "errors": 72,
+        "ref_words": 352
+      },
+      {
+        "bucket": "5",
+        "n": 103,
+        "wer": 0.18058252427184465,
+        "errors": 93,
+        "ref_words": 515
+      },
+      {
+        "bucket": "6",
+        "n": 103,
+        "wer": 0.1779935275080906,
+        "errors": 110,
+        "ref_words": 618
+      },
+      {
+        "bucket": "7",
+        "n": 87,
+        "wer": 0.1724137931034483,
+        "errors": 105,
+        "ref_words": 609
+      },
+      {
+        "bucket": "8",
+        "n": 66,
+        "wer": 0.14015151515151514,
+        "errors": 74,
+        "ref_words": 528
+      },
+      {
+        "bucket": "9",
+        "n": 45,
+        "wer": 0.1259259259259259,
+        "errors": 51,
+        "ref_words": 405
+      },
+      {
+        "bucket": "10+",
+        "n": 47,
+        "wer": 0.13934426229508196,
+        "errors": 68,
+        "ref_words": 488
+      }
+    ],
+    "lm2_5gram_only": [
+      {
+        "bucket": "2-3",
+        "n": 61,
+        "wer": 0.3652694610778443,
+        "errors": 61,
+        "ref_words": 167
+      },
+      {
+        "bucket": "4",
+        "n": 88,
+        "wer": 0.2159090909090909,
+        "errors": 76,
+        "ref_words": 352
+      },
+      {
+        "bucket": "5",
+        "n": 103,
+        "wer": 0.1650485436893204,
+        "errors": 85,
+        "ref_words": 515
+      },
+      {
+        "bucket": "6",
+        "n": 103,
+        "wer": 0.20388349514563106,
+        "errors": 126,
+        "ref_words": 618
+      },
+      {
+        "bucket": "7",
+        "n": 87,
+        "wer": 0.18883415435139572,
+        "errors": 115,
+        "ref_words": 609
+      },
+      {
+        "bucket": "8",
+        "n": 66,
+        "wer": 0.16287878787878787,
+        "errors": 86,
+        "ref_words": 528
+      },
+      {
+        "bucket": "9",
+        "n": 45,
+        "wer": 0.1308641975308642,
+        "errors": 53,
+        "ref_words": 405
+      },
+      {
+        "bucket": "10+",
+        "n": 47,
+        "wer": 0.1680327868852459,
+        "errors": 82,
+        "ref_words": 488
+      }
+    ],
+    "bucket_def": [
+      {
+        "bucket": "2-3",
+        "lo": 2,
+        "hi": 3
+      },
+      {
+        "bucket": "4-4",
+        "lo": 4,
+        "hi": 4
+      },
+      {
+        "bucket": "5-5",
+        "lo": 5,
+        "hi": 5
+      },
+      {
+        "bucket": "6-6",
+        "lo": 6,
+        "hi": 6
+      },
+      {
+        "bucket": "7-7",
+        "lo": 7,
+        "hi": 7
+      },
+      {
+        "bucket": "8-8",
+        "lo": 8,
+        "hi": 8
+      },
+      {
+        "bucket": "9-9",
+        "lo": 9,
+        "hi": 9
+      },
+      {
+        "bucket": "10-+",
+        "lo": 10,
+        "hi": 999
+      }
+    ]
+  },
+  "beam_evidence": {
+    "source": "asc=0.5 5-gram caches (LM1 and LM2 from EXPERIMENTS.md / Tabel IV.3)",
+    "cap_nbest": 100,
+    "conformer_spatial": {
+      "n": 600,
+      "coverage_count": 348,
+      "coverage_rate": 0.58,
+      "oracle_wer": 0.10184682237914178,
+      "nbest_mean": 32.608333333333334,
+      "nbest_min": 1,
+      "nbest_max": 100
+    },
+    "gru": {
+      "n": 600,
+      "coverage_count": 410,
+      "coverage_rate": 0.6833333333333333,
+      "oracle_wer": 0.07957631721890276,
+      "nbest_mean": 48.32833333333333,
+      "nbest_min": 1,
+      "nbest_max": 100
+    },
+    "ref_w4_18_lm2_top1_wer": 0.18576860401955458,
+    "ref_w4_18_e2e_v7_wer": 0.17164584464964694
+  },
+  "overlap": {
+    "both_correct": 175,
+    "only_e2e": 71,
+    "only_lm2": 66,
+    "both_wrong": 288
+  },
+  "best_of_two_oracle_wer": 0.1249321021184139
+}
