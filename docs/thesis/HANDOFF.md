@@ -2,7 +2,7 @@
 
 **Scope:** progress + context for *writing the thesis document* (Bahasa Indonesia). This is separate from the repo-root `HANDOFF.md`, which tracks *experiments*. When you need result numbers, the root `HANDOFF.md` and `docs/mds/EXPERIMENTS.md` are the source of truth.
 
-**Last updated:** 2026-06-02 (**SEMUA BAB I–V SUDAH DIDRAFT — penulisan tugas akhir dijeda untuk sekarang. Tidak ada bab yang sedang ditulis aktif.** Sesi ini finalisasi Bab II: +Gambar II.4 `conformer.png` (Gulati 2020) dgn penjelasan blok (SpecAugment, convolution subsampling 10→40 ms ≈ 4 langkah masukan per langkah keluaran, residual setengah, layer normalization [Ba 2016], kernel 31), +Gambar II.5 `lora.png` (Hu 2021), GRU dijelaskan vs RNN [Cho 2014], rescoring neural diberi rumus, contoh konkret 'i am better' (fitur→fonem→teks) + trellis beam search + Tabel II.1 n-best/rescoring di II.3.3. **Spatial attention dipindah ke II.4.1 & dibingkai 'dapat dicoba karena berpotensi' (BUKAN dipakai); II.4.3 lama DIHAPUS.** Dafpus dibersihkan: +Cho/Ba/Park (web-verified), 8 orphan tak-tersitasi dihapus (Bai, Card, Gemma, Li, Luo, Oord, Rainey, Willett 2025), Touvron dipastikan LLaMA-2 (2307.09288), Silva dilengkapi (NRN 25(7):473-492) → kini 34 entri = persis set yang disitasi di bab1–5. | Sebelumnya 2026-06-01: Bab II didraft ke `bab2.md` — 6 bagian, 3 gambar baru, lihat §4c. Dataset naik jadi II.2, II.4.4 lama dihapus, dafpus +Mohri 2002 +Qwen3. | Sebelumnya: 2026-05-29 — Bab IV drafted ke `bab4.md` — IV.1 Lingkungan, IV.2 Desain, IV.3 Hasil, IV.4 Pembahasan. Eksperimen dekode fonem kini 4 dekoder (+ Transformer murni PER 0,2444 @4_18). Evaluasi arsitektur hanya pelaporkan irisan willett_4_18 (24-sess dibuang). Dua tahap kini menampilkan GRU/Transformer/Conformer. IV.4 diperkaya dgn error analysis (CPU-only, dari cache eval_full.json + _nbest_tmp.json): angka entropi 0,0950 vs 0,1448 nats di paragraf 'ketajaman distribusi', plus 4 paragraf baru — komposisi Ins/Del/Sub (E2E v7 vs LM2, didominasi Sub ~95%), WER vs panjang ujaran + Gambar IV.1 (`figures/fig_wer_vs_length.png`), oracle WER + coverage (willett_4_18 coverage 68,3% / no-cov 31,7% / oracle WER 0,0758 vs LM6 0,1556), dan overlap E2E vs LM2 (24,2% komplementer). Skrip: `AnalysisExamples/analyze_errors.py`. Hasil JSON: `experiments/analysis/error_analysis.json`. Catatan: angka "46,9% coverage" lama dari HANDOFF root §5 tidak match dgn cache n-best yang sekarang (beam24/nb200) — pakai angka aktual hasil pengukuran ini. Placeholder tersisa: Prosesor/RAM pod, semua kolom Transformer dua tahap, CER Transformer, Canary/Granite WER+CER. Next: ambil GPU utk Bagian B (data sweep) + LM6 per-utt rescoring kalau mau Ins/Del/Sub LM6.)
+**Last updated:** 2026-06-09 (**EKSPERIMEN ENSEMBLING 1b/1c SELESAI — lihat §11.** Saran *ensembling* (TODO §6, Bab V.2) kini menjadi hasil nyata. Pasangan utama dua tahap LM6 (Conformer-spatial + 5-gram + base LLaMA-2 7B, 0,1556) × E2E v7 (Whisper-large-v3, 0,1716/0,1711 re-run) di slice willett_4_18. *Router* berbasis *confidence* (regresi logistik / GBDT, 5-fold CV) turun ke **WER 0,1441–0,1431**, mengalahkan sistem tunggal terbaik (0,1556) sekitar 1,2 pp absolut / ~8% relatif dan menjadi WER terbaik proyek di slice Willett. *Oracle best-of-two* pasangan ini 0,1089. Ablasi: argmax mentah (1a) kolaps ke E2E, kalibrasi (1b) memulihkan, *router* (1c) terbaik. Skrip + JSON di §11. **Konsistensi:** Bab IV.4.3 sekarang menulis oracle 0,1249 untuk pasangan E2E×LM2 (5-gram saja); pasangan LM6 punya oracle 0,1089 — putuskan saat menulis subbab ensembling. | Sebelumnya 2026-06-02: **SEMUA BAB I–V SUDAH DIDRAFT — penulisan tugas akhir dijeda untuk sekarang. Tidak ada bab yang sedang ditulis aktif.** Sesi ini finalisasi Bab II: +Gambar II.4 `conformer.png` (Gulati 2020) dgn penjelasan blok (SpecAugment, convolution subsampling 10→40 ms ≈ 4 langkah masukan per langkah keluaran, residual setengah, layer normalization [Ba 2016], kernel 31), +Gambar II.5 `lora.png` (Hu 2021), GRU dijelaskan vs RNN [Cho 2014], rescoring neural diberi rumus, contoh konkret 'i am better' (fitur→fonem→teks) + trellis beam search + Tabel II.1 n-best/rescoring di II.3.3. **Spatial attention dipindah ke II.4.1 & dibingkai 'dapat dicoba karena berpotensi' (BUKAN dipakai); II.4.3 lama DIHAPUS.** Dafpus dibersihkan: +Cho/Ba/Park (web-verified), 8 orphan tak-tersitasi dihapus (Bai, Card, Gemma, Li, Luo, Oord, Rainey, Willett 2025), Touvron dipastikan LLaMA-2 (2307.09288), Silva dilengkapi (NRN 25(7):473-492) → kini 34 entri = persis set yang disitasi di bab1–5. | Sebelumnya 2026-06-01: Bab II didraft ke `bab2.md` — 6 bagian, 3 gambar baru, lihat §4c. Dataset naik jadi II.2, II.4.4 lama dihapus, dafpus +Mohri 2002 +Qwen3. | Sebelumnya: 2026-05-29 — Bab IV drafted ke `bab4.md` — IV.1 Lingkungan, IV.2 Desain, IV.3 Hasil, IV.4 Pembahasan. Eksperimen dekode fonem kini 4 dekoder (+ Transformer murni PER 0,2444 @4_18). Evaluasi arsitektur hanya pelaporkan irisan willett_4_18 (24-sess dibuang). Dua tahap kini menampilkan GRU/Transformer/Conformer. IV.4 diperkaya dgn error analysis (CPU-only, dari cache eval_full.json + _nbest_tmp.json): angka entropi 0,0950 vs 0,1448 nats di paragraf 'ketajaman distribusi', plus 4 paragraf baru — komposisi Ins/Del/Sub (E2E v7 vs LM2, didominasi Sub ~95%), WER vs panjang ujaran + Gambar IV.1 (`figures/fig_wer_vs_length.png`), oracle WER + coverage (willett_4_18 coverage 68,3% / no-cov 31,7% / oracle WER 0,0758 vs LM6 0,1556), dan overlap E2E vs LM2 (24,2% komplementer). Skrip: `AnalysisExamples/analyze_errors.py`. Hasil JSON: `experiments/analysis/error_analysis.json`. Catatan: angka "46,9% coverage" lama dari HANDOFF root §5 tidak match dgn cache n-best yang sekarang (beam24/nb200) — pakai angka aktual hasil pengukuran ini. Placeholder tersisa: Prosesor/RAM pod, semua kolom Transformer dua tahap, CER Transformer, Canary/Granite WER+CER. Next: ambil GPU utk Bagian B (data sweep) + LM6 per-utt rescoring kalau mau Ins/Del/Sub LM6.)
 
 ---
 
@@ -184,3 +184,77 @@ Nama bab per sistematika Bab I §1.6: **"Bab IV Evaluasi"** — prosedur evaluas
 - Metrik akurasi: PER, WER, CER. Kecepatan **RTF/WPM masih TBD** (belum diimplementasi) — sebut sebagai keterbatasan/pekerjaan lanjutan, jangan tampilkan angka.
 
 **Konsistensi dengan Bab III (§4b):** istilah & framing (ECoG, gaya LLaVA vs cross-attention, fitur tx+spikePow) harus sama. Jangan tampilkan ulang detail rancangan — Bab IV fokus prosedur + hasil + analisis.
+
+---
+
+## 11. Eksperimen Ensembling (1b/1c) — hasil (sesi 2026-06-09)
+
+Mengubah saran *ensembling* (TODO §6, Catatan ensembling, Bab V.2) menjadi eksperimen nyata. Dua sistem tunggal terkuat digabung dengan **seleksi berbasis confidence (router)**, per ujaran memilih sistem yang diprediksi WER lebih rendah.
+
+**Dua sistem (slice willett_4_18, 600 ujaran):**
+- **Sistem A = dua tahap LM6** — Conformer-spatial + 5-gram WFST + *rescoring* base LLaMA-2 7B. WER **0,1556**.
+- **Sistem B = E2E v7** — Whisper-large-v3. WER **0,1716** (cache lama) / **0,1711** (re-run untuk ekstraksi *confidence*, beda 0,0005 karena nondeterminisme fp16).
+
+**Protokol (sesuai catatan TODO — semua CPU kecuali ekstraksi skor):**
+- *Confidence* E2E tidak ter-cache. Diekstrak ulang dengan `generate(output_scores=True)` → log-prob urutan per ujaran. Skrip `AnalysisExamples/extract_e2e_confidence.py` → `experiments/analysis/e2e_v7_confidence.json`.
+- Keluaran per-ujaran LM6 juga tidak ter-cache (hanya grid WER). Di-*rescore* ulang: cache n-best `experiments/wfst_5gram_conformer_temp1p5_beam24_nb200/_nbest_tmp.json` (temp 1,5 / beam 24 / 200-best), fusi `asc=0,5 α=0,8 β=0,5` (sama dgn `bssf_..._redo/result.json`). Skrip `AnalysisExamples/extract_lm6_rescore.py` → `experiments/analysis/lm6_llama2_rescore.json`. Reproduksi all_24 0,1895 (kanonik 0,1897) & willett_4_18 0,1556 (persis).
+- *Fitting* router pakai **5-fold cross-validation di set uji willett_4_18** (bebas bocor — tiap ujaran dirutekan oleh model yang tak melihatnya), dirata-ratakan atas **20 seed**. Skrip `AnalysisExamples/ensemble_router.py --system-a lm6`.
+
+**Hasil (WER, willett_4_18):**
+
+| Metode | WER | % ke E2E |
+| --- | --- | --- |
+| A dua tahap (Conformer + 5-gram + LLaMA-2 7B) | 0,1556 | — |
+| B E2E (Whisper-large-v3) | 0,1711 | — |
+| 1a argmax *confidence* mentah (tanpa latih) | 0,1700 | 99,7% (degenerate) |
+| 1b kalibrasi per-model + argmax (Platt) | **0,1465 ± 0,0006** | 34,7% |
+| 1c *router* regresi logistik | **0,1441 ± 0,0015** | 38,5% |
+| 1c *router* GBDT | **0,1431 ± 0,0020** | 39,1% |
+| *Oracle* best-of-two (langit-langit) | 0,1089 | — |
+
+**Temuan utama.** *Router* (1c) mengalahkan sistem tunggal terbaik proyek (LM6, 0,1556) sekitar **1,2 pp absolut / ~8% relatif**, menutup ~27% jarak ke *oracle* (0,1089). Inilah WER terbaik proyek di slice setara Willett. Cerita ablasi persis prediksi TODO — argmax mentah (1a) **kolaps** ke E2E (99,7%, malah lebih buruk dari A) karena skala *confidence* dua sistem tak sebanding; kalibrasi per-model (1b) memulihkan; *router* terlatih (1c) terbaik. Regresi logistik ≈ GBDT (selisih dalam rentang ±), pilih **regresi logistik** sebagai headline karena lebih stabil & dapat ditafsirkan.
+
+**Ablasi fitur 1c** (apa yang dipakai router, urut |koefisien|): paling dominan **`A_entropy`** (ketajaman beam 5-gram dua tahap — beam datar/ragu → rute ke E2E), lalu `A_llama_per_word` (LLaMA yakin → pertahankan dua tahap), `B_sum_logprob`, `A_lm_wfst_per_word`. Fitur `agree` (kesepakatan hipotesis) ~0 karena kedua sistem jarang menghasilkan string identik.
+
+**Pasangan alternatif (A = LM2, 5-gram saja tanpa LLaMA, 0,1858):** dijalankan juga untuk pelengkap. 1c regresi logistik 0,1594 (vs E2E 0,1711), *oracle* 0,1255. Output `experiments/analysis/ensemble_results_lm2.json`. Bukan headline — A di sini bukan sistem terbaik.
+
+**Catatan teknis (untuk reproduksi):**
+- Bobot LLaMA pakai mirror tak-tergerbang `NousResearch/Llama-2-7b-hf` (identik dgn `meta-llama/Llama-2-7b-hf` yang tergerbang, tak ada HF token di pod). Diverifikasi setara via reproduksi 0,1895.
+- **Bug padding:** di transformers 5.x tokenizer LLaMA default `padding_side='left'`, padahal loop skor sum-logprob mengasumsikan rata-kanan. Wajib set `padding_side='right'` atau skor LM jadi sampah (sempat memberi 0,2170 alih-alih 0,1895).
+- Lingkungan pod ini awalnya kosong dependensi — dipasang `transformers / peft / accelerate / tensorflow-cpu / scikit-learn`. GPU = RTX PRO 6000 Blackwell 96 GB.
+
+**Artefak:** skrip `AnalysisExamples/{extract_e2e_confidence,extract_lm6_rescore,ensemble_router}.py`; hasil `experiments/analysis/{e2e_v7_confidence,lm6_llama2_rescore,ensemble_results_lm6,ensemble_results_lm2}.json`.
+
+**Implikasi penulisan (belum dikerjakan — tunggu keputusan):**
+- Ubah Bab V.2 poin *ensembling* dari saran menjadi rujukan ke hasil, atau tambah subbab hasil ensembling di Bab IV (mis. IV.3.x atau perluasan IV.4.3). Sumber angka kanonik = §11 ini.
+- Selaraskan angka *oracle*: IV.4.3 memakai 0,1249 (pasangan E2E × LM2 5-gram); pasangan headline LM6 × E2E punya *oracle* 0,1089. Jangan campur aduk.
+
+### 11.1 Analisis kegagalan router (LM6 × E2E, willett_4_18)
+
+Menjawab "kenapa router tidak mencapai oracle, dan ujaran macam apa yang masih salah". Skrip `AnalysisExamples/ensemble_failure_analysis.py` → `experiments/analysis/ensemble_failure_lm6.json`. *Routing* konkret = 1c regresi logistik, 5-fold CV, **seed tetap 0** (deterministik dan dapat direproduksi), sehingga angka WER router di subbab ini **0,1458** (bukan 0,1441 yang merupakan rata-rata 20 seed — keduanya konsisten).
+
+**Dekomposisi jarak ke oracle.** WER router 0,1458 vs *oracle* best-of-two 0,1089. Selisih **3,69 pp = 136 galat-kata** (dari 3.682 kata referensi) yang hilang murni karena *router* salah pilih. Sisa jarak menuju sistem sempurna adalah *lantai both-wrong* (lihat bawah). Sifat penting: galat *oracle* **seluruhnya** berasal dari ujaran *both-wrong* (pada ujaran komplementer, oracle = 0 galat).
+
+**(1) Kesalahan routing — 114 ujaran (19,0%), dua jenis sangat berbeda:**
+
+| Jenis | n | median panjang | entropi beam A | ref ada di n-best A | conf E2E (mean_logprob) |
+| --- | --- | --- | --- | --- | --- |
+| **Decisive** (satu sistem BENAR sempurna, router pilih yang salah) | 51 (8,5%) | 5 | **0,80** (rendah) | 84% | −0,09 (tinggi) |
+| **Both-wrong** (keduanya salah, router pilih yang lebih salah) | 63 (10,5%) | 6 | **1,67** (tinggi) | 21% | −0,35 (rendah) |
+
+- *Decisive* = yang mahal. Ujaran **pendek, mudah, nyaris seri** — kedua sistem hampir sepakat, ruginya satu kata, biasanya kata fungsi / homofon. Confidence kedua sistem tinggi dan rapat sehingga router membalik ke arah yang salah. Inilah sasaran yang masih bisa direbut router yang lebih baik (~0,3 pp).
+- *Both-wrong mistakes* = murah. Ujaran sudah sulit (panjang, entropi tinggi, ref jarang ter-*cover*), salah pilih nyaris tak menambah galat.
+
+**(2) Lantai both-wrong — 259 ujaran (43,2%):** ini persis residual *oracle* (0,1089). Genuinely hard — bahkan dengan memilih yang lebih baik per ujaran, rata-rata WER-nya masih **0,273**. Cenderung lebih panjang (rata-rata 6,33 kata vs 6,0 untuk sisanya). Distribusi panjang both-wrong vs bukan: `2-4: 56/93`, `5-6: 90/116`, `7-8: 70/83`, `9+: 43/49`. Rata-rata WER per-ujaran di dalam both-wrong: A(LM6)=0,340, B(E2E)=0,337, oracle-dalam-pasangan=0,273.
+
+**Kenapa masih salah meski sudah 5-gram + LLaMA + Whisper + router.** *Ensemble* hanya **memilih di antara dua hipotesis jadi** — tak bisa mensintesis transkrip benar yang tak diproduksi keduanya. Di dalam set both-wrong, referensi **terjangkau oleh beam dua tahap hanya 34%**, memecah penyebab dengan bersih:
+
+1. **Bottleneck *coverage* — 171/259 (66%).** Referensi **tak pernah muncul** di 200-best dua tahap. Tahap akustik→fonem→beam sudah memangkasnya, jadi *rescoring* LLaMA (yang hanya me-*rank* ulang isi beam) maupun *routing* tak mungkin memulihkannya. E2E jalur independen tetapi gagal pada ujaran sulit yang **sama** (panjang, ambigu akustik, kata langka/nama diri). Selaras framing bottleneck beam di TODO §2 / Bab IV.4.3, kini terlokalisasi: *coverage* di set gagal hanya 34% vs ~58% keseluruhan.
+2. **Galat *near-miss* / *ranking* — 88/259 (34%).** Referensi ADA di beam, tetapi kedua sistem mendarat pada kata yang nyaris identik secara fonetis, didominasi morfologi / kata fungsi (jamak-tunggal, kala). Dapat direbut **fusi tingkat kata (ROVER / union n-best, metode 2)** atau *rescorer* lebih baik — **bukan** oleh router per-ujaran, karena kedua hipotesis utuh sama-sama salah.
+
+**Contoh kualitatif (dari `ensemble_failure_lm6.json` → `examples`):**
+- *Decisive routing mistake* (E2E benar, router salah pilih LM6): REF `i have seen it` | LM6 `i have done it` (1 galat) | E2E `i have seen it` (0) → dirute ke LM6. Juga `do you have your bag`→LM6 `...back`; `you make such a choice`→LM6 `to make...`.
+- *Both-wrong out-of-coverage* (ref tak di beam): REF `and i loved ths shining` | LM6 `and i love the line` (3) | E2E `and i loved the reunion` (2). REF `assure the government that he was employed` | LM6 `so the government...` | E2E `usso the government...`.
+- *Both-wrong covered-but-misranked* (ref di beam, salah rank): REF `i believe it costs about ten dollars` | LM6 & E2E sama-sama `...cost...` (1 galat). REF `the measures already passed a senate committee` | LM6 `the measure already...` (1) | E2E `the measure already passed a second committee` (2).
+
+**Kesimpulan untuk tesis.** Router sudah merebut hampir semua yang bisa direbut **seleksi tingkat-ujaran**. Sisa jaraknya ~⅔ masalah *coverage* tahap pertama (perbaiki dekoder fonem / perlebar beam — Bab V.2) dan ~⅓ masalah *ranking* yang butuh fusi sub-ujaran (metode 2), bukan seleksi. Hanya 51 *decisive mistakes* (~0,3 pp) yang masih bisa direbut router yang lebih pintar.

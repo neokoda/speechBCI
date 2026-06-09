@@ -1,0 +1,66 @@
+{
+  "n": 600,
+  "wer_A_twostage_5gram": 0.18576860401955458,
+  "wer_B_e2e_whisper": 0.17110266159695817,
+  "oracle_best_of_two": 0.12547528517110265,
+  "m1a_raw_argmax": {
+    "wer": 0.1694731124388919,
+    "pct_routed_to_B": 0.9933333333333333
+  },
+  "m1b_calibrated_argmax": {
+    "wer_mean": 0.16706952743074416,
+    "wer_std": 0.0007884344577400744,
+    "wer_min": 0.16539923954372623,
+    "wer_max": 0.1683867463335144,
+    "pct_routed_to_B": 0.44483333333333325,
+    "n_seeds": 20
+  },
+  "m1c_logreg_router": {
+    "wer_mean": 0.15943780554046713,
+    "wer_std": 0.001025145592075352,
+    "wer_min": 0.1572514937533949,
+    "wer_max": 0.16159695817490494,
+    "pct_routed_to_B": 0.42783333333333334,
+    "n_seeds": 20,
+    "features": [
+      "A_final_per_frame",
+      "A_final_per_word",
+      "A_acoustic_per_frame",
+      "A_lm_per_word",
+      "A_margin",
+      "A_entropy",
+      "A_nbest_size",
+      "B_sum_logprob",
+      "B_mean_logprob",
+      "B_n_tokens",
+      "agree"
+    ]
+  },
+  "m1c_gbdt_router": {
+    "wer_mean": 0.1622895165670831,
+    "wer_std": 0.0017590138427240535,
+    "wer_min": 0.15860945138511678,
+    "wer_max": 0.1648560564910375,
+    "pct_routed_to_B": 0.5510833333333334,
+    "n_seeds": 20,
+    "features": [
+      "A_final_per_frame",
+      "A_final_per_word",
+      "A_acoustic_per_frame",
+      "A_lm_per_word",
+      "A_margin",
+      "A_entropy",
+      "A_nbest_size",
+      "B_sum_logprob",
+      "B_mean_logprob",
+      "B_n_tokens",
+      "agree"
+    ]
+  },
+  "overlap": {
+    "both_correct": 175,
+    "only_A_correct": 66,
+    "only_B_correct": 69,
+    "both_wrong": 290
+  }
+}

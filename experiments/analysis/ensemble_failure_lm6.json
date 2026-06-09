@@ -1,0 +1,261 @@
+{
+  "n": 600,
+  "wer": {
+    "A_LM6": 0.15562194459532863,
+    "B_E2E": 0.17110266159695817,
+    "router_1c_seed0": 0.14584464964693103,
+    "oracle": 0.1089082020640956
+  },
+  "gap_decomposition": {
+    "router_excess_over_oracle_pp": 3.69,
+    "errors_lost_to_routing_mistakes": 136,
+    "total_ref_words": 3682,
+    "oracle_residual_is_entirely_both_wrong": true
+  },
+  "routing_mistakes": {
+    "total": {
+      "n": 114,
+      "pct_of_600": 19.0,
+      "mean_ref_len": 5.89,
+      "median_ref_len": 6.0,
+      "mean_A_entropy": 1.276,
+      "ref_in_A_nbest_rate": 0.491,
+      "mean_B_mean_logprob": -0.235
+    },
+    "decisive_one_system_was_correct": {
+      "n": 51,
+      "pct_of_600": 8.5,
+      "mean_ref_len": 5.76,
+      "median_ref_len": 5.0,
+      "mean_A_entropy": 0.795,
+      "ref_in_A_nbest_rate": 0.843,
+      "mean_B_mean_logprob": -0.09
+    },
+    "both_wrong_chose_more_wrong": {
+      "n": 63,
+      "pct_of_600": 10.5,
+      "mean_ref_len": 5.98,
+      "median_ref_len": 6.0,
+      "mean_A_entropy": 1.666,
+      "ref_in_A_nbest_rate": 0.206,
+      "mean_B_mean_logprob": -0.353
+    }
+  },
+  "both_wrong": {
+    "agg": {
+      "n": 259,
+      "pct_of_600": 43.2,
+      "mean_ref_len": 6.33,
+      "median_ref_len": 6.0,
+      "mean_A_entropy": 1.471,
+      "ref_in_A_nbest_rate": 0.34,
+      "mean_B_mean_logprob": -0.302
+    },
+    "length_hist": {
+      "2-4": 56,
+      "5-6": 90,
+      "7-8": 70,
+      "9-+": 43
+    },
+    "length_hist_NOT_both_wrong": {
+      "2-4": 93,
+      "5-6": 116,
+      "7-8": 83,
+      "9-+": 49
+    },
+    "ref_in_A_nbest_rate": 0.34,
+    "n_out_of_coverage": 171,
+    "n_covered_but_misranked": 88,
+    "mean_perutt_WER_A": 0.34,
+    "mean_perutt_WER_B": 0.337,
+    "mean_perutt_WER_oracle_within_pair": 0.273
+  },
+  "examples": {
+    "decisive_routing_mistakes": [
+      {
+        "ref": "i have seen it",
+        "len": 4,
+        "hyp_A_LM6": "i have done it",
+        "err_A": 1,
+        "hyp_B_E2E": "i have seen it",
+        "err_B": 0,
+        "routed_to": "LM6",
+        "ref_in_A_nbest": true
+      },
+      {
+        "ref": "the only other place i've ever vacationed",
+        "len": 7,
+        "hyp_A_LM6": "the only other place i've ever occasion",
+        "err_A": 1,
+        "hyp_B_E2E": "the only other place i've ever vacationed",
+        "err_B": 0,
+        "routed_to": "LM6",
+        "ref_in_A_nbest": false
+      },
+      {
+        "ref": "do you have your bag",
+        "len": 5,
+        "hyp_A_LM6": "do you have your back",
+        "err_A": 1,
+        "hyp_B_E2E": "do you have your bag",
+        "err_B": 0,
+        "routed_to": "LM6",
+        "ref_in_A_nbest": true
+      },
+      {
+        "ref": "you make such a choice",
+        "len": 5,
+        "hyp_A_LM6": "to make such a choice",
+        "err_A": 1,
+        "hyp_B_E2E": "you make such a choice",
+        "err_B": 0,
+        "routed_to": "LM6",
+        "ref_in_A_nbest": true
+      },
+      {
+        "ref": "as any city grows up",
+        "len": 5,
+        "hyp_A_LM6": "as any city grows up",
+        "err_A": 0,
+        "hyp_B_E2E": "he's any city grows up",
+        "err_B": 1,
+        "routed_to": "E2E",
+        "ref_in_A_nbest": true
+      },
+      {
+        "ref": "it's about sixteen and a half percent",
+        "len": 7,
+        "hyp_A_LM6": "it's about six and a half percent",
+        "err_A": 1,
+        "hyp_B_E2E": "it's about sixteen and a half percent",
+        "err_B": 0,
+        "routed_to": "LM6",
+        "ref_in_A_nbest": false
+      }
+    ],
+    "both_wrong_out_of_coverage": [
+      {
+        "ref": "and i loved ths shining",
+        "len": 5,
+        "hyp_A_LM6": "and i love the line",
+        "err_A": 3,
+        "hyp_B_E2E": "and i loved the reunion",
+        "err_B": 2,
+        "routed_to": "E2E",
+        "ref_in_A_nbest": false
+      },
+      {
+        "ref": "i do have a friend that ran",
+        "len": 7,
+        "hyp_A_LM6": "i do have a friend that one",
+        "err_A": 1,
+        "hyp_B_E2E": "i do have a friend that went on",
+        "err_B": 2,
+        "routed_to": "E2E",
+        "ref_in_A_nbest": false
+      },
+      {
+        "ref": "assure the government that he was employed",
+        "len": 7,
+        "hyp_A_LM6": "so the government that he was employed",
+        "err_A": 1,
+        "hyp_B_E2E": "usso the government that he was employed",
+        "err_B": 1,
+        "routed_to": "E2E",
+        "ref_in_A_nbest": false
+      },
+      {
+        "ref": "which i use as a reference and has been real handy",
+        "len": 11,
+        "hyp_A_LM6": "which i use as a rift and has been real handy",
+        "err_A": 1,
+        "hyp_B_E2E": "what i do as a riff and has been real handy",
+        "err_B": 3,
+        "routed_to": "LM6",
+        "ref_in_A_nbest": false
+      },
+      {
+        "ref": "in the red square or wherever said",
+        "len": 7,
+        "hyp_A_LM6": "in the race for our ever said",
+        "err_A": 4,
+        "hyp_B_E2E": "in the big store are wherever you sit",
+        "err_B": 5,
+        "routed_to": "E2E",
+        "ref_in_A_nbest": false
+      },
+      {
+        "ref": "joy springs from a grateful heart",
+        "len": 6,
+        "hyp_A_LM6": "joy pain from a grateful heart",
+        "err_A": 1,
+        "hyp_B_E2E": "totally spring from a grateful heart",
+        "err_B": 2,
+        "routed_to": "LM6",
+        "ref_in_A_nbest": false
+      }
+    ],
+    "both_wrong_covered_but_misranked": [
+      {
+        "ref": "besides its an invasion of personal privacy",
+        "len": 7,
+        "hyp_A_LM6": "because it's an invasion of personal privacy",
+        "err_A": 2,
+        "hyp_B_E2E": "between it's an invasion of personal privacy",
+        "err_B": 2,
+        "routed_to": "LM6",
+        "ref_in_A_nbest": true
+      },
+      {
+        "ref": "i believe it costs about ten dollars",
+        "len": 7,
+        "hyp_A_LM6": "i believe it cost about ten dollars",
+        "err_A": 1,
+        "hyp_B_E2E": "i believe it cost about ten dollars",
+        "err_B": 1,
+        "routed_to": "LM6",
+        "ref_in_A_nbest": true
+      },
+      {
+        "ref": "the measures already passed a senate committee",
+        "len": 7,
+        "hyp_A_LM6": "the measure already passed a senate committee",
+        "err_A": 1,
+        "hyp_B_E2E": "the measure already passed a second committee",
+        "err_B": 2,
+        "routed_to": "LM6",
+        "ref_in_A_nbest": true
+      },
+      {
+        "ref": "and then you sprinkle the cheese on top of that",
+        "len": 10,
+        "hyp_A_LM6": "and then you sprinkle the case on top of that",
+        "err_A": 1,
+        "hyp_B_E2E": "and then you bring the case on top of that",
+        "err_B": 2,
+        "routed_to": "E2E",
+        "ref_in_A_nbest": true
+      },
+      {
+        "ref": "bringing something for a potluck picnic",
+        "len": 6,
+        "hyp_A_LM6": "bring something for a potluck picnic",
+        "err_A": 1,
+        "hyp_B_E2E": "ranking systems for a potluck picket",
+        "err_B": 3,
+        "routed_to": "LM6",
+        "ref_in_A_nbest": true
+      },
+      {
+        "ref": "but they have snakes over there",
+        "len": 6,
+        "hyp_A_LM6": "but they have tanks over there",
+        "err_A": 1,
+        "hyp_B_E2E": "but they have checks over there",
+        "err_B": 1,
+        "routed_to": "E2E",
+        "ref_in_A_nbest": true
+      }
+    ]
+  }
+}

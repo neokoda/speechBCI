@@ -1,0 +1,372 @@
+{
+  "grid": [
+    {
+      "acoustic_scale": 0.3,
+      "alpha": 0.0,
+      "beta": 0.5,
+      "gamma": 0.0,
+      "wer": 0.223354,
+      "cer": 0.148974
+    },
+    {
+      "acoustic_scale": 0.3,
+      "alpha": 0.3,
+      "beta": 0.5,
+      "gamma": 0.0,
+      "wer": 0.25191,
+      "cer": 0.159143
+    },
+    {
+      "acoustic_scale": 0.3,
+      "alpha": 0.5,
+      "beta": 0.5,
+      "gamma": 0.0,
+      "wer": 0.262823,
+      "cer": 0.164082
+    },
+    {
+      "acoustic_scale": 0.3,
+      "alpha": 0.8,
+      "beta": 0.5,
+      "gamma": 0.0,
+      "wer": 0.268097,
+      "cer": 0.166987
+    },
+    {
+      "acoustic_scale": 0.3,
+      "alpha": 1.2,
+      "beta": 0.5,
+      "gamma": 0.0,
+      "wer": 0.27028,
+      "cer": 0.168585
+    },
+    {
+      "acoustic_scale": 0.3,
+      "alpha": 0.0,
+      "beta": 1.0,
+      "gamma": 0.0,
+      "wer": 0.208621,
+      "cer": 0.149156
+    },
+    {
+      "acoustic_scale": 0.3,
+      "alpha": 0.3,
+      "beta": 1.0,
+      "gamma": 0.0,
+      "wer": 0.233539,
+      "cer": 0.157363
+    },
+    {
+      "acoustic_scale": 0.3,
+      "alpha": 0.5,
+      "beta": 1.0,
+      "gamma": 0.0,
+      "wer": 0.246271,
+      "cer": 0.161068
+    },
+    {
+      "acoustic_scale": 0.3,
+      "alpha": 0.8,
+      "beta": 1.0,
+      "gamma": 0.0,
+      "wer": 0.254092,
+      "cer": 0.16361
+    },
+    {
+      "acoustic_scale": 0.3,
+      "alpha": 1.2,
+      "beta": 1.0,
+      "gamma": 0.0,
+      "wer": 0.262277,
+      "cer": 0.166697
+    },
+    {
+      "acoustic_scale": 0.3,
+      "alpha": 0.0,
+      "beta": 1.5,
+      "gamma": 0.0,
+      "wer": 0.214078,
+      "cer": 0.154167
+    },
+    {
+      "acoustic_scale": 0.3,
+      "alpha": 0.3,
+      "beta": 1.5,
+      "gamma": 0.0,
+      "wer": 0.227719,
+      "cer": 0.157835
+    },
+    {
+      "acoustic_scale": 0.3,
+      "alpha": 0.5,
+      "beta": 1.5,
+      "gamma": 0.0,
+      "wer": 0.237177,
+      "cer": 0.161649
+    },
+    {
+      "acoustic_scale": 0.3,
+      "alpha": 0.8,
+      "beta": 1.5,
+      "gamma": 0.0,
+      "wer": 0.250637,
+      "cer": 0.164591
+    },
+    {
+      "acoustic_scale": 0.3,
+      "alpha": 1.2,
+      "beta": 1.5,
+      "gamma": 0.0,
+      "wer": 0.254092,
+      "cer": 0.164118
+    },
+    {
+      "acoustic_scale": 0.5,
+      "alpha": 0.0,
+      "beta": 0.5,
+      "gamma": 0.0,
+      "wer": 0.249182,
+      "cer": 0.157436
+    },
+    {
+      "acoustic_scale": 0.5,
+      "alpha": 0.3,
+      "beta": 0.5,
+      "gamma": 0.0,
+      "wer": 0.262277,
+      "cer": 0.162339
+    },
+    {
+      "acoustic_scale": 0.5,
+      "alpha": 0.5,
+      "beta": 0.5,
+      "gamma": 0.0,
+      "wer": 0.267188,
+      "cer": 0.164699
+    },
+    {
+      "acoustic_scale": 0.5,
+      "alpha": 0.8,
+      "beta": 0.5,
+      "gamma": 0.0,
+      "wer": 0.266642,
+      "cer": 0.164518
+    },
+    {
+      "acoustic_scale": 0.5,
+      "alpha": 1.2,
+      "beta": 0.5,
+      "gamma": 0.0,
+      "wer": 0.268825,
+      "cer": 0.166588
+    },
+    {
+      "acoustic_scale": 0.5,
+      "alpha": 0.0,
+      "beta": 1.0,
+      "gamma": 0.0,
+      "wer": 0.215533,
+      "cer": 0.14665
+    },
+    {
+      "acoustic_scale": 0.5,
+      "alpha": 0.3,
+      "beta": 1.0,
+      "gamma": 0.0,
+      "wer": 0.24136,
+      "cer": 0.156601
+    },
+    {
+      "acoustic_scale": 0.5,
+      "alpha": 0.5,
+      "beta": 1.0,
+      "gamma": 0.0,
+      "wer": 0.247726,
+      "cer": 0.159107
+    },
+    {
+      "acoustic_scale": 0.5,
+      "alpha": 0.8,
+      "beta": 1.0,
+      "gamma": 0.0,
+      "wer": 0.255184,
+      "cer": 0.16154
+    },
+    {
+      "acoustic_scale": 0.5,
+      "alpha": 1.2,
+      "beta": 1.0,
+      "gamma": 0.0,
+      "wer": 0.262277,
+      "cer": 0.164554
+    },
+    {
+      "acoustic_scale": 0.5,
+      "alpha": 0.0,
+      "beta": 1.5,
+      "gamma": 0.0,
+      "wer": 0.210622,
+      "cer": 0.147558
+    },
+    {
+      "acoustic_scale": 0.5,
+      "alpha": 0.3,
+      "beta": 1.5,
+      "gamma": 0.0,
+      "wer": 0.227174,
+      "cer": 0.154349
+    },
+    {
+      "acoustic_scale": 0.5,
+      "alpha": 0.5,
+      "beta": 1.5,
+      "gamma": 0.0,
+      "wer": 0.240269,
+      "cer": 0.158889
+    },
+    {
+      "acoustic_scale": 0.5,
+      "alpha": 0.8,
+      "beta": 1.5,
+      "gamma": 0.0,
+      "wer": 0.246635,
+      "cer": 0.160922
+    },
+    {
+      "acoustic_scale": 0.5,
+      "alpha": 1.2,
+      "beta": 1.5,
+      "gamma": 0.0,
+      "wer": 0.255729,
+      "cer": 0.164009
+    },
+    {
+      "acoustic_scale": 0.7,
+      "alpha": 0.0,
+      "beta": 0.5,
+      "gamma": 0.0,
+      "wer": 0.261913,
+      "cer": 0.16321
+    },
+    {
+      "acoustic_scale": 0.7,
+      "alpha": 0.3,
+      "beta": 0.5,
+      "gamma": 0.0,
+      "wer": 0.269189,
+      "cer": 0.166225
+    },
+    {
+      "acoustic_scale": 0.7,
+      "alpha": 0.5,
+      "beta": 0.5,
+      "gamma": 0.0,
+      "wer": 0.269007,
+      "cer": 0.165135
+    },
+    {
+      "acoustic_scale": 0.7,
+      "alpha": 0.8,
+      "beta": 0.5,
+      "gamma": 0.0,
+      "wer": 0.268643,
+      "cer": 0.165789
+    },
+    {
+      "acoustic_scale": 0.7,
+      "alpha": 1.2,
+      "beta": 0.5,
+      "gamma": 0.0,
+      "wer": 0.267552,
+      "cer": 0.165063
+    },
+    {
+      "acoustic_scale": 0.7,
+      "alpha": 0.0,
+      "beta": 1.0,
+      "gamma": 0.0,
+      "wer": 0.231175,
+      "cer": 0.151117
+    },
+    {
+      "acoustic_scale": 0.7,
+      "alpha": 0.3,
+      "beta": 1.0,
+      "gamma": 0.0,
+      "wer": 0.249545,
+      "cer": 0.158526
+    },
+    {
+      "acoustic_scale": 0.7,
+      "alpha": 0.5,
+      "beta": 1.0,
+      "gamma": 0.0,
+      "wer": 0.253183,
+      "cer": 0.160087
+    },
+    {
+      "acoustic_scale": 0.7,
+      "alpha": 0.8,
+      "beta": 1.0,
+      "gamma": 0.0,
+      "wer": 0.259003,
+      "cer": 0.162012
+    },
+    {
+      "acoustic_scale": 0.7,
+      "alpha": 1.2,
+      "beta": 1.0,
+      "gamma": 0.0,
+      "wer": 0.265187,
+      "cer": 0.164591
+    },
+    {
+      "acoustic_scale": 0.7,
+      "alpha": 0.0,
+      "beta": 1.5,
+      "gamma": 0.0,
+      "wer": 0.214442,
+      "cer": 0.146504
+    },
+    {
+      "acoustic_scale": 0.7,
+      "alpha": 0.3,
+      "beta": 1.5,
+      "gamma": 0.0,
+      "wer": 0.23263,
+      "cer": 0.153586
+    },
+    {
+      "acoustic_scale": 0.7,
+      "alpha": 0.5,
+      "beta": 1.5,
+      "gamma": 0.0,
+      "wer": 0.241724,
+      "cer": 0.157
+    },
+    {
+      "acoustic_scale": 0.7,
+      "alpha": 0.8,
+      "beta": 1.5,
+      "gamma": 0.0,
+      "wer": 0.248636,
+      "cer": 0.159361
+    },
+    {
+      "acoustic_scale": 0.7,
+      "alpha": 1.2,
+      "beta": 1.5,
+      "gamma": 0.0,
+      "wer": 0.253547,
+      "cer": 0.160814
+    }
+  ],
+  "best": {
+    "acoustic_scale": 0.3,
+    "alpha": 0.0,
+    "beta": 1.0,
+    "gamma": 0.0,
+    "wer": 0.208621,
+    "cer": 0.149156
+  }
+}
