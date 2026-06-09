@@ -45,12 +45,12 @@ Eksperimen ini bertujuan membandingkan kinerja arsitektur secara utuh dari sisi 
 3. **Dua tahap (Conformer + 5-*gram*).** Dekoder fonem Conformer dengan *spatial attention* yang dilanjutkan dekode model bahasa 5-*gram* berbasis WFST.
 4. **Dua tahap (GRU + 5-*gram* + LLaMA-2 7B).** Daftar *n-best* dari dekode WFST pada dekoder GRU di-*rescore* dengan model bahasa neural LLaMA-2 7B (Touvron et al., 2023).
 5. **Dua tahap (Conformer + 5-*gram* + LLaMA-2 7B).** Daftar *n-best* dari dekode WFST pada dekoder Conformer dengan *spatial attention* di-*rescore* dengan model bahasa neural LLaMA-2 7B.
-6. **E2E Qwen (gaya *LLaVA*).** Arsitektur E2E yang memanfaatkan model bahasa teks Qwen3.5-0.8B dengan adaptasi gaya *LLaVA*.
+6. **E2E Qwen (gaya LLaVA).** Arsitektur E2E yang memanfaatkan model bahasa teks Qwen3.5-0.8B dengan adaptasi gaya LLaVA.
 7. **E2E Whisper-medium.en (*cross-attention*).** Arsitektur E2E yang memanfaatkan model audio Whisper-medium.en melalui *cross-attention*.
 8. **E2E Whisper-large-v3 (*cross-attention*).** Arsitektur E2E yang memanfaatkan model audio Whisper-large-v3 melalui *cross-attention*.
 9. **E2E Cohere Transcribe (*cross-attention*).** Arsitektur E2E yang memanfaatkan model audio Cohere Transcribe melalui *cross-attention*.
-10. **E2E Canary-Qwen (gaya *LLaVA*).** Arsitektur E2E yang menggunakan ulang model bahasa Qwen3-1.7B dari Canary-Qwen-2.5B dengan adaptasi gaya *LLaVA*.
-11. **E2E Granite-Speech (gaya *LLaVA*).** Arsitektur E2E yang menggunakan ulang model bahasa dari Granite-Speech-4.1-2B dengan adaptasi gaya *LLaVA*.
+10. **E2E Canary-Qwen (gaya LLaVA).** Arsitektur E2E yang menggunakan ulang model bahasa Qwen3-1.7B dari Canary-Qwen-2.5B dengan adaptasi gaya LLaVA.
+11. **E2E Granite-Speech (gaya LLaVA).** Arsitektur E2E yang menggunakan ulang model bahasa dari Granite-Speech-4.1-2B dengan adaptasi gaya LLaVA.
 
 WER dan CER dihitung pada tingkat korpus (*micro-average*), yaitu jumlah seluruh kesalahan dibagi jumlah seluruh kata atau karakter pada data uji. Sama seperti eksperimen dekode fonem, akurasi dilaporkan pada data uji dengan sesi perekaman yang sebanding dengan laporan Willett et al. (2023).
 
@@ -84,7 +84,7 @@ Hasil akurasi setiap arsitektur ditunjukkan pada Tabel IV.3. Arsitektur dua taha
 | Dua tahap (Conformer + 5-*gram*)                        | 0,1858           | 0,1253           |
 | Dua tahap (GRU + 5-*gram* + LLaMA-2 7B)                 | 0,1638           | 0,1194           |
 | **Dua tahap (Conformer + 5-*gram* + LLaMA-2 7B)** | **0,1556** | **0,1127** |
-| E2E Qwen (gaya*LLaVA*)                                  | 0,2537           | 0,2413           |
+| E2E Qwen (gayaLLaVA)                                  | 0,2537           | 0,2413           |
 | E2E Whisper-medium.en                                     | 0,1760           | 0,1508           |
 | **E2E Whisper-large-v3**                            | **0,1716** | **0,1428** |
 | E2E Cohere Transcribe                                     | 0,1776           | 0,1523           |
@@ -102,7 +102,7 @@ Hasil efisiensi setiap arsitektur ditunjukkan pada Tabel IV.4. Seluruh arsitektu
 | Dua tahap (Conformer + 5-*gram*)              | 28,5 juta (Conformer fonem 28,49 juta)  | 44,2 GB (TLG.fst 44,1 GB)             | 0,0069     | 10.307     |
 | Dua tahap (GRU + 5-*gram* + LLaMA-2 7B)       | 6,79 miliar (LLaMA-2 6,74 miliar)       | 57,8 GB (TLG.fst 44,1 GB)             | 0,0756     | 935        |
 | Dua tahap (Conformer + 5-*gram* + LLaMA-2 7B) | 6,77 miliar (LLaMA-2 6,74 miliar)       | 57,7 GB (TLG.fst 44,1 GB)             | 0,0430     | 1.650      |
-| E2E Qwen (gaya*LLaVA*)                        | ~0,86 miliar (FM 0,8 miliar)            | 2,1 GB (FM 1,77 GB)                   | 0,0710     | 895        |
+| E2E Qwen (gayaLLaVA)                        | ~0,86 miliar (FM 0,8 miliar)            | 2,1 GB (FM 1,77 GB)                   | 0,0710     | 895        |
 | E2E Whisper-medium.en                           | ~0,80 miliar (FM 769 juta)              | 2,0 GB (FM 1,54 GB)                   | 0,0455     | 1.394      |
 | E2E Whisper-large-v3                            | ~1,57 miliar (FM 1,54 miliar)           | 3,6 GB (FM 3,09 GB)                   | 0,0742     | 857        |
 | E2E Cohere Transcribe                           | ~2,0 miliar (FM ~2 miliar)              | 4,5 GB (FM 4,13 GB)                   | 0,0206     | 3.091      |

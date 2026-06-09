@@ -71,14 +71,14 @@ Gambar yang dipakai (sudah ada di `docs/thesis/figures/`):
 **Bar biru:** Lingkungan Pengembangan
 **Tabel IV.1 (native):**
 
-| Komponen | Spesifikasi |
-| --- | --- |
-| Prosesor | 16 vCPU (host AMD EPYC) |
-| RAM | 62 GB |
-| GPU | NVIDIA GeForce RTX 4090, 24 GB GDDR6X, Ada Lovelace, 16.384 *CUDA core* |
-| Penyimpanan | 200 GB |
-| Sistem Operasi | Ubuntu 22.04 LTS |
-| Lingkungan virtual | Python *venv* (PyTorch CUDA 12 + TensorFlow 2.15) |
+| Komponen           | Spesifikasi                                                              |
+| ------------------ | ------------------------------------------------------------------------ |
+| Prosesor           | 16 vCPU (host AMD EPYC)                                                  |
+| RAM                | 62 GB                                                                    |
+| GPU                | NVIDIA GeForce RTX 4090, 24 GB GDDR6X, Ada Lovelace, 16.384*CUDA core* |
+| Penyimpanan        | 200 GB                                                                   |
+| Sistem Operasi     | Ubuntu 22.04 LTS                                                         |
+| Lingkungan virtual | Python*venv* (PyTorch CUDA 12 + TensorFlow 2.15)                       |
 
 - Seluruh pelatihan dan evaluasi berjalan di GPU *cloud* **RunPod**. RTX 4090 dipilih karena ketersediaan, biaya sewa wajar, dan memori 24 GB cukup untuk FM besar dengan LoRA.
 - Pembagian lingkungan: jalur E2E dan *rescoring* memakai PyTorch (transformers, peft); dekoder fonem dan dekode WFST memakai TensorFlow; metrik kesalahan dihitung dengan jiwer.
@@ -90,12 +90,12 @@ Gambar yang dipakai (sudah ada di `docs/thesis/figures/`):
 **Bar biru:** Evaluasi Dekoder Fonem
 **Tabel IV.2 (native):**
 
-| Dekoder Fonem | PER |
-| --- | --- |
-| GRU 1024 unit 5 lapisan | 0,1597 |
-| Transformer murni | 0,2444 |
-| Conformer vanila | 0,1477 |
-| **Conformer + *spatial attention*** | **0,1428** |
+| Dekoder Fonem                               | Konfigurasi                                                  | PER              |
+| ------------------------------------------- | ------------------------------------------------------------ | ---------------- |
+| GRU                                         | 1024 unit, 5 lapisan searah                                  | 0,1597           |
+| Transformer murni                           | d=512, 4 lapisan, 8*head*, FFN 2048                        | 0,2444           |
+| Conformer vanila                            | d=512, 4 lapisan, 8*head*, FFN 2048, *kernel* 31         | 0,1477           |
+| **Conformer + *spatial attention*** | Conformer vanila +*spatial attention* (dim 64, 4 *head*) | **0,1428** |
 
 - **Desain:** bandingkan empat dekoder fonem (GRU *baseline*, Transformer murni, Conformer vanila, Conformer + *spatial attention*) pada metrik **PER**, dengan *loss* CTC dan *batch* 32.
 - **Pembahasan:** kedua varian Conformer mengalahkan GRU, sedangkan Transformer murni justru terburuk → modul konvolusi penting untuk menangkap pola lokal sinyal ECoG, *self-attention* murni belum cukup. *Spatial attention* menambah keunggulan dengan menangkap dependensi antarelektroda. Conformer + *spatial attention* (0,1428) juga mengalahkan dekoder GRU Seto (~0,192).
@@ -107,19 +107,19 @@ Gambar yang dipakai (sudah ada di `docs/thesis/figures/`):
 **Bar biru:** Evaluasi Arsitektur — Akurasi
 **Tabel IV.3 penuh (native):**
 
-| Arsitektur | WER | CER |
-| --- | --- | --- |
-| Dua tahap (GRU + 5-*gram*) | 0,1828 | 0,1327 |
-| Dua tahap (Transformer + 5-*gram*) | 0,2927 | (menyusul) |
-| Dua tahap (Conformer + 5-*gram*) | 0,1858 | 0,1253 |
-| Dua tahap (GRU + 5-*gram* + LLaMA-2 7B) | 0,1638 | 0,1194 |
-| **Dua tahap (Conformer + 5-*gram* + LLaMA-2 7B)** | **0,1556** | **0,1127** |
-| E2E Qwen (gaya *LLaVA*) | 0,2537 | 0,2413 |
-| E2E Whisper-medium.en | 0,1760 | 0,1508 |
-| **E2E Whisper-large-v3** | **0,1716** | **0,1428** |
-| E2E Cohere Transcribe | 0,1776 | 0,1523 |
-| E2E Canary-Qwen | *tidak dievaluasi penuh* | *tidak dievaluasi penuh* |
-| E2E Granite-Speech | *tidak dievaluasi penuh* | *tidak dievaluasi penuh* |
+| Arsitektur                                                | WER                        | CER                        |
+| --------------------------------------------------------- | -------------------------- | -------------------------- |
+| Dua tahap (GRU + 5-*gram*)                              | 0,1828                     | 0,1327                     |
+| Dua tahap (Transformer + 5-*gram*)                      | 0,2927                     | (menyusul)                 |
+| Dua tahap (Conformer + 5-*gram*)                        | 0,1858                     | 0,1253                     |
+| Dua tahap (GRU + 5-*gram* + LLaMA-2 7B)                 | 0,1638                     | 0,1194                     |
+| **Dua tahap (Conformer + 5-*gram* + LLaMA-2 7B)** | **0,1556**           | **0,1127**           |
+| E2E Qwen (gaya*LLaVA*)                                  | 0,2537                     | 0,2413                     |
+| E2E Whisper-medium.en                                     | 0,1760                     | 0,1508                     |
+| **E2E Whisper-large-v3**                            | **0,1716**           | **0,1428**           |
+| E2E Cohere Transcribe                                     | 0,1776                     | 0,1523                     |
+| E2E Canary-Qwen                                           | *tidak dievaluasi penuh* | *tidak dievaluasi penuh* |
+| E2E Granite-Speech                                        | *tidak dievaluasi penuh* | *tidak dievaluasi penuh* |
 
 - **Desain:** bandingkan arsitektur utuh dua tahap vs E2E. Metrik **WER & CER** (*micro-average* tingkat korpus), data uji sebanding Willett. Canary-Qwen dan Granite-Speech diimplementasikan tetapi tidak dievaluasi penuh karena inkompatibilitas pustaka.
 - **Pembahasan:**
@@ -134,19 +134,19 @@ Gambar yang dipakai (sudah ada di `docs/thesis/figures/`):
 **Bar biru:** Penyimpanan dan Kecepatan
 **Tabel IV.4 (native):**
 
-| Arsitektur | Total Parameter (komponen terbesar) | Penyimpanan Total (komponen terbesar) | RTF | WPM |
-| --- | --- | --- | --- | --- |
-| Dua tahap (GRU + 5-*gram*) | 53,6 jt (GRU 53,55 jt) | 44,3 GB (TLG.fst 44,1 GB) | 0,0155 | 4.556 |
-| Dua tahap (Transformer + 5-*gram*) | (menyusul) | (menyusul) | (menyusul) | (menyusul) |
-| Dua tahap (Conformer + 5-*gram*) | 28,5 jt (Conformer 28,49 jt) | 44,2 GB (TLG.fst 44,1 GB) | 0,0069 | 10.307 |
-| Dua tahap (GRU + 5-*gram* + LLaMA-2 7B) | 6,79 M (LLaMA-2 6,74 M) | 57,8 GB (TLG.fst 44,1 GB) | 0,0756 | 935 |
-| Dua tahap (Conformer + 5-*gram* + LLaMA-2 7B) | 6,77 M (LLaMA-2 6,74 M) | 57,7 GB (TLG.fst 44,1 GB) | 0,0430 | 1.650 |
-| E2E Qwen (gaya *LLaVA*) | ~0,86 M (FM 0,8 M) | 2,1 GB (FM 1,77 GB) | 0,0710 | 895 |
-| E2E Whisper-medium.en | ~0,80 M (FM 769 jt) | 2,0 GB (FM 1,54 GB) | 0,0455 | 1.394 |
-| E2E Whisper-large-v3 | ~1,57 M (FM 1,54 M) | 3,6 GB (FM 3,09 GB) | 0,0742 | 857 |
-| E2E Cohere Transcribe | ~2,0 M (FM ~2 M) | 4,5 GB (FM 4,13 GB) | 0,0206 | 3.091 |
-| E2E Canary-Qwen | ~4,2 M (encoder 2,5 M) | 9,9 GB (encoder 5,12 GB) | 0,1260 | 503 |
-| E2E Granite-Speech | ~2,0 M (FM ~2 M) | 5,3 GB (FM 4,87 GB) | 0,0672 | 943 |
+| Arsitektur                                      | Total Parameter (komponen terbesar) | Penyimpanan Total (komponen terbesar) | RTF        | WPM        |
+| ----------------------------------------------- | ----------------------------------- | ------------------------------------- | ---------- | ---------- |
+| Dua tahap (GRU + 5-*gram*)                    | 53,6 jt (GRU 53,55 jt)              | 44,3 GB (TLG.fst 44,1 GB)             | 0,0155     | 4.556      |
+| Dua tahap (Transformer + 5-*gram*)            | (menyusul)                          | (menyusul)                            | (menyusul) | (menyusul) |
+| Dua tahap (Conformer + 5-*gram*)              | 28,5 jt (Conformer 28,49 jt)        | 44,2 GB (TLG.fst 44,1 GB)             | 0,0069     | 10.307     |
+| Dua tahap (GRU + 5-*gram* + LLaMA-2 7B)       | 6,79 M (LLaMA-2 6,74 M)             | 57,8 GB (TLG.fst 44,1 GB)             | 0,0756     | 935        |
+| Dua tahap (Conformer + 5-*gram* + LLaMA-2 7B) | 6,77 M (LLaMA-2 6,74 M)             | 57,7 GB (TLG.fst 44,1 GB)             | 0,0430     | 1.650      |
+| E2E Qwen (gaya*LLaVA*)                        | ~0,86 M (FM 0,8 M)                  | 2,1 GB (FM 1,77 GB)                   | 0,0710     | 895        |
+| E2E Whisper-medium.en                           | ~0,80 M (FM 769 jt)                 | 2,0 GB (FM 1,54 GB)                   | 0,0455     | 1.394      |
+| E2E Whisper-large-v3                            | ~1,57 M (FM 1,54 M)                 | 3,6 GB (FM 3,09 GB)                   | 0,0742     | 857        |
+| E2E Cohere Transcribe                           | ~2,0 M (FM ~2 M)                    | 4,5 GB (FM 4,13 GB)                   | 0,0206     | 3.091      |
+| E2E Canary-Qwen                                 | ~4,2 M (encoder 2,5 M)              | 9,9 GB (encoder 5,12 GB)              | 0,1260     | 503        |
+| E2E Granite-Speech                              | ~2,0 M (FM ~2 M)                    | 5,3 GB (FM 4,87 GB)                   | 0,0672     | 943        |
 
 *(jt = juta, M = miliar)*
 
@@ -163,14 +163,15 @@ Gambar yang dipakai (sudah ada di `docs/thesis/figures/`):
 **Bar biru:** Distribusi Probabilitas Fonem
 **Tabel IV.5 (native):**
 
-| Dekoder | Coverage | Oracle WER | Rata-rata *n-best* |
-| --- | --- | --- | --- |
-| Conformer + *spatial attention* | 58,0% | 0,1018 | 32,6 |
-| GRU | 68,3% | 0,0796 | 48,3 |
+| Dekoder                          | Coverage | Oracle WER | Rata-rata*n-best* |
+| -------------------------------- | -------- | ---------- | ------------------- |
+| Conformer +*spatial attention* | 58,0%    | 0,1018     | 32,6                |
+| GRU                              | 68,3%    | 0,0796     | 48,3                |
 
 - **Anomali:** PER Conformer lebih baik (0,1428 < 0,1597 GRU), tetapi pada dekode 5-*gram* tanpa *rescoring* WER GRU (0,1828) sedikit lebih rendah dari Conformer (0,1858).
 - **Hipotesis dan uji:** distribusi fonem Conformer lebih tajam (entropi **0,0950 nats** vs GRU **0,1448 nats**, sekitar 34% lebih tajam) → *beam search* memangkas lebih agresif → jalur yang benar lebih sering hilang.
-- **Pembahasan:** lebih dari 40% ujaran, transkrip benar tidak muncul di daftar *n-best* sehingga tidak terpulihkan oleh *rescorer* mana pun. Inilah *bottleneck* dua tahap. Keunggulan WER GRU hilang setelah *rescoring* LLaMA-2 7B, dan Conformer kembali unggul (0,1556 vs 0,1638).
+- **Pembahasan:** lebih dari 40% ujaran, transkrip benar tidak muncul di daftar *n-best* sehingga tidak terpulihkan oleh *rescorer* mana pun. Inilah *bottleneck* dua tahap.
+- **Kenapa *rescoring* memulihkan Conformer:** meski *beam* Conformer lebih sempit, hipotesis di dalamnya berfonem lebih akurat (PER lebih rendah). Model 5-*gram* terlalu lemah untuk memeringkat *n-best* dengan benar sehingga sempat kalah dari GRU. Akan tetapi, LLaMA-2 7B jauh lebih kuat dan menilai ulang seluruh *n-best*, lalu mengangkat hipotesis yang paling masuk akal secara linguistik. Dengan demikian, keunggulan akurasi fonem Conformer kembali muncul (WER 0,1556 vs 0,1638 GRU).
 
 ---
 
@@ -190,10 +191,10 @@ Gambar yang dipakai (sudah ada di `docs/thesis/figures/`):
 **Bar biru:** Komplementaritas Kesalahan
 **Tabel IV.6 (native):**
 
-|  | Dua tahap benar | Dua tahap salah |
-| --- | --- | --- |
-| **E2E benar** | 175 (29,2%) | 71 (11,8%) |
-| **E2E salah** | 66 (11,0%) | 288 (48,0%) |
+|                     | Dua tahap benar | Dua tahap salah |
+| ------------------- | --------------- | --------------- |
+| **E2E benar** | 175 (29,2%)     | 71 (11,8%)      |
+| **E2E salah** | 66 (11,0%)      | 288 (48,0%)     |
 
 - Perbandingan E2E Whisper-large-v3 vs dua tahap (Conformer + 5-*gram*) pada data uji.
 - **22,8% ujaran** benar di satu arsitektur tetapi salah di yang lain → kedua arsitektur menangkap pola kesalahan berbeda.
@@ -208,11 +209,13 @@ Gambar yang dipakai (sudah ada di `docs/thesis/figures/`):
 **Tata letak:** dua kolom (Kesimpulan | Saran)
 
 **Kesimpulan**
+
 1. Arsitektur dua tahap berbasis Transformer berhasil dan mengalahkan Seto. Dekoder Conformer + *spatial attention* PER 0,1428, sistem utuh + *rescoring* LLaMA-2 7B WER 0,1556.
 2. Arsitektur E2E berbasis FM berhasil. Whisper-large-v3 (*cross-attention*) WER 0,1716, mengalahkan semua dua tahap tanpa *rescoring* neural dengan penyimpanan jauh lebih kecil (3,6 GB vs 57,7 GB) → keseimbangan akurasi dan efisiensi lebih baik.
 3. Analisis menyeluruh dilakukan dari sisi akurasi, efisiensi, pola kesalahan, dan keterbatasan. Dua tahap akurat tetapi berat dan ber-*ceiling* (oracle), E2E ringan dan kompetitif, serta keduanya saling melengkapi pada 22,8% ujaran.
 
 **Saran**
+
 - Tambah data latih dan pralatih *encoder* ECoG lintas-subjek.
 - Kembangkan *rescorer* yang lebih baik (selisih *oracle* 0,1018 vs aktual 0,1556).
 - Eksplorasi *ensembling* E2E + dua tahap (*best-of-two* 0,1249).
