@@ -110,18 +110,18 @@ Gambar yang dipakai (sudah ada di `docs/thesis/figures/`):
 | Arsitektur                                                | WER                        | CER                        |
 | --------------------------------------------------------- | -------------------------- | -------------------------- |
 | Dua tahap (GRU + 5-*gram*)                              | 0,1828                     | 0,1327                     |
-| Dua tahap (Transformer + 5-*gram*)                      | 0,2927                     | (menyusul)                 |
+| Dua tahap (Transformer + 5-*gram*)                      | 0,2927                     | 0,2094                     |
 | Dua tahap (Conformer + 5-*gram*)                        | 0,1858                     | 0,1253                     |
 | Dua tahap (GRU + 5-*gram* + LLaMA-2 7B)                 | 0,1638                     | 0,1194                     |
 | **Dua tahap (Conformer + 5-*gram* + LLaMA-2 7B)** | **0,1556**           | **0,1127**           |
-| E2E Qwen (gaya*LLaVA*)                                  | 0,2537                     | 0,2413                     |
+| E2E Qwen (gaya LLaVA)                                    | 0,2537                     | 0,2413                     |
 | E2E Whisper-medium.en                                     | 0,1760                     | 0,1508                     |
 | **E2E Whisper-large-v3**                            | **0,1716**           | **0,1428**           |
 | E2E Cohere Transcribe                                     | 0,1776                     | 0,1523                     |
-| E2E Canary-Qwen                                           | *tidak dievaluasi penuh* | *tidak dievaluasi penuh* |
-| E2E Granite-Speech                                        | *tidak dievaluasi penuh* | *tidak dievaluasi penuh* |
+| E2E Canary-Qwen                                           | 0,2384                   | 0,2115                   |
+| E2E Granite-Speech                                        | 0,2337                   | 0,2097                   |
 
-- **Desain:** bandingkan arsitektur utuh dua tahap vs E2E. Metrik **WER & CER** (*micro-average* tingkat korpus), data uji sebanding Willett. Canary-Qwen dan Granite-Speech diimplementasikan tetapi tidak dievaluasi penuh karena inkompatibilitas pustaka.
+- **Desain:** bandingkan arsitektur utuh dua tahap vs E2E. Metrik **WER & CER** (*micro-average* tingkat korpus), data uji sebanding Willett. 5 varian dua tahap + 6 varian E2E.
 - **Pembahasan:**
   - Dua tahap + *rescoring* LLaMA-2 7B mencapai **WER terendah (0,1556)** dan mengalahkan Willett (~0,174) serta Seto (~0,169).
   - **Tanpa *rescoring* neural, semua dua tahap kalah dari Whisper-large-v3** (Conformer + 5g 0,1858, GRU + 5g 0,1828, Transformer + 5g 0,2927). Keunggulan dua tahap praktis berasal dari LLaMA, bukan dari pipeline fonemnya.

@@ -80,34 +80,34 @@ Hasil akurasi setiap arsitektur ditunjukkan pada Tabel IV.3. Arsitektur dua taha
 | Arsitektur                                                | WER              | CER              |
 | --------------------------------------------------------- | ---------------- | ---------------- |
 | Dua tahap (GRU + 5-*gram*)                              | 0,1828           | 0,1327           |
-| Dua tahap (Transformer + 5-*gram*)                      | 0,2927           | (menyusul)       |
+| Dua tahap (Transformer + 5-*gram*)                      | 0,2927           | 0,2094           |
 | Dua tahap (Conformer + 5-*gram*)                        | 0,1858           | 0,1253           |
 | Dua tahap (GRU + 5-*gram* + LLaMA-2 7B)                 | 0,1638           | 0,1194           |
 | **Dua tahap (Conformer + 5-*gram* + LLaMA-2 7B)** | **0,1556** | **0,1127** |
-| E2E Qwen (gayaLLaVA)                                  | 0,2537           | 0,2413           |
+| E2E Qwen (gaya LLaVA)                                     | 0,2537           | 0,2413           |
 | E2E Whisper-medium.en                                     | 0,1760           | 0,1508           |
 | **E2E Whisper-large-v3**                            | **0,1716** | **0,1428** |
 | E2E Cohere Transcribe                                     | 0,1776           | 0,1523           |
-| E2E Canary-Qwen                                           | (menyusul)       | (menyusul)       |
-| E2E Granite-Speech                                        | (menyusul)       | (menyusul)       |
+| E2E Canary-Qwen                                           | 0,2384           | 0,2115           |
+| E2E Granite-Speech                                        | 0,2337           | 0,2097           |
 
 Hasil efisiensi setiap arsitektur ditunjukkan pada Tabel IV.4. Seluruh arsitektur, baik dua tahap maupun E2E, memiliki RTF jauh di bawah satu sehingga semuanya mampu bekerja lebih cepat daripada durasi ucapan aslinya. Dari sisi penyimpanan, arsitektur E2E jauh lebih ringan, yaitu 2,0 hingga 9,9 GB, dibandingkan arsitektur dua tahap yang mencapai 44,2 hingga 57,8 GB.
 
 **Tabel IV.4** Jumlah parameter, ukuran penyimpanan, dan kecepatan setiap arsitektur.
 
-| Arsitektur                                      | Total Parameter (komponen terbesar)     | Penyimpanan Total (komponen terbesar) | RTF        | WPM        |
-| ----------------------------------------------- | --------------------------------------- | ------------------------------------- | ---------- | ---------- |
-| Dua tahap (GRU + 5-*gram*)                    | 53,6 juta (GRU fonem 53,55 juta)        | 44,3 GB (TLG.fst 44,1 GB)             | 0,0155     | 4.556      |
-| Dua tahap (Transformer + 5-*gram*)            | (menyusul)                              | (menyusul)                            | (menyusul) | (menyusul) |
-| Dua tahap (Conformer + 5-*gram*)              | 28,5 juta (Conformer fonem 28,49 juta)  | 44,2 GB (TLG.fst 44,1 GB)             | 0,0069     | 10.307     |
-| Dua tahap (GRU + 5-*gram* + LLaMA-2 7B)       | 6,79 miliar (LLaMA-2 6,74 miliar)       | 57,8 GB (TLG.fst 44,1 GB)             | 0,0756     | 935        |
-| Dua tahap (Conformer + 5-*gram* + LLaMA-2 7B) | 6,77 miliar (LLaMA-2 6,74 miliar)       | 57,7 GB (TLG.fst 44,1 GB)             | 0,0430     | 1.650      |
-| E2E Qwen (gayaLLaVA)                        | ~0,86 miliar (FM 0,8 miliar)            | 2,1 GB (FM 1,77 GB)                   | 0,0710     | 895        |
-| E2E Whisper-medium.en                           | ~0,80 miliar (FM 769 juta)              | 2,0 GB (FM 1,54 GB)                   | 0,0455     | 1.394      |
-| E2E Whisper-large-v3                            | ~1,57 miliar (FM 1,54 miliar)           | 3,6 GB (FM 3,09 GB)                   | 0,0742     | 857        |
-| E2E Cohere Transcribe                           | ~2,0 miliar (FM ~2 miliar)              | 4,5 GB (FM 4,13 GB)                   | 0,0206     | 3.091      |
-| E2E Canary-Qwen                                 | ~4,2 miliar (encoder Canary 2,5 miliar) | 9,9 GB (encoder Canary 5,12 GB)       | 0,1260     | 503        |
-| E2E Granite-Speech                              | ~2,0 miliar (FM ~2 miliar)              | 5,3 GB (FM 4,87 GB)                   | 0,0672     | 943        |
+| Arsitektur                                      | Total Parameter (komponen terbesar)     | Penyimpanan Total (komponen terbesar) | RTF    | WPM    |
+| ----------------------------------------------- | --------------------------------------- | ------------------------------------- | ------ | ------ |
+| Dua tahap (GRU + 5-*gram*)                    | 53,6 juta (GRU fonem 53,55 juta)        | 44,3 GB (TLG.fst 44,1 GB)             | 0,0155 | 4.556  |
+| Dua tahap (Transformer + 5-*gram*)            | 16,8 juta                               | 44,2 GB (TLG.fst 44,1 GB)             | 0,0044 | 6.573  |
+| Dua tahap (Conformer + 5-*gram*)              | 28,5 juta (Conformer fonem 28,49 juta)  | 44,2 GB (TLG.fst 44,1 GB)             | 0,0069 | 10.307 |
+| Dua tahap (GRU + 5-*gram* + LLaMA-2 7B)       | 6,79 miliar (LLaMA-2 6,74 miliar)       | 57,8 GB (TLG.fst 44,1 GB)             | 0,0756 | 935    |
+| Dua tahap (Conformer + 5-*gram* + LLaMA-2 7B) | 6,77 miliar (LLaMA-2 6,74 miliar)       | 57,7 GB (TLG.fst 44,1 GB)             | 0,0430 | 1.650  |
+| E2E Qwen (gaya LLaVA)                           | ~0,86 miliar (FM 0,8 miliar)            | 2,1 GB (FM 1,77 GB)                   | 0,0710 | 895    |
+| E2E Whisper-medium.en                           | ~0,80 miliar (FM 769 juta)              | 2,0 GB (FM 1,54 GB)                   | 0,0455 | 1.394  |
+| E2E Whisper-large-v3                            | ~1,57 miliar (FM 1,54 miliar)           | 3,6 GB (FM 3,09 GB)                   | 0,0742 | 857    |
+| E2E Cohere Transcribe                           | ~2,0 miliar (FM ~2 miliar)              | 4,5 GB (FM 4,13 GB)                   | 0,0206 | 3.091  |
+| E2E Canary-Qwen                                 | ~4,2 miliar (encoder Canary 2,5 miliar) | 9,9 GB (encoder Canary 5,12 GB)       | 0,3207 | 503    |
+| E2E Granite-Speech                              | ~2,0 miliar (FM ~2 miliar)              | 5,3 GB (FM 4,87 GB)                   | 0,0672 | 943    |
 
 Nilai RTF pada Tabel IV.4 adalah perbandingan waktu dekode terhadap durasi sinyal neural, sedangkan WPM adalah jumlah kata yang dihasilkan per menit waktu nyata (*wall-clock*) sebagai ukuran laju keluaran. RTF dan WPM tidak menghitung waktu muat model satu kali. Jumlah parameter sebagian *Foundation Model* bersifat perkiraan dari ukuran *snapshot* fp16, sedangkan ukuran penyimpanan dilaporkan sebagai bobot siap pakai. Pada model 5-*gram*, berkas TLG.fst tidak memiliki parameter terlatih (non-parametrik), tetapi tetap mendominasi penyimpanan sebesar 44,1 GB.
 
@@ -157,6 +157,10 @@ Untuk melihat sejauh mana E2E dan dua tahap dapat saling melengkapi kesalahan, s
 
 Sebanyak 22,8% ujaran benar pada satu arsitektur tetapi salah pada arsitektur yang lain. Untuk mengukur potensi maksimum gabungan kedua arsitektur, dihitung pula *best-of-two* WER, yaitu WER yang diperoleh jika untuk setiap ujaran dipilih arsitektur dengan WER lebih rendah. Hasilnya adalah WER sebesar 0,1249. Nilai ini jauh di bawah WER masing-masing arsitektur tunggal, yaitu 0,1716 untuk E2E Whisper-large-v3 dan 0,1858 untuk dua tahap (Conformer + 5-*gram*).
 
+Potensi komplementaritas ini diuji melalui eksperimen *ensembling* yang menggabungkan dua sistem terbaik, yaitu arsitektur dua tahap (Conformer + 5-*gram* + LLaMA-2 7B) dengan WER 0,1556 dan arsitektur E2E Whisper-large-v3 dengan WER 0,1716. Untuk setiap ujaran, sebuah *router* berupa model regresi logistik memilih salah satu dari kedua keluaran berdasarkan skor keyakinan (*confidence*) masing-masing sistem. *Router* ini dilatih dan diuji memakai validasi silang lima lipat agar setiap ujaran selalu dinilai oleh *router* yang belum pernah melihatnya saat pelatihan.
+
+Hasilnya, *router* menurunkan WER menjadi 0,1441. Angka ini lebih baik daripada kedua sistem penyusunnya dan menjadi WER terendah pada tugas akhir ini, sekitar 1,2 poin persen di bawah sistem tunggal terbaik. Temuan ini menegaskan kedua arsitektur memang dapat saling melengkapi untuk meningkatkan akurasi. WER tersebut belum mencapai batas *oracle best-of-two* sebesar 0,1089, yaitu WER ideal seandainya untuk setiap ujaran selalu terpilih sistem dengan keluaran lebih baik. Selisih ini muncul karena keputusan *router* belum sempurna, yaitu pada sebagian ujaran *router* memilih sistem yang ternyata justru lebih buruk. Dengan demikian, ruang perbaikan yang tersisa terletak pada ketepatan pemilihan *router*, bukan pada kemampuan kedua sistem itu sendiri.
+
 ## IV.5 Pembahasan
 
 Di antara seluruh arsitektur, E2E Whisper-large-v3 memberikan keseimbangan terbaik antara akurasi dan efisiensi. Dari sisi akurasi, model ini hanya kalah dari arsitektur dua tahap yang memakai *rescoring* LLaMA-2 7B. Apabila bantuan model bahasa neural tersebut ditiadakan, seluruh arsitektur dua tahap justru kalah dari Whisper-large-v3, baik GRU, Conformer, maupun Transformer. Dari sisi efisiensi, Whisper-large-v3 hanya membutuhkan 3,6 GB penyimpanan. Kebutuhan ini jauh lebih kecil daripada arsitektur dua tahap mana pun. Oleh karena itu, Whisper-large-v3 menjadi pilihan paling seimbang untuk penerapan nyata.
@@ -175,6 +179,6 @@ Ketajaman distribusi fonem yang terukur pada bagian IV.4.1 menjelaskan mengapa G
 
 Pola panjang ujaran pada bagian IV.4.2 menunjukkan WER kedua arsitektur sama-sama menurun seiring panjang ujaran yang lebih panjang. E2E Whisper-large-v3 lebih unggul pada hampir semua *bucket* panjang. Dua tahap hanya unggul pada *bucket* ujaran dengan tepat 5 kata. Pola ini dapat dijelaskan oleh perbedaan jangkauan konteks kedua arsitektur. Model bahasa 5-*gram* memiliki jangkauan konteks tetap, yaitu empat kata sebelumnya, sehingga model ini bekerja paling optimal tepat pada ujaran 5 kata di mana seluruh kata pendahulu masih muat di dalam jendela konteksnya. Pada ujaran yang lebih panjang, jendela 5-*gram* tetap terbatas pada empat kata terakhir sehingga konteks tambahan yang dimiliki E2E menjadi keunggulan. Sebaliknya, dekoder *cross-attention* Whisper bersifat autoregresif tanpa jendela tetap sehingga setiap token yang dibangkitkan dapat memanfaatkan seluruh token yang sudah dibangkitkan sebelumnya.
 
-Analisis tumpang tindih kesalahan pada bagian IV.4.3 menunjukkan 22,8% ujaran benar pada satu arsitektur tetapi salah pada arsitektur yang lain. Kedua arsitektur menangkap pola kesalahan yang berbeda. Jika untuk setiap ujaran selalu dipilih arsitektur dengan WER lebih rendah, WER gabungannya turun menjadi 0,1249. Nilai ini jauh di bawah WER tunggal masing-masing arsitektur dan menunjukkan potensi bagi *ensembling* untuk mengangkat akurasi melebihi tiap arsitektur tunggal sebagai arah pengembangan selanjutnya.
+Analisis tumpang tindih kesalahan pada bagian IV.4.3 menunjukkan 22,8% ujaran benar pada satu arsitektur tetapi salah pada arsitektur yang lain. Kedua arsitektur menangkap pola kesalahan yang berbeda. Jika untuk setiap ujaran selalu dipilih arsitektur dengan WER lebih rendah, WER gabungannya turun menjadi 0,1249. Nilai ini jauh di bawah WER tunggal masing-masing arsitektur. Potensi tersebut diwujudkan melalui eksperimen *ensembling* pada bagian IV.4.3, yaitu *router* berbasis *confidence* yang menurunkan WER hingga 0,1441 dan melampaui sistem tunggal terbaik.
 
 Arsitektur E2E pada tugas akhir ini cenderung mengalami *overfitting* karena jumlah data latih yang terbatas. Beberapa percobaan lanjutan dengan pelatihan yang lebih panjang maupun penambahan parameter tidak mampu menurunkan WER arsitektur E2E secara berarti. Hal ini menunjukkan kinerja arsitektur E2E lebih dibatasi oleh ketersediaan data daripada oleh kapasitas model. Penambahan data latih ECoG, baik melalui perekaman tambahan maupun melalui pralatih *encoder* pada data neural lintas-subjek, berpotensi meningkatkan kinerja arsitektur E2E dan dapat menjadi arah pengembangan selanjutnya.

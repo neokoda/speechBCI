@@ -33,11 +33,12 @@ Kekhawatiran: penguji mengira pekerjaan sesederhana yang tertulis, padahal banya
 
 ## 6. Ensembling — pertimbangkan eksperimen nyata (lihat §Catatan)
 
-## 7. Placeholder angka Bab IV yang harus diisi/diputuskan
-- [ ] Tabel IV.3: CER **Dua tahap (Transformer + 5-gram)** masih "(menyusul)".
-- [ ] Tabel IV.4: seluruh baris **Dua tahap (Transformer + 5-gram)** (parameter, penyimpanan, RTF, WPM) masih "(menyusul)".
-- [ ] Canary-Qwen & Granite-Speech: WER/CER "(menyusul)" — putuskan tetap **"tidak dievaluasi penuh (inkompatibilitas pustaka)"** atau isi bila sempat. Jangan masukkan ke tabel headline bila tidak valid.
-- Catatan: spek pod (16 vCPU / 62 GB) dan RTF/WPM lain sudah terisi.
+## 7. Placeholder angka Bab IV — SELESAI (disinkronkan dari docx 2026-06-10)
+- [x] Tabel IV.3: CER Dua tahap (Transformer + 5-gram) = **0,2094**.
+- [x] Tabel IV.4: baris Dua tahap (Transformer + 5-gram) = **16,8 juta / 44,2 GB (TLG.fst 44,1 GB) / RTF 0,0044 / 6.573 WPM**.
+- [x] Canary-Qwen & Granite-Speech **dievaluasi penuh** (keputusan user, docx = source of truth): Canary WER **0,2384** / CER **0,2115**; Granite **0,2337** / **0,2097**. Framing "tidak dievaluasi penuh" dihapus dari `bab4.md` & `SLIDES_BAB345.md`.
+- [x] Tabel IV.4 Canary RTF dikoreksi dari 0,1260 → **0,3207** (sesuai docx).
+- Catatan: **HANDOFF §8 kini usang** soal Canary/Granite "tidak dievaluasi penuh" — abaikan, pakai angka docx.
 
 ## 8. Konsistensi antarbab
 - [ ] **Selaraskan framing *spatial attention* di Bab II §II.4.1.** Saat ini dibingkai "dapat dicoba karena berpotensi", padahal di Bab III.3.2 dan Bab IV sudah menjadi komponen yang benar-benar dipakai (mekanismenya kini dijelaskan). Samakan agar tidak kontradiktif.
@@ -78,6 +79,16 @@ Kedua model sudah ada. Target: turun di bawah WER tunggal terbaik (dua tahap+LLa
 - `HANDOFF.md` — konteks penulisan keseluruhan.
 
 ---
+
+## Sudah selesai (sesi revisi 2026-06-10)
+- **Abstrak** (Indonesia saja) dibuat di `abstrak.md` — latar belakang, tujuan, metode, hasil (PER 0,1428; dua tahap+LLaMA 0,1556; E2E 0,1716; *ensembling* 0,1441), saran.
+- **Bab V.2 saran:** poin *ensembling* (kini sudah jadi hasil) **diganti** dengan dua saran baru — (3) keterbatasan tahap sinyal→fonem & *coverage* dan (4) integrasi modalitas neural lain (EEG/fMRI). Poin *speaker-independent* & kosakata digeser jadi 5 & 6.
+- **Bab IV:** eksperimen *ensembling* ditulis sebagai **lanjutan IV.4.3 dalam bentuk paragraf (tanpa tabel)** — hanya *router* regresi logistik (WER **0,1441** vs 0,1556 dua tahap & 0,1716 E2E; *oracle* 0,1089). Tabel: *coverage* IV.5, kontingensi IV.6.
+- **Keputusan huruf miring** untuk Transformer / Conformer / foundation model dicatat (lihat `DAFTAR_ISTILAH.md` & jawaban sesi).
+
+### Perlu diputuskan saat alignment ke source of truth (`IF4092_...docx.pdf`)
+- **Canary-Qwen & Granite-Speech:** docx (p63) sudah memuat angka — Canary WER 0,2384 / CER 0,2115; Granite 0,2337 / 0,2097 — sedangkan `bab4.md` Tabel IV.3 masih "(menyusul)" dan HANDOFF §8 menyebut keduanya "tidak dievaluasi penuh". **Konflik** — putuskan: pakai angka docx atau pertahankan "tidak dievaluasi penuh".
+- **Jangan timpa revisi md** (mekanisme *spatial attention*, penomoran Persamaan, de-italic nama) saat align — docx belum memuatnya. Align = tarik DATA terbaru dari docx ke md, bukan sebaliknya.
 
 ## Sudah selesai (sesi revisi 2026-06-09)
 - Penomoran **Persamaan II.1–II.5** di `bab2.md` + `DAFTAR_PERSAMAAN.md`.

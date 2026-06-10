@@ -1,0 +1,9 @@
+# ABSTRAK
+
+Individu dengan gangguan neurologis berat seperti *amyotrophic lateral sclerosis* dapat kehilangan kemampuan berbicara meskipun fungsi kognitifnya tetap utuh. Sistem *neuroprosthesis* bicara berupaya memulihkan komunikasi dengan mendekode upaya berbicara langsung dari sinyal otak. Arsitektur termutakhir saat ini bekerja dalam dua tahap, yaitu memetakan sinyal menjadi probabilitas fonem lalu menyusunnya menjadi teks dengan model bahasa. Pendekatan ini masih mengandalkan dekoder fonem berbasis RNN dan secara desain berisiko mengalami propagasi kesalahan antartahap.
+
+Tugas akhir ini membangun dan membandingkan dua paradigma pada dataset Willett et al. (2023). Paradigma pertama adalah arsitektur dua tahap dengan dekoder fonem berbasis Transformer untuk menangkap dependensi spasiotemporal secara lebih efektif. Paradigma kedua adalah arsitektur *end-to-end* yang memetakan sinyal langsung menjadi teks dengan memanfaatkan *foundation model* melalui mekanisme gaya LLaVA dan *cross-attention*. Adaptasi model dilakukan secara hemat parameter dengan LoRA.
+
+Hasil menunjukkan dekoder fonem Conformer dengan *spatial attention* mencapai *phoneme error rate* 0,1428 dan mengungguli penelitian sebelumnya. Arsitektur dua tahap dengan *rescoring* LLaMA-2 7B mencapai *word error rate* (WER) 0,1556, sedangkan arsitektur *end-to-end* berbasis Whisper-large-v3 mencapai WER 0,1716 dengan kebutuhan penyimpanan yang jauh lebih kecil. Penggabungan kedua arsitektur melalui *router* berbasis keyakinan menurunkan WER menjadi 0,1441, yaitu hasil terbaik pada penelitian ini. Penelitian selanjutnya disarankan mengatasi keterbatasan tahap pemetaan sinyal ke fonem serta mengintegrasikan modalitas neural lain seperti EEG dan fMRI.
+
+**Kata kunci:** *neuroprosthesis* bicara, antarmuka otak-komputer, ECoG, Conformer, *foundation model*, *end-to-end*

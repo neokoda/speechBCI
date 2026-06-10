@@ -24,14 +24,14 @@ Bagian ini memaparkan solusi untuk setiap permasalahan pada bagian III.1.
 
    **Tabel III.1** Daftar *Foundation Model* yang digunakan beserta karakteristiknya.
 
-   | Model                 | Penyedia | Modalitas Pelatihan | Mekanisme Adaptasi Modalitas             | Ukuran Parameter |
-   | --------------------- | -------- | ------------------- | ---------------------------------------- | ---------------- |
-   | Qwen3.5-0.8B-Base     | Alibaba  | Teks                | Proyeksi dan konkatenasi (gayaLLaVA) | ~0,8 miliar      |
-   | Whisper-medium.en     | OpenAI   | Audio               | *Cross-attention*                      | ~769 juta        |
-   | Whisper-large-v3      | OpenAI   | Audio               | *Cross-attention*                      | ~1,55 miliar     |
-   | Cohere Transcribe     | Cohere   | Audio               | *Cross-attention*                      | ~2 miliar        |
-   | Canary-Qwen-2.5B      | NVIDIA   | Audio dan teks      | Proyeksi dan konkatenasi (gayaLLaVA) | ~2,5 miliar      |
-   | Granite-Speech-4.1-2B | IBM      | Audio dan teks      | Proyeksi dan konkatenasi (gayaLLaVA) | ~2 miliar        |
+   | Model                 | Penyedia | Modalitas Pelatihan | Mekanisme Adaptasi Modalitas          | Ukuran Parameter |
+   | --------------------- | -------- | ------------------- | ------------------------------------- | ---------------- |
+   | Qwen3.5-0.8B-Base     | Alibaba  | Teks                | Proyeksi dan konkatenasi (gaya LLaVA) | ~0,8 miliar      |
+   | Whisper-medium.en     | OpenAI   | Audio               | *Cross-attention*                   | ~769 juta        |
+   | Whisper-large-v3      | OpenAI   | Audio               | *Cross-attention*                   | ~1,55 miliar     |
+   | Cohere Transcribe     | Cohere   | Audio               | *Cross-attention*                   | ~2 miliar        |
+   | Canary-Qwen-2.5B      | NVIDIA   | Audio dan teks      | Proyeksi dan konkatenasi (gaya LLaVA) | ~2,5 miliar      |
+   | Granite-Speech-4.1-2B | IBM      | Audio dan teks      | Proyeksi dan konkatenasi (gaya LLaVA) | ~2 miliar        |
 
    Kelompok model ini sengaja dipilih untuk mencakup variasi yang luas. Variasi tersebut meliputi arsitektur (LLM teks *decoder-only* atau *encoder-decoder* audio), modalitas pelatihan (teks murni, audio, atau keduanya), ukuran (dari sekitar 769 juta hingga 2,5 miliar parameter), serta mekanisme adaptasi modalitas (konkatenasi gaya LLaVA atau *cross-attention*). Dengan keragaman ini, perbandingan dapat menjawab pendekatan mana yang paling cocok untuk sinyal ECoG. Whisper dan Cohere dimanfaatkan secara utuh sebagai model *encoder-decoder* audio melalui *cross-attention*, sedangkan Canary-Qwen dan Granite-Speech dimanfaatkan dengan menggunakan ulang model bahasa teks di dalamnya secara gaya LLaVA. Untuk Canary-Qwen, komponen yang digunakan ulang adalah model bahasa Qwen3-1.7B beserta proyektor dan *adapter* LoRA yang telah dilatih untuk penyelarasan ucapan. Untuk Granite-Speech, komponen yang digunakan hanyalah model bahasa teksnya, sedangkan *encoder* audio bawaannya tidak dipakai. Alasan lain pemilihan Canary-Qwen dan Granite-Speech adalah keduanya merupakan model bahasa yang telah terbukti menjadi fondasi sistem ASR berkinerja tinggi. Keberhasilan adaptasi tersebut menunjukkan keluarga model bahasa ini cocok untuk memetakan ucapan menjadi teks sehingga berpotensi untuk memetakan sinyal ECoG menjadi teks secara baik.
 3. **Adaptasi Model terhadap Jenis Input Baru.** Untuk adaptasi modalitas, digunakan dua metode sesuai jenis FM. Untuk model bahasa teks *decoder-only* (Qwen, serta model bahasa dari Canary-Qwen dan Granite-Speech), digunakan proyeksi fitur yang diikuti konkatenasi token dengan gaya LLaVA (Liu et al., 2023). Untuk model audio *encoder-decoder* (Whisper dan Cohere), digunakan proyeksi fitur yang diikuti *cross-attention*. Pendekatan *cross-attention* dipilih untuk kasus ini agar sinyal ECoG hanya masuk melalui jalur *cross-attention* dan tidak melalui jalur *self-attention* teks. Hal ini menghindari permasalahan model belajar memprediksi teks dari teks sebelumnya tanpa benar-benar memanfaatkan sinyal ECoG. Untuk *fine-tuning*, dipilih LoRA karena mampu mengadaptasi model besar secara efektif dengan hanya melatih sebagian kecil parameter dan tanpa menambah latensi inferensi (Hu et al., 2021).
