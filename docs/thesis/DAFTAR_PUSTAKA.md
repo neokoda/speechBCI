@@ -12,6 +12,8 @@ Ding, N., Qin, Y., Yang, G., Wei, F., Yang, Z., Su, Y., ... & Sun, M. (2023). Pa
 
 Cho, K., van Merriënboer, B., Gulcehre, C., Bahdanau, D., Bougares, F., Schwenk, H., & Bengio, Y. (2014). Learning Phrase Representations using RNN Encoder-Decoder for Statistical Machine Translation. In Proceedings of the 2014 Conference on Empirical Methods in Natural Language Processing (EMNLP) (pp. 1724-1734). arXiv preprint arXiv:1406.1078.
 
+Cohere. (2026). Cohere Transcribe: State-of-the-Art Speech Recognition. https://cohere.com/blog/transcribe
+
 Devlin, J., Chang, M. W., Lee, K., & Toutanova, K. (2019). BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding. In Proceedings of the 2019 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies, Volume 1 (Long and Short Papers) (pp. 4171-4186). Association for Computational Linguistics.
 
 Feng, S., Liu, H., Wang, Y., & Wang, Y. (2024). Towards an End-to-End Framework for Invasive Brain Signal Decoding with Large Language Models. In Proceedings of Interspeech 2024. arXiv preprint arXiv:2406.11568.
@@ -40,6 +42,8 @@ Mohri, M., Pereira, F., & Riley, M. (2002). Weighted finite-state transducers in
 
 Moses, D. A., Metzger, S. L., Liu, J. R., Anumanchipalli, G. K., Makin, J. G., Sun, P. F.,... & Chang, E. F. (2021). Neuroprosthesis for decoding speech in a paralyzed person with anarthria. New England Journal of Medicine, 385(3), 217-227.
 
+NVIDIA. (2025). Canary-Qwen-2.5B. Hugging Face. https://huggingface.co/nvidia/canary-qwen-2.5b
+
 Park, D. S., Chan, W., Zhang, Y., Chiu, C.-C., Zoph, B., Cubuk, E. D., & Le, Q. V. (2019). SpecAugment: A Simple Data Augmentation Method for Automatic Speech Recognition. In Proceedings of Interspeech 2019 (pp. 2613-2617). arXiv preprint arXiv:1904.08779.
 
 Qwen Team. (2025). Qwen3 Technical Report. arXiv preprint arXiv:2505.09388.
@@ -47,6 +51,8 @@ Qwen Team. (2025). Qwen3 Technical Report. arXiv preprint arXiv:2505.09388.
 Radford, A., Kim, J. W., Xu, T., Brockman, G., McLeavey, C., & Sutskever, I. (2022). Robust Speech Recognition via Large-Scale Weak Supervision. arXiv preprint arXiv:2212.04356.
 
 Raffel, C., Shazeer, N., Roberts, A., Lee, K., Narang, S., Matena, M., ... & Liu, P. J. (2020). Exploring the limits of transfer learning with a unified text-to-text transformer. Journal of Machine Learning Research, 21(140), 1-67.
+
+Saon, G., Dekel, A., Brooks, A., Nagano, T., Daniels, A., Satt, A., ... & Kons, Z. (2025). Granite-speech: open-source speech-aware LLMs with strong English ASR capabilities. arXiv preprint arXiv:2505.08699.
 
 Schalk, G., & Leuthardt, E. C. (2011). Brain-computer interfaces using electrocorticographic signals. IEEE Reviews in Biomedical Engineering, 4, 140-154.
 
